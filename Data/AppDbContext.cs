@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using API.Entities;
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
-    public DbSet<AppUser> Users { get; set; }
+    public DbSet<AppUser> Users { get; set; } // table name
     //Là property đại diện cho bảng Users (được ánh xạ từ AppUser class).
 
 }
