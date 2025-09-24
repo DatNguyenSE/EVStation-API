@@ -28,14 +28,60 @@ public class AccountController(AppDbContext context, ITokenService tokenService)
         {
             if (ComputeHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid password"); // nếu 1 ký tự nào khác
         }
-         var userDto = new UserDto
-         {
-             Id = user.Id,
-             Username = user.UserName,
-             Email = user.Email,
-             Token = tokenService.CreateToken(user)
-    };
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.UserName,
+            Email = user.Email,
+            Token = tokenService.CreateToken(user)
+        };
 
-    return userDto;   
+        return userDto;
+    }
+
+
+    [HttpPost("register")] // account/register
+
+    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+    {
+        if (await EmailExists(registerDto.Email)) return BadRequest("Email has been registered");
+        if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
+        if (this.validPassword(registerDto.Password)) return BadRequest("Password length must be greater than or equal to 12");
+
+
+        using var hmac = new HMACSHA512();
+
+        var user = new AppUser
+        {
+            UserName = registerDto.Username.ToLower(),
+            Email = registerDto.Email,
+            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
+            PasswordSalt = hmac.Key
+        };
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.UserName,
+            Email = user.Email,
+            Token = tokenService.CreateToken(user)
+        };
+        return userDto;
+    }
+
+    private async Task<bool> UserExists(string UserName)
+    {
+        return await context.Users.AnyAsync(x => x.UserName.ToLower() == UserName.ToLower());
+    }
+     private async Task<bool> EmailExists(string Email)
+    {
+        return await context.Users.AnyAsync(x => x.Email.ToLower() == Email.ToLower());
+    }
+    
+    private bool validPassword(string password)
+    {
+        return password.Length < 4;
     }
 }
