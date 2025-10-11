@@ -48,7 +48,7 @@ namespace API.Controllers
             return Ok(post.ToPostDto());
         }
 
-        [HttpPost("{stationId}/posts")]
+        [HttpPost("{stationId}/post")]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)
         {
             if (!ModelState.IsValid)

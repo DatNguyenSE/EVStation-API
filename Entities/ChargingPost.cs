@@ -18,6 +18,7 @@ namespace API.Entities
         public ConnectorType ConnectorType { get; set; }
         [Column(TypeName = "nvarchar(20)")]   // set type cho column chứ không nó để thành int
         public PostStatus Status { get; set; }
+        public bool IsWalkIn { get; set; } = false; // có phải trụ vãng lai không??
         public byte[]? QRCode { get; set; }
     }
 
