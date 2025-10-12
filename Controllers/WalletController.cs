@@ -15,7 +15,7 @@ using Microsoft.Identity.Client;
 
 namespace API.Controllers
 {
-    // [Authorize(Roles = "Driver")]
+    // [Authorize(Roles = AppConstant.Roles.Driver)]
     [ApiController]
     [Route("api/wallet")]
     public class WalletController : ControllerBase

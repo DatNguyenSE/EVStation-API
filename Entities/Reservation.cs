@@ -22,9 +22,6 @@ namespace API.Entities
         public DateTime TimeSlotStart { get; set; }
         [Required]
         public DateTime TimeSlotEnd { get; set; }
-        [Range(1, 4)]
-        public int SlotCount { get; set; } // số lượng slot đã đặt (từ 1 đến 4)
-
         [Column(TypeName = "nvarchar(20)")]
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

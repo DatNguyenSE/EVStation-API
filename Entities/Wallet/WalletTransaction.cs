@@ -18,7 +18,7 @@ namespace API.Entities.Wallet
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
         public string? Description { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Status { get; set; } = "Pending";
         public string? PaymentMethod { get; set; }
         public string? VnpTxnRef { get; set; }

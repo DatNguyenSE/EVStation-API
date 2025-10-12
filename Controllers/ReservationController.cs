@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs.Reservation;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/reservation")]
-    [Authorize(Roles = "Driver")]
+    [Authorize(Roles = AppConstant.Roles.Driver)]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;

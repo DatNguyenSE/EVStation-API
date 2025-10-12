@@ -22,14 +22,10 @@ builder.Services.AddControllers()
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
         // chuyển các giá trị kiểu enum thành chữ chứ không còn là 0, 1, 2,...
         options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-        // Định dạng thời gian dễ đọc hơn
-        options.SerializerSettings.Converters.Add(new CustomDateTimeConverter());
     });
 
 // swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
@@ -60,7 +56,7 @@ builder.Services.AddSwaggerGen(option =>
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+   opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 }); // connect with sql server
 
 builder.Services.AddCors();     //allow client connect to API
@@ -151,5 +147,3 @@ app.MapControllers();
 
 app.Run();
 
-
-//file này là file quan trọng, vì nó đăng kí cấu hình, controller, csdl,...

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Interfaces;
 using API.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API.Repository
 {
@@ -55,6 +58,11 @@ namespace API.Repository
         public async Task<bool> Complete()
         {
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level)
+        {
+            return await _context.Database.BeginTransactionAsync(level);
         }
     }
 }

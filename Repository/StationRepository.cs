@@ -135,15 +135,15 @@ namespace API.Repository
             {
                 if (status == StationStatus.Maintenance)
                 {
-                    post.Status = PostStatus.Maintenance;
+                    post.Status = Helpers.Enums.PostStatus.Maintenance;
                 }
                 else if (status == StationStatus.Inactive)
                 {
-                    post.Status = PostStatus.Offline;
+                    post.Status = Helpers.Enums.PostStatus.Offline;
                 }
                 else
                 {
-                    post.Status = PostStatus.Available;
+                    post.Status = Helpers.Enums.PostStatus.Available;
                 }
             }
 

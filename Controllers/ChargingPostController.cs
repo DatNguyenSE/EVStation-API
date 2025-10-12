@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingPost;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;

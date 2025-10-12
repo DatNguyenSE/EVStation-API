@@ -19,7 +19,6 @@ namespace API.Mappers
                 DriverId = reservation.DriverId,
                 TimeSlotStart = reservation.TimeSlotStart,
                 TimeSlotEnd = reservation.TimeSlotEnd,
-                SlotCount = reservation.SlotCount,
                 Status = reservation.Status.ToString(),
                 CreatedAt = reservation.CreatedAt
             };

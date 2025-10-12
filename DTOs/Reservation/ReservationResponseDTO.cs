@@ -13,7 +13,6 @@ namespace API.DTOs.Reservation
         public string? DriverId { get; set; }
         public DateTime TimeSlotStart { get; set; }
         public DateTime TimeSlotEnd { get; set; }
-        public int SlotCount { get; set; }
         public string? Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }

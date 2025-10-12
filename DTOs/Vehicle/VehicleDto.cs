@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 
 namespace API.DTOs.Vehicle
 {
@@ -18,7 +19,7 @@ namespace API.DTOs.Vehicle
         [Required]
         public double MaxChargingPowerKW { get; set; }         // công suất sạc tối đa xe hỗ trợ
         [Required]
-        public string ConnectorType { get; set; } = string.Empty; // Type2 / CCS2 / Portable
+        public ConnectorType ConnectorType { get; set; } // Type2 / CCS2 / Portable
         [Required]
         public string Plate { get; set; } = string.Empty;
     }

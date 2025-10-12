@@ -6,6 +6,7 @@ using API.Entities;
 using API.Entities.Vnpay;
 using API.Entities.Wallet;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Authorize(Roles = "Driver")]
+    [Authorize(Roles = AppConstant.Roles.Driver)]
     [ApiController]
     [Route("api/payment")]
     public class PaymentController : ControllerBase
