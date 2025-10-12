@@ -2,18 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
+using API.Entities;
+using API.Entities.Wallet;
 using API.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Services
 {
     public class WalletService : IWalletService
     {
         private readonly IUnitOfWork _uow;
+        private readonly IVnPayService _vnPayService;
+        private readonly UserManager<AppUser> _userManager;
 
-        public WalletService(IUnitOfWork uow)
+        public WalletService(IUnitOfWork uow, IVnPayService vnPayService, UserManager<AppUser> userManager)
         {
             _uow = uow;
+            _vnPayService = vnPayService;
+            _userManager = userManager;
         }   
         public async Task<WalletDto?> GetWalletForUserAsync(string userId)
         {
@@ -56,5 +64,70 @@ namespace API.Services
             });
         }
 
+        public async Task<string> CreatePaymentAsync(PaymentInformationModel model, string username, HttpContext context)
+        {
+            var appUser = await _userManager.FindByNameAsync(username);
+            if (appUser == null)
+                throw new Exception("User not found");
+
+            // Tạo hoặc lấy ví
+            var wallet = await _uow.Wallets.GetWalletByUserIdAsync(appUser.Id);
+            if (wallet == null)
+                wallet = await _uow.Wallets.CreateWalletAsync(appUser.Id);
+            await _uow.Complete();
+
+            // Tạo giao dịch Pending
+            var txnRef = DateTime.UtcNow.Ticks.ToString();
+            var txn = new WalletTransaction
+            {
+                WalletId = wallet.Id,
+                TransactionType = Helpers.Enums.TransactionType.Topup,
+                Amount = (decimal)model.Amount,
+                BalanceBefore = wallet.Balance,
+                BalanceAfter = wallet.Balance,
+                Description = model.OrderDescription ?? "Nạp tiền vào ví",
+                Status = Helpers.Enums.TransactionStatus.Pending,
+                PaymentMethod = "VNPAY",
+                VnpTxnRef = txnRef,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _uow.WalletTransactions.AddTransactionAsync(txn);
+            if (!await _uow.Complete())
+            {
+                throw new Exception("Lỗi hệ thống: Không thể lưu giao dịch Pending.");
+            }
+            // Gán thông tin bổ sung
+            model.Name = username;
+            model.OrderType = "other"; 
+            // Tạo URL thanh toán
+            return _vnPayService.CreatePaymentUrl(model, context, txnRef);
+        }
+
+        public async Task<PaymentResponseModel> HandleVnpayCallbackAsync(IQueryCollection query)
+        {
+            var response = _vnPayService.PaymentExecute(query);
+            var txn = await _uow.WalletTransactions.GetByVnpTxnRefAsync(response.OrderId);
+            if (txn == null)
+                throw new Exception("Không tìm thấy giao dịch");
+
+            var wallet = txn.Wallet;
+
+            if (response.Success)
+            {
+                txn.Status = Helpers.Enums.TransactionStatus.Success;
+                wallet.Balance += txn.Amount;
+
+                await _uow.WalletTransactions.UpdateTransactionAsync(txn);
+                await _uow.Wallets.UpdateWalletAsync(wallet);
+            }
+            else
+            {
+                txn.Status = Helpers.Enums.TransactionStatus.Failed;
+                await _uow.WalletTransactions.UpdateTransactionAsync(txn);
+            }
+
+            await _uow.Complete();
+            return response;
+        }
     }
 }
