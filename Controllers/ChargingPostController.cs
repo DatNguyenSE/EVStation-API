@@ -48,6 +48,17 @@ namespace API.Controllers
             return Ok(post.ToPostDto());
         }
 
+        // lấy qrcode trụ
+        [HttpGet("{id:int}/qrcode")]
+        public async Task<IActionResult> GetQRCode(int id)
+        {
+            var post = await _uow.ChargingPosts.GetByIdAsync(id);
+            if (post == null || post.QRCode == null)
+                return NotFound("Không có QR code cho trụ này.");
+
+            return File(post.QRCode, "image/png");
+        }
+
         [HttpPost("{stationId}/post")]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)
         {

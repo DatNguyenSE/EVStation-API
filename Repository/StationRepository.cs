@@ -14,24 +14,31 @@ namespace API.Repository
     public class StationRepository : IStationRepository
     {
         private readonly AppDbContext _context;
-        public StationRepository(AppDbContext context)
+        private readonly IChargingPostRepository _postRepo;
+        public StationRepository(AppDbContext context, IChargingPostRepository postRepo)
         {
             _context = context;
+            _postRepo = postRepo;
         }
 
         public async Task<Station> CreateAsync(Station stationModel)
         {
+            // Tách danh sách post ra tạm, tránh EF tracking post khi lưu station
+            var posts = stationModel.Posts.ToList();
+            stationModel.Posts.Clear();
+
             // lưu station để có id
             await _context.Stations.AddAsync(stationModel);
             await _context.SaveChangesAsync();
             // generate code cho station
             stationModel.Code = StationCodeHelper.GenerateStationCode(stationModel.Address, stationModel.Id);
-            // Generate code cho posts
-            int index = 1;
-            foreach (var post in stationModel.Posts)
+            _context.Stations.Update(stationModel); // đánh dấu lại là Modified cho EF Core
+            await _context.SaveChangesAsync();
+
+            // Tạo từng post qua repo (chỉ chạy logic create 1 lần)
+            foreach (var post in posts)
             {
-                post.Code = $"{stationModel.Code}-CHG{index:D3}";
-                index++;
+                await _postRepo.CreateAsync(stationModel.Id, post);
             }
 
             return stationModel;

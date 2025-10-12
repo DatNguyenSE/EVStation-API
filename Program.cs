@@ -120,6 +120,7 @@ builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 // Đăng ký Email Service

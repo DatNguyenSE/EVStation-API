@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Interfaces;
+using API.Services;
 
 namespace API.Repository
 {
@@ -13,6 +14,7 @@ namespace API.Repository
 
         private IReservationRepository _reservations;
         private IChargingPostRepository _chargingPosts;
+        private IQRCodeService _qrService;
         private IStationRepository _stations;
         private IVehicleRepository _vehicles;
         private IWalletRepository _wallets;
@@ -20,19 +22,20 @@ namespace API.Repository
         private IChargingPackageRepository _chargingPackages;
         private IDriverPackageRepository _driverPackages;
 
-        public UnitOfWork(AppDbContext context)
+        public UnitOfWork(AppDbContext context, IQRCodeService qrService)
         {
             _context = context;
+            _qrService = qrService;
         }
 
         public IReservationRepository Reservations =>
             _reservations ??= new ReservationRepository(_context);
 
         public IChargingPostRepository ChargingPosts =>
-            _chargingPosts ??= new ChargingPostRepository(_context);
+            _chargingPosts ??= new ChargingPostRepository(_context, _qrService);
 
         public IStationRepository Stations =>
-            _stations ??= new StationRepository(_context);
+            _stations ??= new StationRepository(_context, ChargingPosts);
 
         public IVehicleRepository Vehicles =>
             _vehicles ??= new VehicleRepository(_context);

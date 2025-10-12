@@ -16,5 +16,6 @@ namespace API.DTOs.ChargingPost
         [Required]
         public decimal PowerKW { get; set; }             // Công suất
         public PostStatus Status { get; set; } = PostStatus.Available;
+        public bool IsWalkIn { get; set; } = false;
     }
 }

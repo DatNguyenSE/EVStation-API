@@ -14,6 +14,7 @@ namespace API.DTOs.ChargingPost
         public decimal PowerKW { get; set; }
         public ConnectorType ConnectorType { get; set; }
         public PostStatus Status { get; set; }
+        public bool IsWalkIn { get; set; }
         public string QRCodeUrl { get; set; } = string.Empty;
     }
 }
