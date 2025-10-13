@@ -132,7 +132,7 @@ namespace API.Controllers
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
                     FullName = registerDto.FullName,
-                    Age = registerDto.Age
+                    DateOfBirth = registerDto.DateOfBirth
                 }; 
 
                 // Tạo user trong Identity
