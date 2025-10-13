@@ -26,8 +26,10 @@ namespace API.Services
         {
             // var now = DateTime.UtcNow.AddHours(AppConstant.ReservationRules.TimezoneOffsetHours);
             var now = DateTime.UtcNow;
+
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
+
             // Kiểm tra không đặt trong quá khứ
             if (timeSlotStartUtc < now)
                 throw new Exception("Không thể đặt chỗ trong quá khứ.");
@@ -36,6 +38,7 @@ namespace API.Services
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
             if (vehicle == null)
                 throw new Exception("Xe không tồn tại.");
+                
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)
                throw new Exception("Bạn không có quyền đặt chỗ cho xe này.");
