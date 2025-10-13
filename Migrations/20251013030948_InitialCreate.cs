@@ -210,9 +210,9 @@ namespace API.Migrations
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BatteryCapacityKWh = table.Column<double>(type: "float", nullable: false),
                     MaxChargingPowerKW = table.Column<double>(type: "float", nullable: false),
-                    ConnectorType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Plate = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -282,6 +282,7 @@ namespace API.Migrations
                     PowerKW = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    IsWalkIn = table.Column<bool>(type: "bit", nullable: false),
                     QRCode = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
                 },
                 constraints: table =>
@@ -302,12 +303,16 @@ namespace API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     WalletId = table.Column<int>(type: "int", nullable: false),
+                    TransactionType = table.Column<int>(type: "int", maxLength: 50, nullable: false),
+                    ReferenceId = table.Column<int>(type: "int", nullable: true),
+                    BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BalanceAfter = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    VnpTxnRef = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    VnpTxnRef = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -316,6 +321,37 @@ namespace API.Migrations
                         name: "FK_WalletTransactions_Wallets_WalletId",
                         column: x => x.WalletId,
                         principalTable: "Wallets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reservations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VehicleId = table.Column<int>(type: "int", nullable: false),
+                    ChargingPostId = table.Column<int>(type: "int", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TimeSlotStart = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeSlotEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reservations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reservations_ChargingPosts_ChargingPostId",
+                        column: x => x.ChargingPostId,
+                        principalTable: "ChargingPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reservations_Vehicles_VehicleId",
+                        column: x => x.VehicleId,
+                        principalTable: "Vehicles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -382,6 +418,16 @@ namespace API.Migrations
                 column: "PackageId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Reservations_ChargingPostId",
+                table: "Reservations",
+                column: "ChargingPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reservations_VehicleId",
+                table: "Reservations",
+                column: "VehicleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_OwnerId",
                 table: "Vehicles",
                 column: "OwnerId");
@@ -423,13 +469,10 @@ namespace API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "ChargingPosts");
-
-            migrationBuilder.DropTable(
                 name: "DriverPackages");
 
             migrationBuilder.DropTable(
-                name: "Vehicles");
+                name: "Reservations");
 
             migrationBuilder.DropTable(
                 name: "WalletTransactions");
@@ -438,13 +481,19 @@ namespace API.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Stations");
-
-            migrationBuilder.DropTable(
                 name: "ChargingPackages");
 
             migrationBuilder.DropTable(
+                name: "ChargingPosts");
+
+            migrationBuilder.DropTable(
+                name: "Vehicles");
+
+            migrationBuilder.DropTable(
                 name: "Wallets");
+
+            migrationBuilder.DropTable(
+                name: "Stations");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

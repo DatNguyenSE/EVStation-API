@@ -11,7 +11,6 @@ namespace API.DTOs.Reservation
     {
         public int VehicleId { get; set; }
         public int ChargingPostId { get; set; }
-        // public string? DriverId { get; set; }
         public DateTime TimeSlotStart { get; set; }
         public int SlotCount { get; set; }
     }

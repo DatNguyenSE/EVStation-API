@@ -15,6 +15,6 @@ namespace API.Interfaces
         Task<ChargingPost?> UpdateAsync(int id, UpdateChargingPostDto postDto);
         Task<ChargingPost?> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task<ChargingPost?> UpdateStatusAsync(int id, PostStatus status);
+        Task<ChargingPost?> UpdateStatusAsync(int id, Helpers.Enums.PostStatus status);
     }
 }

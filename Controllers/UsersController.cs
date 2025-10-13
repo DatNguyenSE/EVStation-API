@@ -53,7 +53,7 @@ public class UsersController : ControllerBase //cung cấp nhiều phương th�
             Email = appUser.Email,
             Role = singleRole,
             FullName = appUser.FullName,
-            Age = appUser.Age,
+            DateOfBirth = appUser.DateOfBirth,
             Vehicles = VehicleResponseDto
         });
     }

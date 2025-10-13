@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingPost;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -48,7 +50,58 @@ namespace API.Controllers
             return Ok(post.ToPostDto());
         }
 
-        [HttpPost("{stationId}/posts")]
+        // lấy qrcode trụ
+        [HttpGet("{id:int}/qrcode")]
+        public async Task<IActionResult> GetQRCode(int id)
+        {
+            var post = await _uow.ChargingPosts.GetByIdAsync(id);
+            if (post == null || post.QRCode == null)
+                return NotFound("Không có QR code cho trụ này.");
+
+            return File(post.QRCode, "image/png");
+        }
+
+        [HttpGet("{postId}/check-reservation")]
+        public async Task<IActionResult> CheckReservation(int postId)
+        {
+            var driverId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var post = await _uow.ChargingPosts.GetByIdAsync(postId);
+            if (post == null)
+                return NotFound(new { message = "Không tìm thấy trụ sạc" });
+
+            var reservation = await _uow.Reservations
+                .GetActiveByPostIdAsync(postId);
+
+            if (reservation == null)
+            {
+                return Ok(new
+                {
+                    canStart = false,
+                    status = post.Status.ToString(),
+                    message = "Trụ hiện chưa được đặt"
+                });
+            }
+
+            if (reservation.DriverId == driverId)
+            {
+                return Ok(new
+                {
+                    canStart = true,
+                    status = post.Status.ToString(),
+                    message = "Bạn đã đặt trụ này, có thể bắt đầu sạc"
+                });
+            }
+
+            return Ok(new
+            {
+                canStart = false,
+                status = post.Status.ToString(),
+                message = "Trụ đã được đặt bởi người khác"
+            });
+        }
+
+        [HttpPost("{stationId}/post")]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)
         {
             if (!ModelState.IsValid)

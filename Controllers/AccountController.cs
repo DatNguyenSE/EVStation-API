@@ -7,6 +7,7 @@ using API.DTOs.Account;
 using API.DTOs.Email;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -131,7 +132,7 @@ namespace API.Controllers
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
                     FullName = registerDto.FullName,
-                    Age = registerDto.Age
+                    DateOfBirth = registerDto.DateOfBirth
                 }; 
 
                 // Tạo user trong Identity
@@ -143,7 +144,7 @@ namespace API.Controllers
                 }
 
                 // Gán role mặc định
-                var roleResult = await _userManager.AddToRoleAsync(appUser, "Driver");
+                var roleResult = await _userManager.AddToRoleAsync(appUser, AppConstant.Roles.Driver);
 
                 if (!roleResult.Succeeded)
                 {

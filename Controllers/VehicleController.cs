@@ -7,6 +7,7 @@ using API.Data;
 using API.DTOs.Vehicle;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ namespace API.Controllers
         }
 
         [HttpPost("add")]
-        [Authorize(Roles = "Driver")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> AddVehicle([FromBody] VehicleDto vehicleDto)
         {
             if (!ModelState.IsValid)
@@ -75,7 +76,7 @@ namespace API.Controllers
 
         // lấy thông tin xe của User
         [HttpGet("my")]
-        [Authorize(Roles = "Driver")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetMyVehicles()
         {
             var username = User.GetUsername();
@@ -98,7 +99,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Driver")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> UpdateVehicle([FromRoute] int id, [FromBody] VehicleUpdateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -139,7 +140,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("my/{id}")]
-        [Authorize(Roles = "Driver")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> DeactivateVehicle([FromRoute] int id)
         {
             var username = User.GetUsername();

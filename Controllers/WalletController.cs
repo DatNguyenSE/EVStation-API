@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
 using API.Entities;
 using API.Entities.Wallet;
@@ -15,7 +16,7 @@ using Microsoft.Identity.Client;
 
 namespace API.Controllers
 {
-    // [Authorize(Roles = "Driver")]
+    // [Authorize(Roles = AppConstant.Roles.Driver)]
     [ApiController]
     [Route("api/wallet")]
     public class WalletController : ControllerBase
@@ -62,6 +63,32 @@ namespace API.Controllers
 
             // Service đã xử lý việc kiểm tra ví, chỉ cần trả về kết quả
             return Ok(result);
+        }
+
+        [HttpPost("top-up")]
+        public async Task<IActionResult> CreatePayment([FromBody] PaymentInformationModel model)
+        {
+            var username = User.GetUsername();
+            var paymentUrl = await _walletService.CreatePaymentAsync(model, username, HttpContext);
+            return Ok(new { paymentUrl });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("vnpay-return")]
+        public async Task<IActionResult> PaymentCallback()
+        {
+            try
+            {
+                var response = await _walletService.HandleVnpayCallbackAsync(Request.Query);
+                if (response.Success)
+                    return Ok(new { message = "Nạp tiền thành công", data = response });
+                else
+                    return BadRequest(new { message = "Thanh toán thất bại", data = response });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
     }
 }

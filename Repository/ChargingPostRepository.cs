@@ -5,17 +5,21 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.ChargingPost;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using API.Services;
 
 namespace API.Repository
 {
     public class ChargingPostRepository : IChargingPostRepository
     {
         private readonly AppDbContext _context;
-        public ChargingPostRepository(AppDbContext context)
+        private readonly IQRCodeService _qrService;
+        public ChargingPostRepository(AppDbContext context, IQRCodeService qrService)
         {
             _context = context;
+            _qrService = qrService;
         }
         public async Task<ChargingPost> CreateAsync(int stationId, ChargingPost postModel)
         {
@@ -32,6 +36,15 @@ namespace API.Repository
             postModel.StationId = stationId;
 
             await _context.ChargingPosts.AddAsync(postModel);
+            await _context.SaveChangesAsync(); // để có Id
+
+            // Generate QR sau khi có Id
+            var feUrl = $"http://localhost:4200/charging-post/{postModel.Id}"; // 💥💥💥CÓ THỂ SỬA SAU KHI CHỐT URL TRÊN FE💥💥💥💥
+            postModel.QRCode = _qrService.GenerateQRCode(feUrl);
+
+            _context.ChargingPosts.Update(postModel); // tạo rồi nhưng chưa có QR, giờ update mới có QR
+            await _context.SaveChangesAsync();
+
             return postModel;
         }
 

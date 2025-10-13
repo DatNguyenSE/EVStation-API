@@ -19,7 +19,11 @@ namespace API.Mappers
                 PowerKW = postModel.PowerKW,
                 ConnectorType = postModel.ConnectorType,
                 Status = postModel.Status,
-                QRCodeUrl = postModel.QRCode != null ? Convert.ToBase64String(postModel.QRCode) : null
+                IsWalkIn = postModel.IsWalkIn,
+                QRCodeUrl = postModel.QRCode != null
+                    ? $"http://localhost:5001/api/posts/{postModel.Id}/qrcode"
+                    : string.Empty // BỎ CÁI NÀY VÔ THẺ <img> LÀ NÓ RA QR CODE
+                                   // <img src={post.qrCodeUrl} alt="QR code" /> => VÍ DỤ THÔI NHA
             };
         }
 
@@ -30,7 +34,8 @@ namespace API.Mappers
                 Type = postDto.Type,
                 PowerKW = postDto.PowerKW,
                 ConnectorType = postDto.ConnectorType,
-                Status = postDto.Status
+                Status = postDto.Status,
+                IsWalkIn = postDto.IsWalkIn
             };
         }
     }

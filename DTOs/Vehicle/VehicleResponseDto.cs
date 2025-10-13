@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 
 namespace API.DTOs.Vehicle
 {
@@ -12,7 +13,7 @@ namespace API.DTOs.Vehicle
         public string Type { get; set; } = string.Empty;            // Car / Motorbike
         public double BatteryCapacityKWh { get; set; }
         public double MaxChargingPowerKW { get; set; }
-        public string ConnectorType { get; set; } = string.Empty;
+        public ConnectorType ConnectorType { get; set; }
         public string Plate { get; set; } = string.Empty;
     }
 }

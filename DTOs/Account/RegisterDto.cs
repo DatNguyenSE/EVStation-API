@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Vehicle;
+using API.Helpers;
 
 namespace API.DTOs.Account
 {
@@ -22,9 +23,11 @@ namespace API.DTOs.Account
         // Thông tin cá nhân
         [Required]
         public string FullName { get; set; } = string.Empty;
+
         [Required]
-        [Range(18,100,ErrorMessage = "Tuổi phải lớn hơn 18")]
-        public int Age { get; set; }
+        [DataType(DataType.Date)]
+        [MinimumAge(18)]
+        public DateTime DateOfBirth { get; set; }
 
         // Danh sách xe
         public List<VehicleDto> Vehicles { get; set; } = new();

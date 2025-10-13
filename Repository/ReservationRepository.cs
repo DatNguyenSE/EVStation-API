@@ -42,6 +42,14 @@ namespace API.Repository
                                 r.Status != ReservationStatus.Cancelled);
         }
 
+        public async Task<Reservation?> GetActiveByPostIdAsync(int postId)
+        {
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId && 
+                            (r.Status == ReservationStatus.Confirmed))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Reservation?> GetReservationByIdAsync(int id)
         {
             return await _context.Reservations.FindAsync(id);
