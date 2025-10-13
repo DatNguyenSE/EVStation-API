@@ -35,8 +35,8 @@ namespace API.Mappers
                 Latitude = stationDto.Latitude,
                 Longitude = stationDto.Longitude,
                 Description = stationDto.Description,
-                OpenTime = stationDto.OpenTime,
-                CloseTime = stationDto.CloseTime,
+                OpenTime = stationDto.GetOpenTime() ?? TimeSpan.Zero,
+                CloseTime = stationDto.GetCloseTime() ?? TimeSpan.Zero,
                 Posts = stationDto.Posts.Select(p => p.ToChargingPostFromCreateDto()).ToList()
             };
         }

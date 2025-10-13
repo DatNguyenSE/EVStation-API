@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Station;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -57,11 +58,17 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var stationModel = stationDto.ToStationFromCreateDto();
-            await _uow.Stations.CreateAsync(stationModel);
-            // var result = await _uow.Complete();
-            // if (!result) return BadRequest("Tạo trạm thất bại");
-            return CreatedAtAction(nameof(GetById), new { id = stationModel.Id }, stationModel.ToStationDto());
+            try
+            {
+                var stationModel = stationDto.ToStationFromCreateDto();
+                await _uow.Stations.CreateAsync(stationModel);
+                return CreatedAtAction(nameof(GetById), new { id = stationModel.Id }, stationModel.ToStationDto());
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return BadRequest(ModelState);
+            }
         }
 
         [HttpPut]
