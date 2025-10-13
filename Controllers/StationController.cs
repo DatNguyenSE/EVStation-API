@@ -58,17 +58,11 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var stationModel = stationDto.ToStationFromCreateDto();
-                await _uow.Stations.CreateAsync(stationModel);
-                return CreatedAtAction(nameof(GetById), new { id = stationModel.Id }, stationModel.ToStationDto());
-            }
-            catch (ArgumentException ex)
-            {
-                ModelState.AddModelError("", ex.Message);
-                return BadRequest(ModelState);
-            }
+            var stationModel = stationDto.ToStationFromCreateDto();
+            await _uow.Stations.CreateAsync(stationModel);
+            // var result = await _uow.Complete();
+            // if (!result) return BadRequest("Tạo trạm thất bại");
+            return CreatedAtAction(nameof(GetById), new { id = stationModel.Id }, stationModel.ToStationDto());
         }
 
         [HttpPut]
