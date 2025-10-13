@@ -28,11 +28,15 @@ namespace API.Repository
             var posts = stationModel.Posts.ToList();
             stationModel.Posts.Clear();
 
+            Console.WriteLine($"Before Save: OpenTime={stationModel.OpenTime}, CloseTime={stationModel.CloseTime}");
+
             // Convert 24:00:00 -> 00:00:00 (SQL không nhận 24h)
-            if (stationModel.CloseTime.TotalHours == 24)
+            if (stationModel.CloseTime.TotalHours >= 24)
                 stationModel.CloseTime = TimeSpan.Zero;
-            if (stationModel.OpenTime.TotalHours == 24)
+            if (stationModel.OpenTime.TotalHours >= 24)
                 stationModel.OpenTime = TimeSpan.Zero;
+
+            _context.Entry(stationModel).State = EntityState.Detached;
 
             // lưu station để có id
             await _context.Stations.AddAsync(stationModel);
