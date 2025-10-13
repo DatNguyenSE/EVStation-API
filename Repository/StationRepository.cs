@@ -28,6 +28,12 @@ namespace API.Repository
             var posts = stationModel.Posts.ToList();
             stationModel.Posts.Clear();
 
+            // Convert 24:00:00 -> 00:00:00 (SQL không nhận 24h)
+            if (stationModel.CloseTime.TotalHours == 24)
+                stationModel.CloseTime = TimeSpan.Zero;
+            if (stationModel.OpenTime.TotalHours == 24)
+                stationModel.OpenTime = TimeSpan.Zero;
+
             // lưu station để có id
             await _context.Stations.AddAsync(stationModel);
             await _context.SaveChangesAsync();
@@ -109,10 +115,29 @@ namespace API.Repository
                 stationModel.Name = stationDto.Name;
             if (stationDto.Description != null)
                 stationModel.Description = stationDto.Description;
+            // Convert 24:00:00 -> 00:00:00 (SQL không nhận 24h)
             if (stationDto.OpenTime.HasValue)
-                stationModel.OpenTime = stationDto.OpenTime.Value;
+            {
+                if (stationDto.OpenTime.Value.TotalHours == 24)
+                {
+                    stationModel.OpenTime = TimeSpan.Zero;
+                }
+                else
+                {
+                    stationModel.OpenTime = stationDto.OpenTime.Value;
+                }
+            }   
             if (stationDto.CloseTime.HasValue)
-                stationModel.CloseTime = stationDto.CloseTime.Value;
+            {
+                if (stationDto.CloseTime.Value.TotalHours == 24)
+                {
+                    stationModel.CloseTime = TimeSpan.Zero;
+                }
+                else
+                {
+                    stationModel.CloseTime = stationDto.CloseTime.Value;
+                }
+            }                
             if (stationDto.Status.HasValue)
                 stationModel.Status = stationDto.Status.Value;
             return stationModel;
