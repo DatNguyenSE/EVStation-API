@@ -6,6 +6,7 @@ using API.Data;
 using API.DTOs.Station;
 using API.Entities;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Station;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;

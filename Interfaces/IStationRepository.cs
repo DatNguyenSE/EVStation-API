@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Station;
 using API.Entities;
+using API.Helpers.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Interfaces
