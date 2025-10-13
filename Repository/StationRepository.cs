@@ -6,6 +6,7 @@ using API.Data;
 using API.DTOs.Station;
 using API.Entities;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,16 @@ namespace API.Repository
             // Tách danh sách post ra tạm, tránh EF tracking post khi lưu station
             var posts = stationModel.Posts.ToList();
             stationModel.Posts.Clear();
+
+            Console.WriteLine($"Before Save: OpenTime={stationModel.OpenTime}, CloseTime={stationModel.CloseTime}");
+
+            // Convert 24:00:00 -> 00:00:00 (SQL không nhận 24h)
+            if (stationModel.CloseTime.TotalHours >= 24)
+                stationModel.CloseTime = TimeSpan.Zero;
+            if (stationModel.OpenTime.TotalHours >= 24)
+                stationModel.OpenTime = TimeSpan.Zero;
+
+            _context.Entry(stationModel).State = EntityState.Detached;
 
             // lưu station để có id
             await _context.Stations.AddAsync(stationModel);
@@ -108,10 +119,29 @@ namespace API.Repository
                 stationModel.Name = stationDto.Name;
             if (stationDto.Description != null)
                 stationModel.Description = stationDto.Description;
+            // Convert 24:00:00 -> 00:00:00 (SQL không nhận 24h)
             if (stationDto.OpenTime.HasValue)
-                stationModel.OpenTime = stationDto.OpenTime.Value;
+            {
+                if (stationDto.OpenTime.Value.TotalHours == 24)
+                {
+                    stationModel.OpenTime = TimeSpan.Zero;
+                }
+                else
+                {
+                    stationModel.OpenTime = stationDto.OpenTime.Value;
+                }
+            }   
             if (stationDto.CloseTime.HasValue)
-                stationModel.CloseTime = stationDto.CloseTime.Value;
+            {
+                if (stationDto.CloseTime.Value.TotalHours == 24)
+                {
+                    stationModel.CloseTime = TimeSpan.Zero;
+                }
+                else
+                {
+                    stationModel.CloseTime = stationDto.CloseTime.Value;
+                }
+            }                
             if (stationDto.Status.HasValue)
                 stationModel.Status = stationDto.Status.Value;
             return stationModel;

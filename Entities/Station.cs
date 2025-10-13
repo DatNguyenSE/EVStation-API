@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 
 namespace API.Entities
 {
@@ -22,10 +23,5 @@ namespace API.Entities
         public List<ChargingPost> Posts { get; set; } = new();
     }
 
-    public enum StationStatus
-    {
-        Active,
-        Inactive,
-        Maintenance
-    }
+    
 }
