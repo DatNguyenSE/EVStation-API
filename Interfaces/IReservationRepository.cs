@@ -18,5 +18,6 @@ namespace API.Interfaces
         Task<int> CountByDriverInDateAsync(string driverId, DateTime date);
         // Kiểm tra xem có đặt chỗ nào bị trùng lặp trong khoảng thời gian không
         Task<bool> CheckOverlapAsync(int postId, DateTime start, DateTime end);
+        Task<Reservation?> GetActiveByPostIdAsync(int postId);
     }
 }

@@ -103,8 +103,9 @@ namespace API.Services
 
                 return reservation.ToReservationResponseDto();
             }
-            catch
+            catch(Exception e)
             {
+                e.ToString();
                 // Nếu có bất kỳ lỗi nào xảy ra trong khối try, rollback transaction
                 // Mọi thay đổi (thêm reservation, cập nhật status) sẽ bị hủy bỏ
                 await transaction.RollbackAsync();
