@@ -30,6 +30,10 @@ namespace API.Services
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
 
+            // Kiểm tra giờ chẵn (phút, giây, mili giây phải = 0)
+            if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
+                throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
+
             // Kiểm tra không đặt trong quá khứ
             if (timeSlotStartUtc < now)
                 throw new Exception("Không thể đặt chỗ trong quá khứ.");
@@ -38,7 +42,7 @@ namespace API.Services
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
             if (vehicle == null)
                 throw new Exception("Xe không tồn tại.");
-                
+
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)
                throw new Exception("Bạn không có quyền đặt chỗ cho xe này.");
