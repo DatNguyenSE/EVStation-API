@@ -17,6 +17,7 @@ namespace API.Interfaces
         IWalletTransactionRepository WalletTransactions { get; }
         IChargingPackageRepository ChargingPackages { get; }
         IDriverPackageRepository DriverPackages { get; }
+        IVehicleModelRepository VehicleModels { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 

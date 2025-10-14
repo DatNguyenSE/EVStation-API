@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DTOs.Reservation;
 using API.Entities;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 
@@ -57,8 +58,21 @@ namespace API.Services
                 throw new Exception($"Trụ sạc hiện đang ở trạng thái {post.Status}, không thể đặt chỗ.");
 
             // So sánh trực tiếp loại cổng sạc của xe và của trụ.
-            if (vehicle.ConnectorType != post.ConnectorType)
-                throw new Exception($"Loại xe không tương thích. Trụ này yêu cầu loại sạc '{post.ConnectorType}'.");
+            if (vehicle.ConnectorType == ConnectorType.CCS2)
+            {
+                if (post.ConnectorType != ConnectorType.CCS2 && post.ConnectorType != ConnectorType.Type2)
+                {
+                    throw new Exception($"Xe sạc CCS2 không tương thích. Trụ này là loại '{post.ConnectorType}', chỉ chấp nhận trụ CCS2 hoặc Type2.");
+                }
+            }
+            else 
+            {
+                // Đối với các loại xe khác, cổng sạc của xe và trụ phải khớp chính xác.
+                if (vehicle.ConnectorType != post.ConnectorType)
+                {
+                    throw new Exception($"Loại xe không tương thích. Trụ này yêu cầu loại sạc '{post.ConnectorType}'.");
+                }
+            }
 
             // Kiểm tra số slot hợp lệ (1–4)
             if (dto.SlotCount < AppConstant.ReservationRules.MinSlotCount || dto.SlotCount > AppConstant.ReservationRules.MaxSlotCount)

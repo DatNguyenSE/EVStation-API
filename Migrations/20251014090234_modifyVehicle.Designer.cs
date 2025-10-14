@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251014090234_modifyVehicle")]
+    partial class modifyVehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -339,243 +342,6 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("Vehicles");
-                });
-
-            modelBuilder.Entity("API.Entities.VehicleModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("BatteryCapacityKWh")
-                        .HasColumnType("float");
-
-                    b.Property<int>("ConnectorType")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("HasDualBattery")
-                        .HasColumnType("bit");
-
-                    b.Property<double?>("MaxChargingPowerAC_KW")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("MaxChargingPowerDC_KW")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("MaxChargingPowerKW")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VehicleModels");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Theon S",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 2,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Vento S",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Vento Neo",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 4,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Klara S2 (2022)",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 5,
-                            BatteryCapacityKWh = 2.0,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Klara Neo",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 6,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Feliz S",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 7,
-                            BatteryCapacityKWh = 2.0,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Feliz Neo/Lite",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 8,
-                            BatteryCapacityKWh = 2.3999999999999999,
-                            ConnectorType = 2,
-                            HasDualBattery = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Feliz 2025",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 9,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Evo 200/200 Lite",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 10,
-                            BatteryCapacityKWh = 2.3999999999999999,
-                            ConnectorType = 2,
-                            HasDualBattery = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Evo Grand",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 11,
-                            BatteryCapacityKWh = 2.0,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Evo Neo/Lite Neo",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 12,
-                            BatteryCapacityKWh = 2.0,
-                            ConnectorType = 2,
-                            HasDualBattery = false,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Motio",
-                            Type = 0
-                        },
-                        new
-                        {
-                            Id = 13,
-                            BatteryCapacityKWh = 18.640000000000001,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 7.4000000000000004,
-                            MaxChargingPowerDC_KW = 60.0,
-                            Model = "VF 3",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 14,
-                            BatteryCapacityKWh = 37.229999999999997,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 7.4000000000000004,
-                            MaxChargingPowerDC_KW = 60.0,
-                            Model = "VF 5 Plus",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 15,
-                            BatteryCapacityKWh = 42.0,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 7.4000000000000004,
-                            MaxChargingPowerDC_KW = 60.0,
-                            Model = "VF e34",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 16,
-                            BatteryCapacityKWh = 59.600000000000001,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 11.0,
-                            MaxChargingPowerDC_KW = 150.0,
-                            Model = "VF 6",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 17,
-                            BatteryCapacityKWh = 75.299999999999997,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 11.0,
-                            MaxChargingPowerDC_KW = 150.0,
-                            Model = "VF 7",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 18,
-                            BatteryCapacityKWh = 87.700000000000003,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 11.0,
-                            MaxChargingPowerDC_KW = 150.0,
-                            Model = "VF 8",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 19,
-                            BatteryCapacityKWh = 123.0,
-                            ConnectorType = 1,
-                            HasDualBattery = false,
-                            MaxChargingPowerAC_KW = 11.0,
-                            MaxChargingPowerDC_KW = 250.0,
-                            Model = "VF 9",
-                            Type = 1
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.Wallet.Wallet", b =>

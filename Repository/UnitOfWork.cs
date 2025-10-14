@@ -24,6 +24,7 @@ namespace API.Repository
         private IWalletTransactionRepository _walletTransactions;
         private IChargingPackageRepository _chargingPackages;
         private IDriverPackageRepository _driverPackages;
+        private IVehicleModelRepository _vehicleModels;
 
         public UnitOfWork(AppDbContext context, IQRCodeService qrService)
         {
@@ -54,6 +55,9 @@ namespace API.Repository
 
         public IDriverPackageRepository DriverPackages =>
             _driverPackages ??= new DriverPackageRepository(_context);
+        
+        public IVehicleModelRepository VehicleModels =>
+            _vehicleModels ??= new VehicleModelRepository(_context);
 
         public async Task<bool> Complete()
         {

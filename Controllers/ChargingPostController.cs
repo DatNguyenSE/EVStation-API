@@ -61,6 +61,7 @@ namespace API.Controllers
             return File(post.QRCode, "image/png");
         }
 
+        /*
         [HttpGet("{postId}/check-reservation")]
         public async Task<IActionResult> CheckReservation(int postId)
         {
@@ -100,6 +101,7 @@ namespace API.Controllers
                 message = "Trụ đã được đặt bởi người khác"
             });
         }
+        */
 
         [HttpPost("{stationId}/post")]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)
@@ -107,7 +109,7 @@ namespace API.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }            
+            }
 
             var postModel = postDto.ToChargingPostFromCreateDto();
             try
@@ -169,6 +171,83 @@ namespace API.Controllers
             }
             await _uow.Complete();
             return NoContent();
+        }
+
+        // Lấy các khung giờ còn trống của một trụ sạc
+        [HttpGet("{postId:int}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlots([FromRoute] int postId)
+        {
+            // --- Bước 1: Xác thực dữ liệu đầu vào ---
+            // Kiểm tra trụ tồn tại
+            var post = await _uow.ChargingPosts.GetByIdAsync(postId);
+            if (post == null)
+            {
+                return NotFound("Không tìm thấy trụ sạc");
+            }
+
+            // lấy thông tin trạm (để biết giờ mở/đóng)
+            var station = await _uow.Stations.GetByIdAsync(post.StationId);
+            if (station == null)
+            {
+                return NotFound("Không tìm thấy trạm");
+            }
+
+            // --- Bước 2: Tính toán slot cho cả hai ngày ---
+
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            // Gọi hàm helper để lấy slot cho từng ngày
+            var todaySlots = await GetAvailableSlotsForDateAsync(postId, station, today);
+            var tomorrowSlots = await GetAvailableSlotsForDateAsync(postId, station, tomorrow);
+
+            // --- Bước 3: Tạo đối tượng kết quả và trả về ---
+
+            // Sử dụng Dictionary để cấu trúc kết quả cho dễ dùng ở phía client
+            var result = new Dictionary<string, List<DateTime>>
+            {
+                { today.ToString("yyyy-MM-dd"), todaySlots },
+                { tomorrow.ToString("yyyy-MM-dd"), tomorrowSlots }
+            };
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Phương thức helper để tính toán các slot còn trống cho một trụ và một ngày cụ thể.
+        /// </summary>
+        /// <param name="postId">ID của trụ sạc</param>
+        /// <param name="station">Đối tượng trạm chứa thông tin giờ mở/đóng cửa</param>
+        /// <param name="date">Ngày cần tính toán</param>
+        /// <returns>Danh sách các DateTime là thời gian bắt đầu của các slot còn trống</returns>
+        private async Task<List<DateTime>> GetAvailableSlotsForDateAsync(int postId, Station station, DateTime date)
+        {
+            // Lấy tất cả các Reservation của trụ này trong ngày được chọn
+            var reservationsOnDate = await _uow.Reservations.GetReservationsForPostOnDateAsync(postId, date);
+            var bookedStartTimes = reservationsOnDate.Select(r => r.TimeSlotStart).ToHashSet();
+
+            var availableSlots = new List<DateTime>();
+            const int slotDurationMinutes = 60;
+
+            var slotIterator = date.Date + station.OpenTime;
+            var closingTime = date.Date + station.CloseTime;
+
+            if (closingTime <= slotIterator)
+            {
+                closingTime = closingTime.AddDays(1);
+            }
+
+            while (slotIterator < closingTime)
+            {
+                // Chỉ thêm vào nếu slot chưa được đặt và chưa trôi qua
+                if (!bookedStartTimes.Contains(slotIterator) && slotIterator >= DateTime.Now)
+                {
+                    availableSlots.Add(slotIterator);
+                }
+
+                slotIterator = slotIterator.AddMinutes(slotDurationMinutes);
+            }
+
+            return availableSlots;
         }
     }
 }

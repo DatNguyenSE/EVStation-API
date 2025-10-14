@@ -8,6 +8,7 @@ using API.DTOs.Vehicle;
 using API.Entities;
 using API.Extensions;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -96,6 +97,13 @@ namespace API.Controllers
             var result = vehicles.Select(v => v.ToVehicleResponseDto());
 
             return Ok(result);
+        }
+
+        [HttpGet("models")]
+        public async Task<IActionResult> GetVehicleModels([FromQuery] VehicleType vehicleType)
+        {
+            var models = await _uow.VehicleModels.GetByTypeAsync(vehicleType);
+            return Ok(models);
         }
 
         [HttpPut("{id}")]

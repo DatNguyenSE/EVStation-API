@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
@@ -63,6 +64,23 @@ namespace API.Repository
                        r.Status == ReservationStatus.Confirmed &&
                        start < r.TimeSlotEnd &&
                        end > r.TimeSlotStart);
+        }
+
+        public async Task<List<Reservation>> GetReservationsForPostOnDateAsync(int postId, DateTime date)
+        {
+            var startOfDay = date.Date; // Lấy phần ngày, bỏ qua giờ (00:00:00)
+            var endOfDay = startOfDay.AddDays(1); // Ngày hôm sau lúc 00:00:00
+
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId &&
+                            r.TimeSlotStart >= startOfDay &&
+                            r.TimeSlotStart < endOfDay)
+                .ToListAsync();
+        }
+
+        public async Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate)
+        {
+            return await _context.Reservations.FirstOrDefaultAsync(predicate);
         }
     }
 }
