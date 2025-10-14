@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingPackage;
 using API.Entities;
+using API.Helpers.Enums;
 
 namespace API.DTOs.DriverPackage
 {
