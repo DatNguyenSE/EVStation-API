@@ -61,6 +61,7 @@ namespace API.Controllers
             return File(post.QRCode, "image/png");
         }
 
+        /*
         [HttpGet("{postId}/check-reservation")]
         public async Task<IActionResult> CheckReservation(int postId)
         {
@@ -100,6 +101,7 @@ namespace API.Controllers
                 message = "Trụ đã được đặt bởi người khác"
             });
         }
+        */
 
         [HttpPost("{stationId}/post")]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)

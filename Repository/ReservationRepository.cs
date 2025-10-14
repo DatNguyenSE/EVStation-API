@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
@@ -75,6 +76,11 @@ namespace API.Repository
                             r.TimeSlotStart >= startOfDay &&
                             r.TimeSlotStart < endOfDay)
                 .ToListAsync();
+        }
+
+        public async Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate)
+        {
+            return await _context.Reservations.FirstOrDefaultAsync(predicate);
         }
     }
 }

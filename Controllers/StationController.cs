@@ -154,7 +154,8 @@ namespace API.Controllers
                 return NotFound("Không tìm thấy xe.");
             }
 
-            var posts = station.Posts;
+            // chỉ lấy những trạm dành cho đặt trước
+            var posts = station.Posts.Where(p => p.IsWalkIn == false);
 
             // Nếu là xe ô tô và loại sạc CCS2
             if (vehicle.Type == VehicleType.Car && vehicle.ConnectorType == ConnectorType.CCS2)
