@@ -270,14 +270,14 @@ namespace API.Controllers
             var frontendUrl = "http://localhost:4200";
             var baseUrl = _configuration["AppSettings:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
             var confirmationLink = $"{frontendUrl}/api/account/confirm-email?userId={user.Id}&token={encodedToken}";
-        
+
 
             try
             {
-                await _emailService.SendEmailConfirmationAsync(user.Email, user.Id,encodedToken);
-                
+                await _emailService.SendEmailConfirmationAsync(user.Email, user.Id, encodedToken);
+
                 _logger.LogInformation($"Confirmation email resent to {user.Email}");
-                
+
                 return Ok(new { message = "Email xác nhận đã được gửi lại. Vui lòng kiểm tra hộp thư đến của bạn." });
             }
             catch (Exception ex)
@@ -285,6 +285,13 @@ namespace API.Controllers
                 _logger.LogError(ex, $"Failed to resend confirmation email to {user.Email}");
                 return StatusCode(500, new { message = "Không gửi được email xác nhận. Vui lòng thử lại sau." });
             }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok(new { message = "Đăng xuất thành công." });
         }
     }
 }

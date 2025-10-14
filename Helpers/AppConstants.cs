@@ -20,6 +20,8 @@ namespace API.Helpers
             public const string Admin = "Admin";
             public const string Manager = "Manager";
             public const string Driver = "Driver";
+            public const string Operator = "Operator";
+            public const string Technician = "Technician";
         }
     }
 }

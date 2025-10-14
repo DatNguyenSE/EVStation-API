@@ -13,7 +13,11 @@ namespace API.DTOs.Vehicle
         public string Model { get; set; } = string.Empty;      // VD: VF e34, Klara S
         [Required]
         [RegularExpression("Car|Motorbike", ErrorMessage = "Loại xe phải là 'Car' hoặc 'Motorbike'.")]
+<<<<<<< HEAD
         public VehicleType Type { get; set; }    // "Car" hoặc "Motorbike"
+=======
+        public VehicleType Type { get; set; } 
+>>>>>>> 2479b0f35c247d50308223bea54573b15487d31a
         [Required]
         [Range(0.1, 1000, ErrorMessage = "Dung lượng không hợp lệ.")]
         public double BatteryCapacityKWh { get; set; }         // dung lượng pin

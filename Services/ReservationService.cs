@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DTOs.Reservation;
 using API.Entities;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 
@@ -30,6 +31,10 @@ namespace API.Services
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
 
+            // Kiểm tra giờ chẵn (phút, giây, mili giây phải = 0)
+            if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
+                throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
+
             // Kiểm tra không đặt trong quá khứ
             if (timeSlotStartUtc < now)
                 throw new Exception("Không thể đặt chỗ trong quá khứ.");
@@ -38,7 +43,7 @@ namespace API.Services
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
             if (vehicle == null)
                 throw new Exception("Xe không tồn tại.");
-                
+
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)
                throw new Exception("Bạn không có quyền đặt chỗ cho xe này.");
@@ -53,8 +58,21 @@ namespace API.Services
                 throw new Exception($"Trụ sạc hiện đang ở trạng thái {post.Status}, không thể đặt chỗ.");
 
             // So sánh trực tiếp loại cổng sạc của xe và của trụ.
-            if (vehicle.ConnectorType != post.ConnectorType)
-                throw new Exception($"Loại xe không tương thích. Trụ này yêu cầu loại sạc '{post.ConnectorType}'.");
+            if (vehicle.ConnectorType == ConnectorType.CCS2)
+            {
+                if (post.ConnectorType != ConnectorType.CCS2 && post.ConnectorType != ConnectorType.Type2)
+                {
+                    throw new Exception($"Xe sạc CCS2 không tương thích. Trụ này là loại '{post.ConnectorType}', chỉ chấp nhận trụ CCS2 hoặc Type2.");
+                }
+            }
+            else 
+            {
+                // Đối với các loại xe khác, cổng sạc của xe và trụ phải khớp chính xác.
+                if (vehicle.ConnectorType != post.ConnectorType)
+                {
+                    throw new Exception($"Loại xe không tương thích. Trụ này yêu cầu loại sạc '{post.ConnectorType}'.");
+                }
+            }
 
             // Kiểm tra số slot hợp lệ (1–4)
             if (dto.SlotCount < AppConstant.ReservationRules.MinSlotCount || dto.SlotCount > AppConstant.ReservationRules.MaxSlotCount)
