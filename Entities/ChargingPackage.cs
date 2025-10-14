@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 
 namespace API.Entities
 {
@@ -32,11 +33,5 @@ namespace API.Entities
 
         // Ngày tạo
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
-
-    public enum VehicleType
-    {
-        Bike,
-        Car
     }
 }

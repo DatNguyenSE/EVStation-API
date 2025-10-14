@@ -19,5 +19,7 @@ namespace API.Interfaces
         // Kiểm tra xem có đặt chỗ nào bị trùng lặp trong khoảng thời gian không
         Task<bool> CheckOverlapAsync(int postId, DateTime start, DateTime end);
         Task<Reservation?> GetActiveByPostIdAsync(int postId);
+
+        Task<List<Reservation>> GetReservationsForPostOnDateAsync(int postId, DateTime date);
     }
 }

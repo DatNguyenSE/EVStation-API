@@ -116,22 +116,65 @@ namespace API.Controllers
         }
 
         // API gợi ý trạm gần nhất
-        [HttpGet("nearby")]
-        public async Task<IActionResult> GetNearBy([FromQuery] double lat, [FromQuery] double lon, [FromQuery] double radiusKm = 5)
+        [HttpGet("nearest")]
+        public async Task<IActionResult> GetNearest([FromQuery] double lat, [FromQuery] double lon)
         {
-            if (radiusKm <= 0) radiusKm = 5;
-            var stations = await _uow.Stations.GetNearbyAsync(lat, lon, radiusKm);
-            var stationDtos = stations.Select(s => s.ToStationDto()).ToList();
+            var station = await _uow.Stations.GetNearestAsync(lat, lon);
 
-            return Ok(stationDtos);
+            // Nếu không tìm thấy trạm nào (CSDL rỗng), trả về lỗi 404 Not Found
+            if (station == null)
+            {
+                return NotFound("Không tìm thấy trạm nào.");
+            }
+            var stationDto = station.ToStationDto();
+            return Ok(stationDto);
         }
 
         // API tìm kiếm trạm
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string address)
         {
-            var stations = await _uow.Stations.SearchByAddressAsync(address);
+            var stations = await _uow.Stations.SearchAsync(address);
             return Ok(stations.Select(s => s.ToStationDto()));
         }
-    }
+
+        // trả về danh sách các trụ sạc tương thích với xe trong trạm
+        [HttpGet("{stationId:int}/compatible-posts/{vehicleId:int}")]
+        public async Task<IActionResult> GetCompatiblePosts(int stationId, int vehicleId) 
+        {
+            var station = await _uow.Stations.GetByIdAsync(stationId);
+            if (station == null)
+            {
+                return NotFound("Không tìm thấy trạm.");
+            }
+
+            var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(vehicleId);
+            if (vehicle == null)
+            {
+                return NotFound("Không tìm thấy xe.");
+            }
+
+            var posts = station.Posts;
+
+            // Nếu là xe ô tô và loại sạc CCS2
+            if (vehicle.Type == VehicleType.Car && vehicle.ConnectorType == ConnectorType.CCS2)
+            {
+                posts = posts
+                    .Where(p => p.ConnectorType == ConnectorType.CCS2 || p.ConnectorType == ConnectorType.Type2)
+                    .ToList();
+            }
+            else if (vehicle.Type == VehicleType.Motorbike && vehicle.ConnectorType == ConnectorType.VinEScooter)
+            {
+                posts = posts
+                    .Where(p => p.ConnectorType == ConnectorType.VinEScooter)
+                    .ToList();
+            }
+            else
+            {
+                posts = new List<ChargingPost>();
+            }
+
+            return Ok(posts.Select(p => p.ToPostDto()));
+        }
+    }   
 }

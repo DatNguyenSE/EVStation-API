@@ -79,31 +79,43 @@ namespace API.Repository
 
         public async Task<Station?> GetByIdAsync(int id)
         {
-            return await _context.Stations.FindAsync(id);
+            return await _context.Stations.Include(s => s.Posts).FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task<List<Station>> GetNearbyAsync(double latitude, double longitude, double radiusKm)
+        public async Task<Station?> GetNearestAsync(double latitude, double longitude)
         {
             var stations = await _context.Stations.ToListAsync();
 
-            return stations
-                .Where(s => StationCodeHelper.GetDistanceKm(latitude, longitude, s.Latitude, s.Longitude) <= radiusKm)
-                .ToList();
+            // Xử lý trường hợp không có trạm nào trong cơ sở dữ liệu
+            if (!stations.Any())
+            {
+                return null;
+            }
+
+
+            // Sắp xếp các trạm theo khoảng cách tăng dần và chọn cái đầu tiên
+            var nearestStation = stations
+                .OrderBy(s => StationCodeHelper.GetDistanceKm(latitude, longitude, s.Latitude, s.Longitude))
+                .FirstOrDefault();
+
+            return nearestStation;
         }
 
-        public async Task<List<Station>> SearchByAddressAsync(string address)
+        public async Task<List<Station>> SearchAsync(string keyword)
         {
-            // Kiểm tra input rỗng
-            if (string.IsNullOrEmpty(address))
+            // Nên dùng IsNullOrWhiteSpace để kiểm tra cả trường hợp chuỗi chỉ có khoảng trắng
+            if (string.IsNullOrWhiteSpace(keyword))
             {
                 return new List<Station>();
             }
 
-            var search = address.Trim().ToLower();
+            var search = keyword.Trim().ToLower();
 
             // Tìm kiếm trong database
             var stations = await _context.Stations
-                .Where(s => s.Address.ToLower().Contains(search)).ToListAsync();
+                .Where(s => s.Address.ToLower().Contains(search) ||
+                            s.Name.ToLower().Contains(search))
+                .ToListAsync();
 
             return stations;
         }

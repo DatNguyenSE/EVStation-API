@@ -64,5 +64,17 @@ namespace API.Repository
                        start < r.TimeSlotEnd &&
                        end > r.TimeSlotStart);
         }
+
+        public async Task<List<Reservation>> GetReservationsForPostOnDateAsync(int postId, DateTime date)
+        {
+            var startOfDay = date.Date; // Lấy phần ngày, bỏ qua giờ (00:00:00)
+            var endOfDay = startOfDay.AddDays(1); // Ngày hôm sau lúc 00:00:00
+
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId &&
+                            r.TimeSlotStart >= startOfDay &&
+                            r.TimeSlotStart < endOfDay)
+                .ToListAsync();
+        }
     }
 }

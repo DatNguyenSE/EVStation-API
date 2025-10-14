@@ -10,7 +10,7 @@ namespace API.DTOs.Vehicle
     {
         public int VehicleId { get; set; }
         public string Model { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;            // Car / Motorbike
+        public VehicleType Type { get; set; }           // Car / Bike
         public double BatteryCapacityKWh { get; set; }
         public double MaxChargingPowerKW { get; set; }
         public ConnectorType ConnectorType { get; set; }
