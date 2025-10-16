@@ -14,6 +14,7 @@ namespace API.Mappers
             return new ChargingPostDto
             {
                 Id = postModel.Id,
+                StationId = postModel.StationId,
                 Code = postModel.Code,
                 Type = postModel.Type,
                 PowerKW = postModel.PowerKW,
