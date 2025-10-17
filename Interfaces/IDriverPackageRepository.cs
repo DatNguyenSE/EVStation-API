@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Entities;
+using API.Helpers.Enums;
 
 namespace API.Interfaces
 {
@@ -13,5 +14,7 @@ namespace API.Interfaces
         Task<List<DriverPackage>> GetByUserAsync(string userId);
         Task<DriverPackage> CreateAsync(string appUserId, int packageId);
         Task<DriverPackage?> DeleteAsync(int id);
+
+        Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType);
     }
 }
