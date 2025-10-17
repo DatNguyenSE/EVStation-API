@@ -99,18 +99,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Đăng ký Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký repository (tầng data)
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IChargingPostRepository, ChargingPostRepository>();
+builder.Services.AddScoped<IStationRepository, StationRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
-// builder.Services.AddScoped<IWalletRepository, WalletRepository>();
-// builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-// builder.Services.AddScoped<IStationRepository, StationRepository>();
-// builder.Services.AddScoped<IChargingPostRepository, ChargingPostRepository>();
-// builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository>();
-// builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
-// builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository>();
+builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
+builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
+
+// Đăng ký Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký service (tầng logic)
 builder.Services.AddScoped<ITokenService, TokenService>();
