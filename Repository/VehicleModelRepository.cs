@@ -30,5 +30,12 @@ namespace API.Repository
         {
             return _context.VehicleModels.Where(vm => vm.Type == vehicleType).ToListAsync();
         }
+
+        public async Task<IEnumerable<VehicleModel>> GetCompatibleModelsAsync(ConnectorType connectorType)
+        {
+            return await _context.VehicleModels
+                .Where(vm => vm.ConnectorType == connectorType)
+                .ToListAsync();
+        }
     }
 }

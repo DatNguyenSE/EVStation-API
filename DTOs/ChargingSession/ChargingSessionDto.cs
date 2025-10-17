@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Helpers.Enums;
 
-namespace API.Entities
+namespace API.DTOs.ChargingSession
 {
-    public class ChargingSession
+    public class ChargingSessionDto
     {
         public int Id { get; set; }
         public int? VehicleId { get; set; }
@@ -19,7 +18,6 @@ namespace API.Entities
         public float? StartBatteryPercentage { get; set; }
         public float? EndBatteryPercentage { get; set; }
         public double EnergyConsumed { get; set; }
-        [Column(TypeName = "nvarchar(20)")]   // set type cho column chứ không nó để thành int
         public SessionStatus Status { get; set; }
         public int Cost { get; set; }
     }

@@ -33,16 +33,53 @@ namespace API.Controllers
             {
                 // Lấy driverId từ JWT 
                 var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(driverId))
+                {
+                    return Unauthorized();
+                }
+
                 if (dto == null)
                 {
                     return BadRequest("Dữ liệu đặt chỗ không hợp lệ.");
                 }
 
                 var result = await _reservationService.CreateReservationAsync(dto, driverId);
-                
+
                 return Ok(new
                 {
                     message = "Đặt chỗ thành công!",
+                    data = result
+                });
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new
+                {
+                    message = e.Message
+                });
+            }
+        }
+        
+        
+        [HttpPost("{reservationId:int}/cancel")]
+        public async Task<IActionResult> CancelReservation([FromRoute] int reservationId)
+        {
+            try
+            {
+                // Lấy driverId từ JWT 
+                var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(driverId))
+                {
+                    return Unauthorized();
+                }
+
+                var result = await _reservationService.CancelReservationAsync(reservationId, driverId);
+                
+                return Ok(new
+                {
+                    message = "Huỷ đặt chỗ thành công.",
                     data = result
                 });
 
@@ -54,6 +91,5 @@ namespace API.Controllers
                 });
             }
         }
-
     }
 }
