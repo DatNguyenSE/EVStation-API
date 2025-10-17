@@ -22,7 +22,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ChargingPackage> ChargingPackages { get; set; }
     public DbSet<DriverPackage> DriverPackages { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
-    // public DbSet<ChargingSession> ChargingSessions { get; set; }
+    public DbSet<ChargingSession> ChargingSessions { get; set; }
     public DbSet<VehicleModel> VehicleModels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)

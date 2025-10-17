@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using API.Entities.Email;
 using API.Helpers;
+using API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,6 +118,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 // Đăng ký Email Service
@@ -126,6 +128,12 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 // đăng ký service check status gói của người dùng mỗi 24h
 builder.Services.AddHostedService<PackageStatusChecker>();
+
+// Đăng ký SignalR
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
+builder.Services.AddHostedService(provider => (ChargingSimulationService)provider.GetRequiredService<IChargingSimulationService>());
 
 var app = builder.Build();
 
@@ -139,6 +147,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 .WithOrigins("https://localhost:4200", "http://localhost:4200")); //set connect
 
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
 
 app.UseAuthentication();
 app.UseAuthorization();
