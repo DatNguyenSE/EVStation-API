@@ -55,12 +55,13 @@ namespace API.Services
             var transactions = await _uow.WalletTransactions.GetTransactionsByWalletIdAsync(wallet.Id);
             return transactions.Select(t => new TransactionDto
             {
-                Id = t.Id,
+                TransactionType = t.TransactionType,
+                BalanceBefore = t.BalanceBefore,
+                BalanceAfter = t.BalanceAfter,
                 Amount = t.Amount,
                 Description = t.Description,
                 CreatedAt = t.CreatedAt,
                 Status = t.Status,
-                PaymentMethod = t.PaymentMethod
             });
         }
 
@@ -84,8 +85,8 @@ namespace API.Services
                 TransactionType = Helpers.Enums.TransactionType.Topup,
                 Amount = (decimal)model.Amount,
                 BalanceBefore = wallet.Balance,
-                BalanceAfter = wallet.Balance,
-                Description = model.OrderDescription ?? "Nạp tiền vào ví",
+                BalanceAfter = wallet.Balance + (decimal)model.Amount,
+                Description = "Nạp tiền vào ví",
                 Status = Helpers.Enums.TransactionStatus.Pending,
                 PaymentMethod = "VNPAY",
                 VnpTxnRef = txnRef,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs.ChargingPackage;
 using API.Interfaces;
@@ -17,10 +18,12 @@ namespace API.Controllers
     public class ChargingPackageController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
+        private readonly IPackageService _packageService;
 
-        public ChargingPackageController(IUnitOfWork uow)
+        public ChargingPackageController(IUnitOfWork uow, IPackageService packageService)
         {
             _uow = uow;
+            _packageService = packageService;
         }
 
         [HttpGet]
@@ -116,6 +119,26 @@ namespace API.Controllers
                 return StatusCode(500, "Không thể xóa gói sạc.");
 
             return NoContent();
+        }
+
+        [HttpPost("purchase/{packageId}")]
+        public async Task<IActionResult> PurchasePackage(int packageId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var (Success, Message) = await _packageService.PurchasePackageAsync(userId, packageId);
+
+            if (!Success)
+            {
+                return BadRequest(new { message = Message });
+            }
+
+            return Ok(new { message = Message });
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Station;
 using API.Entities;
+using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
@@ -140,7 +141,7 @@ namespace API.Controllers
 
         // trả về danh sách các trụ sạc tương thích với xe trong trạm
         [HttpGet("{stationId:int}/compatible-posts/{vehicleId:int}")]
-        public async Task<IActionResult> GetCompatiblePosts(int stationId, int vehicleId) 
+        public async Task<IActionResult> GetCompatiblePosts(int stationId, int vehicleId)
         {
             var station = await _uow.Stations.GetByIdAsync(stationId);
             if (station == null)
@@ -154,7 +155,8 @@ namespace API.Controllers
                 return NotFound("Không tìm thấy xe.");
             }
 
-            var posts = station.Posts;
+            // chỉ lấy những trạm dành cho đặt trước
+            var posts = station.Posts.Where(p => p.IsWalkIn == false);
 
             // Nếu là xe ô tô và loại sạc CCS2
             if (vehicle.Type == VehicleType.Car && vehicle.ConnectorType == ConnectorType.CCS2)
@@ -175,6 +177,15 @@ namespace API.Controllers
             }
 
             return Ok(posts.Select(p => p.ToPostDto()));
+        }
+        
+        [HttpGet("distance")]
+        public async Task<IActionResult> GetDistanceKm([FromQuery] double lat1, [FromQuery] double lon1, [FromQuery] double lat2, [FromQuery] double lon2)
+        {
+            return Ok(new
+            {
+                distance = StationCodeHelper.GetDistanceKm(lat1, lon1, lat2, lon2)
+            });
         }
     }   
 }
