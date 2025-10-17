@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +65,15 @@ namespace API.Repository
         public Task<List<DriverPackage>> GetByUserAsync(string userId)
         {
             return _context.DriverPackages.Where(p => p.AppUserId == userId).Include(p => p.Package).ToListAsync();
+        }
+
+        public async Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.AnyAsync(d =>
+                d.AppUserId == userId &&
+                d.VehicleType == vehicleType &&
+                d.IsActive &&
+                d.EndDate > DateTime.UtcNow);
         }
     }
 }
