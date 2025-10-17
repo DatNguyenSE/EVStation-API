@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using API.Entities.Email;
 using API.Helpers;
+using API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,34 +100,45 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Đăng ký Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký repository (tầng data)
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IChargingPostRepository, ChargingPostRepository>();
+builder.Services.AddScoped<IStationRepository, StationRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
-// builder.Services.AddScoped<IWalletRepository, WalletRepository>();
-// builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-// builder.Services.AddScoped<IStationRepository, StationRepository>();
-// builder.Services.AddScoped<IChargingPostRepository, ChargingPostRepository>();
-// builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository>();
-// builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
-// builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository>();
+builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
+builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
+builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
+
+// Đăng ký Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký service (tầng logic)
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
 builder.Services.AddScoped<IChargingService, ChargingService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
+
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-// Đăng ký Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
-// Connect VnPay API
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 // đăng ký service check status gói của người dùng mỗi 24h
 builder.Services.AddHostedService<PackageStatusChecker>();
+builder.Services.AddHostedService<ReservationCleanupService>();
+
+// Đăng ký SignalR
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
+builder.Services.AddHostedService(provider => (ChargingSimulationService)provider.GetRequiredService<IChargingSimulationService>());
 
 var app = builder.Build();
 
@@ -140,6 +152,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 .WithOrigins("https://localhost:4200", "http://localhost:4200")); //set connect
 
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
 
 app.UseAuthentication();
 app.UseAuthorization();

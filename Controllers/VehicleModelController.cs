@@ -40,11 +40,10 @@ namespace API.Controllers
             
             return Ok(new
             {
-                model.Model,
-                model.Type,
                 model.BatteryCapacityKWh,
                 MaxChargingPowerKW = maxPower,
-                model.ConnectorType
+                model.ConnectorType,
+                model.HasDualBattery
             });
         }
     }

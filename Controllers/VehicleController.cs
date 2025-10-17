@@ -102,8 +102,12 @@ namespace API.Controllers
         [HttpGet("models")]
         public async Task<IActionResult> GetVehicleModels([FromQuery] VehicleType vehicleType)
         {
-            var models = await _uow.VehicleModels.GetByTypeAsync(vehicleType);
-            return Ok(models);
+            var vehicleModelObjects = await _uow.VehicleModels.GetByTypeAsync(vehicleType);
+
+            // Chỉ chọn ra thuộc tính 'Model'
+            var modelNames = vehicleModelObjects.Select(vm => vm.Model);
+
+            return Ok(modelNames);
         }
 
         [HttpPut("{id}")]

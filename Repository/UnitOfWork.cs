@@ -15,49 +15,42 @@ namespace API.Repository
     {
         private readonly AppDbContext _context;
 
-        private IReservationRepository _reservations;
-        private IChargingPostRepository _chargingPosts;
-        private IQRCodeService _qrService;
-        private IStationRepository _stations;
-        private IVehicleRepository _vehicles;
-        private IWalletRepository _wallets;
-        private IWalletTransactionRepository _walletTransactions;
-        private IChargingPackageRepository _chargingPackages;
-        private IDriverPackageRepository _driverPackages;
-        private IVehicleModelRepository _vehicleModels;
+        public IReservationRepository Reservations { get; }
+        public IChargingPostRepository ChargingPosts { get; }
+        public IStationRepository Stations { get; }
+        public IVehicleRepository Vehicles { get; }
+        public IWalletRepository Wallets { get; }
+        public IWalletTransactionRepository WalletTransactions { get; }
+        public IChargingPackageRepository ChargingPackages { get; }
+        public IDriverPackageRepository DriverPackages { get; }
+        public IVehicleModelRepository VehicleModels { get; }
+        public IChargingSessionRepository ChargingSessions { get; }
 
-        public UnitOfWork(AppDbContext context, IQRCodeService qrService)
+        public UnitOfWork(
+            AppDbContext context,
+            IReservationRepository reservations,
+            IChargingPostRepository chargingPosts,
+            IStationRepository stations,
+            IVehicleRepository vehicles,
+            IWalletRepository wallets,
+            IWalletTransactionRepository walletTransactions,
+            IChargingPackageRepository chargingPackages,
+            IDriverPackageRepository driverPackages,
+            IVehicleModelRepository vehicleModels,
+            IChargingSessionRepository chargingSession)
         {
             _context = context;
-            _qrService = qrService;
+            Reservations = reservations;
+            ChargingPosts = chargingPosts;
+            Stations = stations;
+            Vehicles = vehicles;
+            Wallets = wallets;
+            WalletTransactions = walletTransactions;
+            ChargingPackages = chargingPackages;
+            DriverPackages = driverPackages;
+            VehicleModels = vehicleModels;
+            ChargingSessions = chargingSession;
         }
-
-        public IReservationRepository Reservations =>
-            _reservations ??= new ReservationRepository(_context);
-
-        public IChargingPostRepository ChargingPosts =>
-            _chargingPosts ??= new ChargingPostRepository(_context, _qrService);
-
-        public IStationRepository Stations =>
-            _stations ??= new StationRepository(_context, ChargingPosts);
-
-        public IVehicleRepository Vehicles =>
-            _vehicles ??= new VehicleRepository(_context);
-
-        public IWalletRepository Wallets =>
-            _wallets ??= new WalletRepository(_context);
-
-        public IWalletTransactionRepository WalletTransactions =>
-            _walletTransactions ??= new WalletTransactionRepository(_context);
-
-        public IChargingPackageRepository ChargingPackages =>
-            _chargingPackages ??= new ChargingPackageRepository(_context);
-
-        public IDriverPackageRepository DriverPackages =>
-            _driverPackages ??= new DriverPackageRepository(_context);
-        
-        public IVehicleModelRepository VehicleModels =>
-            _vehicleModels ??= new VehicleModelRepository(_context);
 
         public async Task<bool> Complete()
         {

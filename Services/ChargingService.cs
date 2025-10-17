@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 using API.Interfaces;
 
 namespace API.Services
@@ -67,14 +68,24 @@ namespace API.Services
                     return (false, "Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
                 }
 
-                // Kiểm tra trạng thái trụ
-                if (post.Status != Helpers.Enums.PostStatus.Reserved && post.Status != Helpers.Enums.PostStatus.Available)
+                // Người dùng đã có lịch hợp lệ, BÂY GIỜ mới kiểm tra xem trụ có sẵn sàng không.
+                switch (post.Status)
                 {
-                    return (false, $"Trụ đang ở trạng thái {post.Status}. Không thể bắt đầu sạc.");
-                }
+                    case PostStatus.Available:
+                        // Hợp lệ, cho phép sạc
+                        return (true, "Xác thực đặt chỗ thành công. Bạn có thể bắt đầu sạc.");
 
-                // Hợp lệ
-                return (true, "Đặt chỗ hợp lệ. Bạn có thể bắt đầu sạc ngay.");
+                    case PostStatus.Occupied: // Đang sạc hoặc đã sạc xong nhưng chưa rời đi
+                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang được sử dụng bởi phiên sạc trước. Vui lòng đợi.");
+
+                    case PostStatus.Maintenance:
+                    case PostStatus.Offline:
+                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang bảo trì hoặc bị lỗi. Vui lòng liên hệ hỗ trợ.");
+
+                    default:
+                        return (false, $"Trụ đang ở trạng thái không xác định ({post.Status}).");
+                }
+                
             }
         }
     }
