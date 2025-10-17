@@ -39,6 +39,84 @@ namespace API.Services
         // Tạo session mới
         public async Task<ChargingSessionDto> CreateSessionAsync(CreateChargingSessionDto dto)
         {
+            // --- Validation đầu vào ---
+            if (!dto.VehicleId.HasValue && string.IsNullOrEmpty(dto.VehiclePlate))
+            {
+                throw new InvalidOperationException("Cần cung cấp VehicleId hoặc VehiclePlate để tạo phiên sạc.");
+            }
+
+            // --- Bước 1: Tìm thông tin xe bằng mọi cách có thể ---
+            Vehicle? vehicle = null;
+            if (dto.VehicleId.HasValue)
+            {
+                // Ưu tiên tìm theo ID nếu được cung cấp (dành cho user đã đăng nhập)
+                vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId.Value);
+                if (vehicle == null)
+                {
+                    throw new KeyNotFoundException($"Không tìm thấy xe với ID = {dto.VehicleId.Value}.");
+                }
+            }
+            else
+            {
+                // Nếu không có ID, tìm theo biển số (dành cho khách vãng lai hoặc user không chọn xe)
+                vehicle = await _uow.Vehicles.GetByPlateAsync(dto.VehiclePlate);
+            }
+
+            // --- Bước 2: Xác định dung lượng pin dựa trên kết quả tìm kiếm ---
+            double batteryCapacity;
+            var random = new Random();
+
+            if (vehicle != null)
+            {
+                // TRƯỜNG HỢP 1: Đã tìm thấy xe trong DB -> Lấy dung lượng pin thực tế.
+                batteryCapacity = vehicle.BatteryCapacityKWh;
+            }
+            else
+            {
+                // TRƯỜNG HỢP 2: Không tìm thấy xe -> Khách vãng lai mới, random dung lượng pin.
+                var chargingPost = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
+                if (chargingPost == null)
+                {
+                    throw new KeyNotFoundException($"Không tìm thấy trụ sạc với ID = {dto.PostId}.");
+                }
+
+                // Lấy các mẫu xe tương thích để random thông tin cho hợp lệ
+                var compatibleModels = (await _uow.VehicleModels.GetCompatibleModelsAsync(chargingPost.ConnectorType)).ToList();
+                if (!compatibleModels.Any())
+                {
+                    throw new InvalidOperationException($"Không tìm thấy mẫu xe nào tương thích với loại trụ sạc '{chargingPost.ConnectorType}'.");
+                }
+                
+                // Random một mẫu xe và lấy dung lượng pin của nó
+                var randomModel = compatibleModels[random.Next(compatibleModels.Count)];
+                batteryCapacity = randomModel.BatteryCapacityKWh;
+            }
+
+            // --- Bước 3: Tạo và lưu phiên sạc mới ---
+            var session = new ChargingSession
+            {
+                VehicleId = vehicle?.Id, // Gán ID nếu tìm thấy xe
+                VehiclePlate = dto.VehiclePlate ?? vehicle?.Plate, // Ưu tiên biển số người dùng nhập
+                PostId = dto.PostId,
+                ReservationId = dto.ReservationId,
+                StartTime = DateTime.UtcNow,
+                Status = SessionStatus.Charging,
+                EnergyConsumed = 0,
+                Cost = 0,
+                // Random % pin khởi điểm từ 10% đến 35%
+                StartBatteryPercentage = random.Next(10, 36)
+            };
+            session.EndBatteryPercentage = session.StartBatteryPercentage;
+
+            var createdSession = await _uow.ChargingSessions.CreateAsync(session);
+            await _uow.Complete();
+
+            // --- Bước 4: Bắt đầu tiến trình mô phỏng sạc ---
+            await _simulationService.StartSimulationAsync(createdSession.Id, batteryCapacity);
+
+            return createdSession.MapToDto();
+
+            /*
             if (dto.VehicleId == null && string.IsNullOrEmpty(dto.VehiclePlate))
             {
                 throw new Exception("Cần VehicleId hoặc VehiclePlate");
@@ -110,6 +188,7 @@ namespace API.Services
             await _simulationService.StartSimulationAsync(session.Id, batteryCapacity);
 
             return session.MapToDto();
+            */
         }
 
         // Cập nhật năng lượng và pin, kiểm tra ví
@@ -178,7 +257,7 @@ namespace API.Services
 
             _uow.ChargingSessions.Update(session);
 
-            await _simulationService.StopSimulationAsync(sessionId);
+            await _simulationService.StopSimulation(sessionId);
 
 
             await _hubContext.Clients.Group($"session-{sessionId}")

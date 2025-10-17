@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Reservation;
+using API.Entities;
 
 namespace API.Interfaces
 {
@@ -15,5 +16,6 @@ namespace API.Interfaces
         /// - Không cần đặt cọc.
         /// </summary>
         Task<ReservationResponseDto> CreateReservationAsync(CreateReservationDto dto, string driverId);
+        Task<ReservationResponseDto> CancelReservationAsync(int reservationId, string driverId);
     }
 }

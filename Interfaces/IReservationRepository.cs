@@ -24,5 +24,6 @@ namespace API.Interfaces
         Task<List<Reservation>> GetReservationsForPostOnDateAsync(int postId, DateTime date);
 
         Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate);
+        Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes);
     }
 }

@@ -8,7 +8,7 @@ namespace API.Interfaces
     public interface IChargingSimulationService
     {
         Task StartSimulationAsync(int sessionId, double batteryCapacity);
-        Task StopSimulationAsync(int sessionId);
+        Task StopSimulation(int sessionId);
         bool IsRunning(int sessionId);
     }
 }

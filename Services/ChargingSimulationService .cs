@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
+using API.Helpers.Enums;
 using API.Hubs;
 using API.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -33,7 +34,7 @@ namespace API.Services
             _ = Task.Run(() => SimulateChargingAsync(sessionId, batteryCapacity, cts.Token));
         }
 
-        public async Task StopSimulationAsync(int sessionId)
+        public Task StopSimulation(int sessionId)
         {
             if (_runningSessions.TryRemove(sessionId, out var cts))
             {
@@ -41,19 +42,20 @@ namespace API.Services
                 Console.WriteLine($"🟥 Stop simulation for session {sessionId}");
             }
 
-            using var scope = _scopeFactory.CreateScope();
-            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
-            if (session != null)
-            {
-                session.Status = API.Helpers.Enums.SessionStatus.Completed;
-                uow.ChargingSessions.Update(session);
-                await uow.Complete();
-            }
+            return Task.CompletedTask;
+            // using var scope = _scopeFactory.CreateScope();
+            // var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            // var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
+            // if (session != null)
+            // {
+            //     session.Status = API.Helpers.Enums.SessionStatus.Completed;
+            //     uow.ChargingSessions.Update(session);
+            //     await uow.Complete();
+            // }
 
-            var hub = scope.ServiceProvider.GetRequiredService<IHubContext<ChargingHub>>();
-            await hub.Clients.Group($"session_{sessionId}")
-                .SendAsync("ReceiveSessionEnded", sessionId, "Stopped by user");
+            // var hub = scope.ServiceProvider.GetRequiredService<IHubContext<ChargingHub>>();
+            // await hub.Clients.Group($"session_{sessionId}")
+            //     .SendAsync("ReceiveSessionEnded", sessionId, "Stopped by user");
         }
 
         private async Task SimulateChargingAsync(int sessionId, double batteryCapacity, CancellationToken token)
@@ -99,25 +101,48 @@ namespace API.Services
                     };
 
                     // update DB
-                    var s = await uow.ChargingSessions.GetByIdAsync(sessionId);
-                    if (s == null) break;
-                    s.EnergyConsumed = update.EnergyConsumed;
-                    s.EndBatteryPercentage = (float)update.BatteryPercentage;
-                    s.Cost = (int) update.Cost;
+                    // var s = await uow.ChargingSessions.GetByIdAsync(sessionId);
+                    // if (s == null) break;
+                    // s.EnergyConsumed = update.EnergyConsumed;
+                    // s.EndBatteryPercentage = (float)update.BatteryPercentage;
+                    // s.Cost = (int) update.Cost;
 
-                    if (update.BatteryPercentage >= 100)
-                        s.Status = API.Helpers.Enums.SessionStatus.Full;
+                    // if (update.BatteryPercentage >= 100)
+                    //     s.Status = API.Helpers.Enums.SessionStatus.Full;
 
-                    uow.ChargingSessions.Update(s);
-                    await uow.Complete();
+                    // uow.ChargingSessions.Update(s);
+                    // await uow.Complete();
 
-                    await hub.Clients.Group($"session_{sessionId}")
+
+                    // CHỈ GỬI SIGNALR, KHÔNG UPDATE DB
+                    await hub.Clients.Group($"session-{sessionId}")
                         .SendAsync("ReceiveSessionUpdate", update);
 
                     Console.WriteLine($"⚡ Session {sessionId}: {update.BatteryPercentage:0.0}% - {update.EnergyConsumed:0.0}kWh");
                 }
 
-                Console.WriteLine($"🟩 Simulation finished for session {sessionId}");
+                // KHI VÒNG LẶP KẾT THÚC (đầy hoặc bị cancel), MỚI CẬP NHẬT DB LẦN CUỐI
+                var finalSession = await uow.ChargingSessions.GetByIdAsync(sessionId);
+                if (finalSession != null && finalSession.Status == SessionStatus.Charging)
+                {
+                    double finalEnergy = (currentPercentage - finalSession.StartBatteryPercentage.Value) / 100.0 * batteryCapacity;
+                    
+                    finalSession.EnergyConsumed = finalEnergy;
+                    finalSession.EndBatteryPercentage = (float)currentPercentage;
+                    finalSession.Cost = (int)(finalEnergy * pricePerKWh);
+                    
+                    if (currentPercentage >= 100)
+                    {
+                        finalSession.Status = SessionStatus.Full;
+                        finalSession.EndTime = DateTime.UtcNow;
+                    }
+                    
+                    uow.ChargingSessions.Update(finalSession);
+                    await uow.Complete();
+                    Console.WriteLine($"💾 Saved final state for session {sessionId}");
+                }
+
+                // Console.WriteLine($"🟩 Simulation finished for session {sessionId}");
             }
             catch (TaskCanceledException)
             {

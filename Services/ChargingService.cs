@@ -72,7 +72,6 @@ namespace API.Services
                 switch (post.Status)
                 {
                     case PostStatus.Available:
-                    case PostStatus.Reserved: // Trạng thái Reserved vẫn được coi là sẵn sàng cho người đã đặt.
                         // Hợp lệ, cho phép sạc
                         return (true, "Xác thực đặt chỗ thành công. Bạn có thể bắt đầu sạc.");
 

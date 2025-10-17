@@ -82,5 +82,15 @@ namespace API.Repository
         {
             return await _context.Reservations.FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes)
+        {
+            var now = DateTime.UtcNow;
+            var cutoffTime = now.AddMinutes(-gracePeriodMinutes);
+
+            return await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Confirmed && r.TimeSlotStart < cutoffTime)
+                .ToListAsync();
+        }
     }
 }

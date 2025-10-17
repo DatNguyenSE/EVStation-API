@@ -8,7 +8,7 @@ namespace API.DTOs.ChargingSession
     public class CreateChargingSessionDto
     {
         public int? VehicleId { get; set; }
-        public string? VehiclePlate { get; set; }
+        public string VehiclePlate { get; set; } = string.Empty;
         public int PostId { get; set; }
         public int? ReservationId { get; set; }
     }
