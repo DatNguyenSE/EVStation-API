@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using API.DTOs.Reservation;
 using API.Entities;
 
 namespace API.Interfaces
@@ -25,5 +26,9 @@ namespace API.Interfaces
 
         Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate);
         Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes);
+        Task<List<Reservation>> GetUpcomingReservationsByDriverAsync(string driverId);
+
+        Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
+        Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
     }
 }
