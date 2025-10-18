@@ -16,6 +16,7 @@ namespace API.Helpers
             public const int MaxSlotCount = 4;
             public const int CancellationCutoffMinutes = 20;
             public const int NoShowGracePeriodMinutes = 15;
+            public const int slotDurationMinutes = 60;
         }
 
         public static class Roles

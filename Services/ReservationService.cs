@@ -184,5 +184,28 @@ namespace API.Services
                 throw;
             }
         }
+
+        public async Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId)
+        {
+            var details = await _uow.Reservations.GetReservationDetailsAsync(reservationId);
+            return details;
+        }
+
+        public async Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId)
+        {
+            var historyReservationModels = await _uow.Reservations.GetReservationHistoryByDriverAsync(driverId);
+
+            return historyReservationModels
+                .Select(r => r.ToReservationResponseDto())
+                .ToList();
+        }
+
+        public async Task<List<ReservationResponseDto>> GetUpcomingReservationsByDriverAsync(string driverId)
+        {
+            var upcomingReservationModels = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+            return upcomingReservationModels
+                .Select(r => r.ToReservationResponseDto())
+                .ToList();
+        }
     }
 }
