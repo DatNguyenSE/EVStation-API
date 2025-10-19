@@ -57,14 +57,28 @@ namespace API.Services
                 var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
                     r.DriverId == driverId &&
                     r.ChargingPostId == postId &&
-                    r.Status == Entities.ReservationStatus.Confirmed &&
-                    now >= r.TimeSlotStart.AddMinutes(-15) &&
-                    now <= r.TimeSlotEnd);
+                    r.Status == Entities.ReservationStatus.Confirmed);
 
-                // Kiểm tra kết quả
+                // Nếu không có đơn hợp lệ
                 if (reservation == null)
                 {
-                    return (false, "Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
+                    return (false, " Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
+                }
+                
+                // Kiểm tra khung giờ (cho phép check-in sớm 15 phút)
+                bool isEarly = now < reservation.TimeSlotStart.AddMinutes(-15);
+                bool isLate = now > reservation.TimeSlotEnd;
+
+                if (isEarly)
+                {
+                    return (false,
+                        $" Chưa đến thời gian đặt chỗ.\n- Giờ hiện tại: {now:HH:mm}\n- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+                }
+
+                if (isLate)
+                {
+                    return (false,
+                        $" Đã quá thời gian đặt chỗ.\n- Giờ hiện tại: {now:HH:mm}\n- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
                 }
 
                 // Người dùng đã có lịch hợp lệ, BÂY GIỜ mới kiểm tra xem trụ có sẵn sàng không.
