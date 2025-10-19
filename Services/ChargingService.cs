@@ -52,7 +52,6 @@ namespace API.Services
             {
                 var now = DateTime.UtcNow;
 
-
                 // Tìm đơn đặt chỗ hợp lệ: đúng người, đúng trụ, đúng trạng thái và TRONG KHUNG GIỜ
                 // Cho phép tài xế check-in sớm 15 phút
                 var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
