@@ -10,6 +10,7 @@ namespace API.DTOs.ChargingPost
     public class ChargingPostDto
     {
         public int Id { get; set; }
+        public int StationId { get; set; }
         public string Code { get; set; } = string.Empty;
         public PostType Type { get; set; }
         public decimal PowerKW { get; set; }
