@@ -11,6 +11,5 @@ namespace API.Helpers.Enums
         Occupied,    // đang có xe
         Maintenance, // bảo trì
         Offline,      // mất kết nối
-        Reserved
     }
 }
