@@ -135,7 +135,8 @@ builder.Services.AddHostedService<PackageStatusChecker>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-builder.Services.AddHostedService(provider => (ChargingSimulationService)provider.GetRequiredService<IChargingSimulationService>());
+builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
+
 
 var app = builder.Build();
 

@@ -16,10 +16,10 @@ namespace API.Entities
         public int? ReservationId { get; set; } // sạc vãng lai kh cần đặt trước    
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
-        public float? StartBatteryPercentage { get; set; }
+        public float StartBatteryPercentage { get; set; }
         public float? EndBatteryPercentage { get; set; }
         public double EnergyConsumed { get; set; }
-        [Column(TypeName = "nvarchar(20)")]   // set type cho column chứ không nó để thành int
+        [Column(TypeName = "nvarchar(30)")]   // set type cho column chứ không nó để thành int
         public SessionStatus Status { get; set; }
         public int Cost { get; set; }
     }

@@ -34,14 +34,13 @@ namespace API.Controllers
             }
         }
 
-        // API cập nhật năng lượng: POST api/chargingsessions/update-energy
-        [HttpPost("update-energy")]
-        public async Task<ActionResult> UpdateEnergy(EnergyUpdateDto dto)
+        [HttpPost("{sessionId}/update-plate")]
+        public async Task<IActionResult> UpdatePlate (int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
             {
-                await _service.UpdateEnergyAsync(dto);
-                return Ok();
+                var session = await _service.UpdatePlateAsync(sessionId, vehiclePlate.Plate);
+                return Ok(session);
             }
             catch (Exception ex)
             {

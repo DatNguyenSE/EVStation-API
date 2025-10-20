@@ -52,6 +52,13 @@ namespace API.Repository
             return userPackageModel;
         }
 
+        public async Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
+                                                       && dp.VehicleType == vehicleType
+                                                       && dp.IsActive == true);
+        }
+
         public Task<List<DriverPackage>> GetAllAsync()
         {
             return _context.DriverPackages.Include(p => p.Package).ToListAsync();
