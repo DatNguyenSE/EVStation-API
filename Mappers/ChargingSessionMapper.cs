@@ -16,7 +16,7 @@ namespace API.Mappers
                 Id = session.Id,
                 VehicleId = session.VehicleId,
                 VehiclePlate = session.VehiclePlate,
-                PostId = session.PostId,
+                PostId = session.ChargingPostId,
                 ReservationId = session.ReservationId,
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,

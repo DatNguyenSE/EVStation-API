@@ -36,6 +36,7 @@ namespace API.Services
         // Tạo session mới
         public async Task<ChargingSessionDto> CreateSessionAsync(CreateChargingSessionDto dto)
         {
+            // 1. Kiểm tra trụ sạc, kiểm tra ví
             var chargingPost = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
             if (chargingPost == null) throw new Exception("Không tìm thấy trụ sạc");
 
@@ -74,7 +75,7 @@ namespace API.Services
                 {
                     VehicleId = dto.VehicleId,
                     VehiclePlate = vehicle.Plate,
-                    PostId = dto.PostId,
+                    ChargingPostId = dto.PostId,
                     ReservationId = dto.ReservationId,
                     StartTime = DateTime.UtcNow,
                     Status = SessionStatus.Charging,
@@ -99,7 +100,7 @@ namespace API.Services
                 {
                     VehicleId = null,
                     VehiclePlate = "",
-                    PostId = dto.PostId,
+                    ChargingPostId = dto.PostId,
                     StartTime = DateTime.UtcNow,
                     Status = SessionStatus.Charging,
                     EnergyConsumed = 0,
@@ -138,7 +139,7 @@ namespace API.Services
             await _simulationService.StopSimulationAsync(sessionId, setCompleted: true);
 
             var updatedSession = await _uow.ChargingSessions.GetByIdAsync(sessionId);
-            await _uow.ChargingPosts.UpdateStatusAsync(session.PostId, PostStatus.Available);
+            await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
 
             await _hubContext.Clients.Group($"session-{sessionId}")
                 .SendAsync("ReceiveSessionEnded", sessionId, updatedSession.Status);
@@ -169,7 +170,7 @@ namespace API.Services
             }
             else
             {
-                var chargingPost = await _uow.ChargingPosts.GetByIdAsync(session.PostId);
+                var chargingPost = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
                 var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(chargingPost.ConnectorType);
                 if (compatibleModels?.Any() != true) throw new Exception("Không tìm thấy mẫu xe tương thích");
 
