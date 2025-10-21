@@ -74,7 +74,7 @@ namespace API.Repository
 
         public async Task<List<Station>> GetAllAsync()
         {
-            return await _context.Stations.ToListAsync();
+            return await _context.Stations.Include(s => s.Posts).ToListAsync();
         }
 
         public async Task<Station?> GetByIdAsync(int id)
