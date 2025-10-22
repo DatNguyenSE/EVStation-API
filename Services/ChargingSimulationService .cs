@@ -156,8 +156,7 @@ namespace API.Services
                         double addedEnergy = ((state.CurrentPercentage - previousPercentage) / 100.0) * state.BatteryCapacity;
                         state.EnergyConsumed = Math.Round(state.EnergyConsumed + addedEnergy, 3, MidpointRounding.AwayFromZero);
 
-                        state.Cost = state.IsFreeCharging ? 0 :
-                            (int)Math.Round(state.EnergyConsumed * pricePerKWh, MidpointRounding.AwayFromZero);
+                        state.Cost = (int)Math.Round(state.EnergyConsumed * pricePerKWh, MidpointRounding.AwayFromZero);
 
                         if (!state.GuestMode && !state.IsFreeCharging && state.Cost > state.WalletBalance)
                         {

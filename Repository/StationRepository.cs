@@ -114,7 +114,7 @@ namespace API.Repository
             // Tìm kiếm trong database
             var stations = await _context.Stations
                 .Where(s => s.Address.ToLower().Contains(search) ||
-                            s.Name.ToLower().Contains(search))
+                            s.Name.ToLower().Contains(search)).Include(s => s.Posts)
                 .ToListAsync();
 
             return stations;
