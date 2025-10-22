@@ -11,19 +11,20 @@ public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
     {
-        
-    } 
+
+    }
 
     public DbSet<Vehicle> Vehicles { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<WalletTransaction> WalletTransactions { get; set; }
     public DbSet<Station> Stations { get; set; }
-    public DbSet<ChargingPost> ChargingPosts { get; set; }  
+    public DbSet<ChargingPost> ChargingPosts { get; set; }
     public DbSet<ChargingPackage> ChargingPackages { get; set; }
     public DbSet<DriverPackage> DriverPackages { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
     public DbSet<ChargingSession> ChargingSessions { get; set; }
     public DbSet<VehicleModel> VehicleModels { get; set; }
+    public DbSet<Pricing> Pricings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -51,6 +52,74 @@ public class AppDbContext : IdentityDbContext<AppUser>
         builder.Entity<ChargingPackage>()
             .Property(p => p.Price)
             .HasPrecision(18, 2);
+
+        builder.Entity<Pricing>()
+        .Property(p => p.PriceType)
+        .HasConversion<string>(); // <-- Lưu enum dưới dạng chuỗi
+
+        // Lấy một ngày làm mốc (ví dụ: đầu năm)
+        var effectiveDate = new DateTime(2025, 1, 1);
+
+        // Đặt ngày hết hạn rất xa trong tương lai
+        var expiryDate = new DateTime(2099, 12, 31);
+
+        builder.Entity<Pricing>().HasData(
+            new Pricing
+            {
+                Id = 1,
+                Name = "Khách vãng lai - Sạc thường AC",
+                PriceType = PriceType.Guest_AC,
+                PricePerKwh = 4000m, // Giá mỗi kWh
+                PricePerMinute = null, // Không áp dụng giá mỗi phút
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
+            },
+            new Pricing
+            {
+                Id = 2,
+                Name = "Khách vãng lai - Sạc nhanh DC",
+                PriceType = PriceType.Guest_DC,
+                PricePerKwh = 4800m, // Giá mỗi kWh
+                PricePerMinute = null,
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
+            },
+            new Pricing
+            {
+                Id = 3,
+                Name = "Thành viên - Sạc thường AC",
+                PriceType = PriceType.Member_AC,
+                PricePerKwh = 3500m, // Giá mỗi kWh
+                PricePerMinute = null,
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
+            },
+            new Pricing
+            {
+                Id = 4,
+                Name = "Thành viên - Sạc nhanh DC",
+                PriceType = PriceType.Member_DC,
+                PricePerKwh = 4200m, // Giá mỗi kWh
+                PricePerMinute = null,
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
+            },
+            new Pricing
+            {
+                Id = 5,
+                Name = "Phí chiếm dụng",
+                PriceType = PriceType.OccupancyFee,
+                PricePerKwh = 0m, // Không tính giá mỗi kWh
+                PricePerMinute = 1000m, // Giá mỗi phút
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
+            }
+        );
 
         builder.Entity<VehicleModel>().HasData(
             // 🛵 Motorbikes

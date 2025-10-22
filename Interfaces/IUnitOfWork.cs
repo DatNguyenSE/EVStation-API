@@ -19,6 +19,7 @@ namespace API.Interfaces
         IDriverPackageRepository DriverPackages { get; }
         IVehicleModelRepository VehicleModels { get; }
         IChargingSessionRepository ChargingSessions { get; }
+        IPricingRepository Pricings { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 

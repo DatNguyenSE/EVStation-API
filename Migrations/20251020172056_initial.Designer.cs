@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251019135338_ExtendSessionStatusLength")]
-    partial class ExtendSessionStatusLength
+    [Migration("20251020172056_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -187,6 +187,10 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChargingPostId")
+                        .HasColumnType("int")
+                        .HasColumnName("PostId");
+
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
@@ -198,9 +202,6 @@ namespace API.Migrations
 
                     b.Property<double>("EnergyConsumed")
                         .HasColumnType("float");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
 
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
@@ -224,6 +225,12 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChargingPostId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("VehicleId");
+
                     b.ToTable("ChargingSessions");
                 });
 
@@ -237,7 +244,7 @@ namespace API.Migrations
 
                     b.Property<string>("AppUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -255,6 +262,8 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("PackageId");
 
@@ -879,13 +888,44 @@ namespace API.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("API.Entities.ChargingSession", b =>
+                {
+                    b.HasOne("API.Entities.ChargingPost", "ChargingPost")
+                        .WithMany()
+                        .HasForeignKey("ChargingPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId");
+
+                    b.HasOne("API.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId");
+
+                    b.Navigation("ChargingPost");
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("API.Entities.DriverPackage", b =>
                 {
+                    b.HasOne("API.Entities.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.ChargingPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AppUser");
 
                     b.Navigation("Package");
                 });

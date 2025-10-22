@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,7 @@ namespace API.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Age = table.Column<int>(type: "int", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -92,6 +92,26 @@ namespace API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Stations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VehicleModels",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BatteryCapacityKWh = table.Column<double>(type: "float", nullable: false),
+                    HasDualBattery = table.Column<bool>(type: "bit", nullable: false),
+                    MaxChargingPowerKW = table.Column<double>(type: "float", nullable: true),
+                    MaxChargingPowerAC_KW = table.Column<double>(type: "float", nullable: true),
+                    MaxChargingPowerDC_KW = table.Column<double>(type: "float", nullable: true),
+                    ConnectorType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VehicleModels", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -206,8 +226,8 @@ namespace API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Type = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BatteryCapacityKWh = table.Column<double>(type: "float", nullable: false),
                     MaxChargingPowerKW = table.Column<double>(type: "float", nullable: false),
                     ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
@@ -252,7 +272,7 @@ namespace API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AppUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PackageId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -262,6 +282,12 @@ namespace API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DriverPackages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DriverPackages_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DriverPackages_ChargingPackages_PackageId",
                         column: x => x.PackageId,
@@ -356,6 +382,45 @@ namespace API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ChargingSessions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VehicleId = table.Column<int>(type: "int", nullable: true),
+                    VehiclePlate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ReservationId = table.Column<int>(type: "int", nullable: true),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StartBatteryPercentage = table.Column<float>(type: "real", nullable: false),
+                    EndBatteryPercentage = table.Column<float>(type: "real", nullable: true),
+                    EnergyConsumed = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(30)", nullable: false),
+                    Cost = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChargingSessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChargingSessions_ChargingPosts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "ChargingPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChargingSessions_Reservations_ReservationId",
+                        column: x => x.ReservationId,
+                        principalTable: "Reservations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ChargingSessions_Vehicles_VehicleId",
+                        column: x => x.VehicleId,
+                        principalTable: "Vehicles",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -366,6 +431,32 @@ namespace API.Migrations
                     { "3", null, "Manager", "MANAGER" },
                     { "4", null, "Staff", "STAFF" },
                     { "5", null, "Technician", "TECHNICIAN" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "VehicleModels",
+                columns: new[] { "Id", "BatteryCapacityKWh", "ConnectorType", "HasDualBattery", "MaxChargingPowerAC_KW", "MaxChargingPowerDC_KW", "MaxChargingPowerKW", "Model", "Type" },
+                values: new object[,]
+                {
+                    { 1, 3.5, 2, false, null, null, 1.2, "Theon S", 0 },
+                    { 2, 3.5, 2, false, null, null, 1.2, "Vento S", 0 },
+                    { 3, 3.5, 2, false, null, null, 1.2, "Vento Neo", 0 },
+                    { 4, 3.5, 2, false, null, null, 1.2, "Klara S2 (2022)", 0 },
+                    { 5, 2.0, 2, false, null, null, 1.2, "Klara Neo", 0 },
+                    { 6, 3.5, 2, false, null, null, 1.2, "Feliz S", 0 },
+                    { 7, 2.0, 2, false, null, null, 1.2, "Feliz Neo/Lite", 0 },
+                    { 8, 2.3999999999999999, 2, true, null, null, 1.2, "Feliz 2025", 0 },
+                    { 9, 3.5, 2, false, null, null, 1.2, "Evo 200/200 Lite", 0 },
+                    { 10, 2.3999999999999999, 2, true, null, null, 1.2, "Evo Grand", 0 },
+                    { 11, 2.0, 2, false, null, null, 1.2, "Evo Neo/Lite Neo", 0 },
+                    { 12, 2.0, 2, false, null, null, 1.2, "Motio", 0 },
+                    { 13, 18.640000000000001, 1, false, 7.4000000000000004, 60.0, null, "VF 3", 1 },
+                    { 14, 37.229999999999997, 1, false, 7.4000000000000004, 60.0, null, "VF 5 Plus", 1 },
+                    { 15, 42.0, 1, false, 7.4000000000000004, 60.0, null, "VF e34", 1 },
+                    { 16, 59.600000000000001, 1, false, 11.0, 150.0, null, "VF 6", 1 },
+                    { 17, 75.299999999999997, 1, false, 11.0, 150.0, null, "VF 7", 1 },
+                    { 18, 87.700000000000003, 1, false, 11.0, 150.0, null, "VF 8", 1 },
+                    { 19, 123.0, 1, false, 11.0, 250.0, null, "VF 9", 1 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -411,6 +502,26 @@ namespace API.Migrations
                 name: "IX_ChargingPosts_StationId",
                 table: "ChargingPosts",
                 column: "StationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChargingSessions_PostId",
+                table: "ChargingSessions",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChargingSessions_ReservationId",
+                table: "ChargingSessions",
+                column: "ReservationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChargingSessions_VehicleId",
+                table: "ChargingSessions",
+                column: "VehicleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DriverPackages_AppUserId",
+                table: "DriverPackages",
+                column: "AppUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DriverPackages_PackageId",
@@ -469,10 +580,13 @@ namespace API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ChargingSessions");
+
+            migrationBuilder.DropTable(
                 name: "DriverPackages");
 
             migrationBuilder.DropTable(
-                name: "Reservations");
+                name: "VehicleModels");
 
             migrationBuilder.DropTable(
                 name: "WalletTransactions");
@@ -481,16 +595,19 @@ namespace API.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Reservations");
+
+            migrationBuilder.DropTable(
                 name: "ChargingPackages");
+
+            migrationBuilder.DropTable(
+                name: "Wallets");
 
             migrationBuilder.DropTable(
                 name: "ChargingPosts");
 
             migrationBuilder.DropTable(
                 name: "Vehicles");
-
-            migrationBuilder.DropTable(
-                name: "Wallets");
 
             migrationBuilder.DropTable(
                 name: "Stations");

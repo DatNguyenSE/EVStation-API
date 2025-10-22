@@ -12,6 +12,7 @@ namespace API.Mappers
     {
         public static StationDto ToStationDto(this Station stationModel)
         {
+            var postDtos = stationModel.Posts.Select(p => p.ToPostDto()).ToList();
             return new StationDto
             {
                 Id = stationModel.Id,

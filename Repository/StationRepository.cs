@@ -84,7 +84,7 @@ namespace API.Repository
 
         public async Task<Station?> GetNearestAsync(double latitude, double longitude)
         {
-            var stations = await _context.Stations.ToListAsync();
+            var stations = await _context.Stations.Include(s => s.Posts).ToListAsync();
 
             // Xử lý trường hợp không có trạm nào trong cơ sở dữ liệu
             if (!stations.Any())
@@ -114,7 +114,8 @@ namespace API.Repository
             // Tìm kiếm trong database
             var stations = await _context.Stations
                 .Where(s => s.Address.ToLower().Contains(search) ||
-                            s.Name.ToLower().Contains(search)).Include(s => s.Posts)
+                            s.Name.ToLower().Contains(search))
+                .Include(s => s.Posts)
                 .ToListAsync();
 
             return stations;
