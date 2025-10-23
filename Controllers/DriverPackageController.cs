@@ -6,10 +6,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs.DriverPackage;
 using API.Entities;
+using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -20,7 +22,7 @@ namespace API.Controllers
     {
         private readonly IUnitOfWork _uow;
 
-        public DriverPackageController(IUnitOfWork uow)
+        public DriverPackageController(IUnitOfWork uow, UserManager<AppUser> userManager)
         {
             _uow = uow;
         }
@@ -57,6 +59,7 @@ namespace API.Controllers
 
             var userPackageModels = await _uow.DriverPackages.GetByUserAsync(userId);
             var userPackageDtos = userPackageModels.Select(up => up.ToUserPackageViewDto()).ToList();
+
             return Ok(userPackageDtos);
         }
 

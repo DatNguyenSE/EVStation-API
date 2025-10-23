@@ -30,7 +30,7 @@ public class UsersController : ControllerBase //cung cấp nhiều phương th�
     }
 
     [HttpGet("profile-driver")]
-    [Authorize(Roles = AppConstant.Roles.Driver)]
+    [Authorize]
     public async Task<IActionResult> GetProfile_Driver()
     {
         var username = User.GetUsername();

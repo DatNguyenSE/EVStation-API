@@ -77,7 +77,7 @@ namespace API.Controllers
 
         // lấy thông tin xe của User
         [HttpGet("my")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize]
         public async Task<IActionResult> GetMyVehicles()
         {
             var username = User.GetUsername();
