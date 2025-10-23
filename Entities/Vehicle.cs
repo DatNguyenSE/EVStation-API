@@ -27,7 +27,7 @@ namespace API.Entities
 
         // Quan hệ với AppUser
         public string? OwnerId { get; set; }                    // FK tới AppUser.Id
-        public AppUser Owner { get; set; }                      // navigation property
+        public AppUser Owner { get; set; } = null!;            // navigation property
 
         // Để đánh dấu trạng thái thay vì xóa
         public bool IsActive { get; set; } = true;

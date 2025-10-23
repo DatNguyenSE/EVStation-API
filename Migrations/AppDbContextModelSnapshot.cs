@@ -92,6 +92,60 @@ namespace API.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "F2A4C7B8-9E1D-5B6C-8F7A-6D5E4B3C2A1F",
+                            DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "admin@evsystem.com",
+                            EmailConfirmed = true,
+                            FullName = "System Administrator",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@EVSYSTEM.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
+                            PhoneNumber = "0900000000",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
+                });
+
+            modelBuilder.Entity("API.Entities.Assignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ShiftDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("ShiftEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("ShiftStart")
+                        .HasColumnType("time");
+
+                    b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("StationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
+
+                    b.HasIndex("StationId");
+
+                    b.ToTable("Assignment");
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPackage", b =>
@@ -174,6 +228,206 @@ namespace API.Migrations
                     b.HasIndex("StationId");
 
                     b.ToTable("ChargingPosts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "Q1-Type2-A",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "Q1-Type2-B",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "Q1-CCS2-A",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "Q1-CCS2-B",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "Q1-SC-A",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "Q1-SC-B",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 1,
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "TD-Type2-A",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Code = "TD-Type2-B",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Code = "TD-CCS2-A",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Code = "TD-CCS2-B",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "TD-SC-A",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Code = "TD-SC-B",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 2,
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Code = "BD-Type2-A",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Code = "BD-Type2-B",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Code = "BD-CCS2-A",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Code = "BD-CCS2-B",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Code = "BD-SC-A",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Code = "BD-SC-B",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 3,
+                            Status = "Available",
+                            Type = "Scooter"
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.ChargingSession", b =>
@@ -183,6 +437,9 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChargingPostId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Cost")
                         .HasColumnType("int");
@@ -196,13 +453,10 @@ namespace API.Migrations
                     b.Property<double>("EnergyConsumed")
                         .HasColumnType("float");
 
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
-                    b.Property<float?>("StartBatteryPercentage")
+                    b.Property<float>("StartBatteryPercentage")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("StartTime")
@@ -210,7 +464,7 @@ namespace API.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<int?>("VehicleId")
                         .HasColumnType("int");
@@ -220,6 +474,12 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChargingPostId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("VehicleId");
 
                     b.ToTable("ChargingSessions");
                 });
@@ -234,7 +494,7 @@ namespace API.Migrations
 
                     b.Property<string>("AppUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -253,9 +513,219 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppUserId");
+
                     b.HasIndex("PackageId");
 
                     b.ToTable("DriverPackages");
+                });
+
+            modelBuilder.Entity("API.Entities.Pricing", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PricePerKwh")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("PricePerMinute")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("PriceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pricings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Khách vãng lai - Sạc thường AC",
+                            PricePerKwh = 4000m,
+                            PriceType = "Guest_AC"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Khách vãng lai - Sạc nhanh DC",
+                            PricePerKwh = 4800m,
+                            PriceType = "Guest_DC"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Thành viên - Sạc thường AC",
+                            PricePerKwh = 3500m,
+                            PriceType = "Member_AC"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Thành viên - Sạc nhanh DC",
+                            PricePerKwh = 4200m,
+                            PriceType = "Member_DC"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Phí chiếm dụng",
+                            PricePerKwh = 0m,
+                            PricePerMinute = 1000m,
+                            PriceType = "OccupancyFee"
+                        });
+                });
+
+            modelBuilder.Entity("API.Entities.Receipt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ChargingSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("EnergyConsumed")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("EnergyCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("IdleEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("IdleFee")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("IdleStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PricePerKwhSnapshot")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("PricingName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("ChargingSessionId");
+
+                    b.HasIndex("PackageId");
+
+                    b.ToTable("Receipt");
+                });
+
+            modelBuilder.Entity("API.Entities.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FixedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FixedNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechnicianId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("TechnicianId");
+
+                    b.ToTable("Report");
                 });
 
             modelBuilder.Entity("API.Entities.Reservation", b =>
@@ -341,6 +811,47 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Stations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Address = "12 Lê Lợi, Quận 1, TP.HCM",
+                            CloseTime = new TimeSpan(0, 22, 0, 0, 0),
+                            Code = "Q1HCM",
+                            Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC",
+                            Latitude = 10.776899999999999,
+                            Longitude = 106.7009,
+                            Name = "Trạm sạc VinFast Quận 1",
+                            OpenTime = new TimeSpan(0, 6, 0, 0, 0),
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM",
+                            CloseTime = new TimeSpan(0, 22, 0, 0, 0),
+                            Code = "TDHCM",
+                            Description = "Trạm sạc khu vực Thủ Đức, gần Vincom",
+                            Latitude = 10.849500000000001,
+                            Longitude = 106.7689,
+                            Name = "Trạm sạc VinFast Thủ Đức",
+                            OpenTime = new TimeSpan(0, 6, 0, 0, 0),
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương",
+                            CloseTime = new TimeSpan(0, 22, 0, 0, 0),
+                            Code = "BDBD",
+                            Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa",
+                            Latitude = 10.949999999999999,
+                            Longitude = 106.75,
+                            Name = "Trạm sạc VinFast Bình Dương",
+                            OpenTime = new TimeSpan(0, 6, 0, 0, 0),
+                            Status = "Active"
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.Vehicle", b =>
@@ -637,6 +1148,12 @@ namespace API.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("Dept")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDept")
+                        .HasColumnType("bit");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -677,6 +1194,9 @@ namespace API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("ReceiptId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ReferenceId")
                         .HasColumnType("int");
 
@@ -696,6 +1216,8 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("WalletId");
 
@@ -846,6 +1368,13 @@ namespace API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "1",
+                            RoleId = "1"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -867,6 +1396,25 @@ namespace API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("API.Entities.Assignment", b =>
+                {
+                    b.HasOne("API.Entities.AppUser", "Staff")
+                        .WithMany("Assignments")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Staff");
+
+                    b.Navigation("Station");
+                });
+
             modelBuilder.Entity("API.Entities.ChargingPost", b =>
                 {
                     b.HasOne("API.Entities.Station", null)
@@ -876,15 +1424,94 @@ namespace API.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("API.Entities.ChargingSession", b =>
+                {
+                    b.HasOne("API.Entities.ChargingPost", "ChargingPost")
+                        .WithMany()
+                        .HasForeignKey("ChargingPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId");
+
+                    b.HasOne("API.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId");
+
+                    b.Navigation("ChargingPost");
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("API.Entities.DriverPackage", b =>
                 {
+                    b.HasOne("API.Entities.AppUser", "AppUser")
+                        .WithMany("DriverPackages")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.ChargingPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AppUser");
+
                     b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("API.Entities.Receipt", b =>
+                {
+                    b.HasOne("API.Entities.AppUser", "AppUser")
+                        .WithMany("Receipts")
+                        .HasForeignKey("AppUserId");
+
+                    b.HasOne("API.Entities.ChargingSession", "ChargingSession")
+                        .WithMany()
+                        .HasForeignKey("ChargingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.DriverPackage", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId");
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("ChargingSession");
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("API.Entities.Report", b =>
+                {
+                    b.HasOne("API.Entities.AppUser", "CreatedByStaff")
+                        .WithMany("ReportsCreated")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.ChargingPost", "ChargingPost")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.AppUser", "Technician")
+                        .WithMany("ReportsAssignedToFix")
+                        .HasForeignKey("TechnicianId");
+
+                    b.Navigation("ChargingPost");
+
+                    b.Navigation("CreatedByStaff");
+
+                    b.Navigation("Technician");
                 });
 
             modelBuilder.Entity("API.Entities.Reservation", b =>
@@ -929,6 +1556,10 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Wallet.WalletTransaction", b =>
                 {
+                    b.HasOne("API.Entities.Receipt", null)
+                        .WithMany("WalletTransactions")
+                        .HasForeignKey("ReceiptId");
+
                     b.HasOne("API.Entities.Wallet.Wallet", "Wallet")
                         .WithMany("Transactions")
                         .HasForeignKey("WalletId")
@@ -991,7 +1622,22 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.AppUser", b =>
                 {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("DriverPackages");
+
+                    b.Navigation("Receipts");
+
+                    b.Navigation("ReportsAssignedToFix");
+
+                    b.Navigation("ReportsCreated");
+
                     b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("API.Entities.Receipt", b =>
+                {
+                    b.Navigation("WalletTransactions");
                 });
 
             modelBuilder.Entity("API.Entities.Station", b =>

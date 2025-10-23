@@ -51,7 +51,8 @@ namespace API.Controllers
             return Ok(station.ToStationDto());
         }
 
-        [HttpPost]
+        [HttpPost] 
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Create([FromBody] CreateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -68,6 +69,7 @@ namespace API.Controllers
 
         [HttpPut]
         [Route("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -86,6 +88,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}/status")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] StationStatus status)
         {
             var stationModel = await _uow.Stations.UpdateStatusAsync(id, status);
@@ -99,6 +102,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -141,6 +145,7 @@ namespace API.Controllers
 
         // trả về danh sách các trụ sạc tương thích với xe trong trạm
         [HttpGet("{stationId:int}/compatible-posts/{vehicleId:int}")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetCompatiblePosts(int stationId, int vehicleId)
         {
             var station = await _uow.Stations.GetByIdAsync(stationId);
@@ -187,5 +192,5 @@ namespace API.Controllers
                 distance = StationCodeHelper.GetDistanceKm(lat1, lon1, lat2, lon2)
             });
         }
-    }   
+    }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers.Enums;
 
 namespace API.Entities
 {
@@ -26,9 +27,9 @@ namespace API.Entities
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [ForeignKey(nameof(VehicleId))]
-        public Vehicle Vehicle { get; set; }
+        public Vehicle Vehicle { get; set; } = null!;
         [ForeignKey(nameof(ChargingPostId))]
-        public ChargingPost Post { get; set; }
+        public ChargingPost Post { get; set; } = null!;
     }
 
     public enum ReservationStatus

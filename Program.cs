@@ -112,6 +112,7 @@ builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository
 builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
 builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
+builder.Services.AddScoped<IPricingRepository, PricingRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -124,6 +125,7 @@ builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
 builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IPricingService, PricingService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -138,7 +140,8 @@ builder.Services.AddHostedService<ReservationCleanupService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-builder.Services.AddHostedService(provider => (ChargingSimulationService)provider.GetRequiredService<IChargingSimulationService>());
+builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
+
 
 var app = builder.Build();
 
