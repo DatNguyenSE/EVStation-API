@@ -21,6 +21,6 @@ namespace API.DTOs.Station
         public TimeSpan OpenTime { get; set; }
         public TimeSpan CloseTime { get; set; }
         public StationStatus Status { get; set; }
-        public List<ChargingPostDto> ChargingPosts { get; set; } = new List<ChargingPostDto>();
+        public List<PostOfStationDto>? ChargingPosts { get; set; }
     }
 }
