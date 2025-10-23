@@ -50,7 +50,7 @@ namespace API.Services
             }
 
             // Nếu là trụ đặt chỗ
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
             var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
                 r.DriverId == driverId &&
                 r.ChargingPostId == postId &&

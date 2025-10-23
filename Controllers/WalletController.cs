@@ -8,6 +8,7 @@ using API.DTOs.Wallet;
 using API.Entities;
 using API.Entities.Wallet;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +33,7 @@ namespace API.Controllers
 
         // Lấy ví của user
         [HttpGet("my")]
-        [Authorize]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetMyWallet()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -52,7 +53,7 @@ namespace API.Controllers
 
         // Lấy lịch sử giao dịch
         [HttpGet("transactions")]
-        [Authorize]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetTransaction()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,6 +67,7 @@ namespace API.Controllers
         }
 
         [HttpPost("top-up")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CreatePayment([FromBody] PaymentInformationModel model)
         {
             var username = User.GetUsername();

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
+using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -21,6 +23,8 @@ namespace API.Controllers
 
         // API tạo session: POST api/chargingsessions
         [HttpPost]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -35,6 +39,7 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/update-plate")]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<IActionResult> UpdatePlate (int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
@@ -50,6 +55,8 @@ namespace API.Controllers
 
         // API kết thúc session: POST api/chargingsessions/{sessionId}/end
         [HttpPost("{sessionId}/end")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<ActionResult<ChargingSessionDto>> EndSession(int sessionId)
         {
             try

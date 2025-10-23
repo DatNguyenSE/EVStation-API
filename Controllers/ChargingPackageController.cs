@@ -4,8 +4,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs.ChargingPackage;
+using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +29,10 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(Roles = AppConstant.Roles.Manager)]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
+        [Authorize(Roles = AppConstant.Roles.Technician)]
         public async Task<IActionResult> GetAll()
         {
             var packages = await _uow.ChargingPackages.GetAllAsync();
@@ -35,6 +41,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -50,22 +57,38 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Create([FromBody] CreateChargingPackageDto packageDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var packageModel = packageDto.ToPackageFromCreateDto();
-            await _uow.ChargingPackages.CreateAsync(packageModel);
 
-            if (!await _uow.Complete())
-                return StatusCode(500, "Không thể lưu gói sạc.");
+            try
+            {
+                var packageModel = packageDto.ToPackageFromCreateDto();
 
-            return CreatedAtAction(nameof(GetById), new { id = packageModel.Id }, packageModel.ToPackageDto());
+                // Sử dụng Repository để tạo (đã bao gồm validation)
+                await _uow.ChargingPackages.CreateAsync(packageModel);
+
+                if (!await _uow.Complete())
+                {
+                    // Lỗi xảy ra khi lưu vào database (DB Error)
+                    return StatusCode(500, "Lỗi Server: Không thể lưu gói sạc vào cơ sở dữ liệu.");
+                }
+
+                // Trả về 201 Created
+                return CreatedAtAction(nameof(GetById), new { id = packageModel.Id }, packageModel.ToPackageDto());
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateChargingPackageDto packageDto)
         {
             if (!ModelState.IsValid)
@@ -73,25 +96,37 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var packageModel = await _uow.ChargingPackages.UpdateAsync(id, packageDto);
-            if (packageModel == null)
+            try
             {
-                return NotFound();
-            }
-            if (!await _uow.Complete())
-                return StatusCode(500, "Không thể cập nhật gói sạc.");
+                var packageModel = await _uow.ChargingPackages.UpdateAsync(id, packageDto);
 
-            return Ok(packageModel.ToPackageDto());
+                if (packageModel == null)
+                {
+                    return NotFound($"Không tìm thấy gói sạc với ID: {id}");
+                }
+
+                if (!await _uow.Complete())
+                {
+                    return StatusCode(500, "Lỗi Server: Không thể cập nhật gói sạc trong cơ sở dữ liệu.");
+                }
+
+                return Ok(packageModel.ToPackageDto());
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}/status")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] UpdateChargingPackageStatusDto packageDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            
+
             var packageModel = await _uow.ChargingPackages.UpdateStatusAsync(id, packageDto);
             if (packageModel == null)
             {
@@ -104,6 +139,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -122,6 +158,7 @@ namespace API.Controllers
         }
 
         [HttpPost("purchase/{packageId}")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> PurchasePackage(int packageId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -139,6 +176,20 @@ namespace API.Controllers
             }
 
             return Ok(new { message = Message });
+        }
+
+        [HttpGet("available")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(Roles = AppConstant.Roles.Manager)]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
+        [Authorize(Roles = AppConstant.Roles.Technician)]
+        public async Task<IActionResult> GetAvailable()
+        {
+            // Gọi thẳng đến service để lấy và xử lý dữ liệu
+            var packageDtos = await _packageService.GetAvailablePackagesAsync();
+
+            // Trả về 200 OK
+            return Ok(packageDtos);
         }
     }
 }

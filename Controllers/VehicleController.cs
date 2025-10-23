@@ -100,6 +100,7 @@ namespace API.Controllers
         }
 
         [HttpGet("models")]
+        [Authorize]
         public async Task<IActionResult> GetVehicleModels([FromQuery] VehicleType vehicleType)
         {
             var vehicleModelObjects = await _uow.VehicleModels.GetByTypeAsync(vehicleType);

@@ -4,6 +4,7 @@ using API.Data;
 using API.DTOs.Account;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ public class UsersController : ControllerBase //cung cấp nhiều phương th�
     }
 
     [HttpGet("profile-driver")]
-    [Authorize(Roles ="Driver")]
+    [Authorize(Roles = AppConstant.Roles.Driver)]
     public async Task<IActionResult> GetProfile_Driver()
     {
         var username = User.GetUsername();

@@ -90,7 +90,7 @@ namespace API.Services
                 Status = Helpers.Enums.TransactionStatus.Pending,
                 PaymentMethod = "VNPAY",
                 VnpTxnRef = txnRef,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.AddHours(7)
             };
             await _uow.WalletTransactions.AddTransactionAsync(txn);
             if (!await _uow.Complete())

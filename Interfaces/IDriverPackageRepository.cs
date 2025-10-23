@@ -14,7 +14,7 @@ namespace API.Interfaces
         Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType);
         Task<List<DriverPackage>> GetByUserAsync(string userId);
         Task<DriverPackage> CreateAsync(string appUserId, int packageId);
-        Task<DriverPackage?> DeleteAsync(int id);
+        Task<DriverPackage?> DeactiveAsync(int id);
 
         Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType);
     }

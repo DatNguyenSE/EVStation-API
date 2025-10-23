@@ -40,7 +40,7 @@ namespace API.Repository
             return userPackageModel;
         }
 
-        public async Task<DriverPackage?> DeleteAsync(int id)
+        public async Task<DriverPackage?> DeactiveAsync(int id)
         {
             var userPackageModel = await _context.DriverPackages.FindAsync(id);
             if (userPackageModel == null)
@@ -48,7 +48,7 @@ namespace API.Repository
                 return null;
             }
 
-            _context.DriverPackages.Remove(userPackageModel);
+            userPackageModel.IsActive = false;
             return userPackageModel;
         }
 

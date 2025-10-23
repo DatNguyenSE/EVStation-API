@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DTOs.ChargingPackage;
 using API.Entities;
 using API.Entities.Wallet;
 using API.Helpers.Enums;
 using API.Interfaces;
+using API.Mappers;
 
 namespace API.Services
 {
@@ -17,6 +19,25 @@ namespace API.Services
         {
             _uow = uow;
         }
+
+        public async Task<IEnumerable<ChargingPackageDto>> GetAvailablePackagesAsync()
+        {
+            // 1. Lấy tất cả các gói sạc từ Repository (hoặc DBContext)
+            var allPackages = await _uow.ChargingPackages.GetAllAsync();
+
+            // 2. Lọc các gói đang hoạt động (IsActive = true)
+            var availablePackages = allPackages
+                .Where(p => p.IsActive)
+                .ToList();
+
+            // 3. Chuyển đổi từ Entity sang DTO
+            var packageDtos = availablePackages
+                .Select(p => p.ToPackageDto()) // Giả định phương thức mở rộng ToPackageDto() tồn tại
+                .ToList();
+
+            return packageDtos;
+        }
+
         public async Task<(bool Success, string Message)> PurchasePackageAsync(string userId, int packageId)
         {
             await using var dbTransaction = await _uow.BeginTransactionAsync(IsolationLevel.ReadCommitted);
