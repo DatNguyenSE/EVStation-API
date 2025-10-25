@@ -42,7 +42,7 @@ namespace API.Controllers
             // Gọi Service Layer
             var walletDto = await _walletService.GetWalletForUserAsync(userId);
 
-            if (walletDto == null) 
+            if (walletDto == null)
             {
                 // Nếu Service không thể tạo/tìm ví (lỗi DB hoặc user không tồn tại)
                 return StatusCode(500, "Không thể khởi tạo hoặc tìm ví.");
@@ -70,6 +70,9 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CreatePayment([FromBody] PaymentInformationModel model)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+                
             var username = User.GetUsername();
             var paymentUrl = await _walletService.CreatePaymentAsync(model, username, HttpContext);
             return Ok(new { paymentUrl });

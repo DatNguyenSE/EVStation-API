@@ -26,6 +26,7 @@ namespace API.Repository
         public IVehicleModelRepository VehicleModels { get; }
         public IChargingSessionRepository ChargingSessions { get; }
         public IPricingRepository Pricings { get; }
+        public IReportRepository Reports { get; }
 
         public UnitOfWork(
             AppDbContext context,
@@ -39,7 +40,8 @@ namespace API.Repository
             IDriverPackageRepository driverPackages,
             IVehicleModelRepository vehicleModels,
             IChargingSessionRepository chargingSession,
-            IPricingRepository pricing)
+            IPricingRepository pricing,
+            IReportRepository report)
         {
             _context = context;
             Reservations = reservations;
@@ -53,6 +55,7 @@ namespace API.Repository
             VehicleModels = vehicleModels;
             ChargingSessions = chargingSession;
             Pricings = pricing;
+            Reports = report;
         }
 
         public async Task<bool> Complete()
