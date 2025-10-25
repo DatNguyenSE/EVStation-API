@@ -88,7 +88,7 @@ namespace API.Repository
 
         public async Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
             var cutoffTime = now.AddMinutes(-gracePeriodMinutes);
 
             return await _context.Reservations
@@ -163,6 +163,15 @@ namespace API.Repository
             }
 
             return result;
+        }
+
+        public async Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId)
+        {
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            r.TimeSlotStart > DateTime.UtcNow)
+                .ToListAsync();
         }
     }
 }

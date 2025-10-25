@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]  // Route: api/chargingsessions
+    [Route("api/charging-session")]  // Route: api/chargingsessions
     public class ChargingSessionsController : ControllerBase
     {
         private readonly IChargingSessionService _service;
@@ -22,9 +22,8 @@ namespace API.Controllers
         }
 
         // API tạo session: POST api/chargingsessions
-        [HttpPost]
+        [HttpPost("start")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -39,7 +38,7 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/update-plate")]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
+        // [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<IActionResult> UpdatePlate (int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
@@ -56,7 +55,6 @@ namespace API.Controllers
         // API kết thúc session: POST api/chargingsessions/{sessionId}/end
         [HttpPost("{sessionId}/end")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<ActionResult<ChargingSessionDto>> EndSession(int sessionId)
         {
             try

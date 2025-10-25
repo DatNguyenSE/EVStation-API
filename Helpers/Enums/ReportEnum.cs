@@ -7,30 +7,17 @@ namespace API.Helpers.Enums
 {
     public enum ReportSeverity
     {
-        /// <summary>Vấn đề nhỏ, không ảnh hưởng lớn đến hoạt động.</summary>
-        Minor,
-        /// <summary>Vấn đề nghiêm trọng, gây gián đoạn dịch vụ quan trọng.</summary>
+        Normal,
         Critical
     }
 
     public enum ReportStatus
     {
-        /// <summary>Báo cáo mới được tạo.</summary>
-        New,
-
-        /// <summary>Đã được giao cho kỹ thuật viên.</summary>
-        Assigned,
-
-        /// <summary>Kỹ thuật viên đang xử lý.</summary>
-        InProgress,
-
-        /// <summary>Đã sửa xong và đang chờ xác nhận.</summary>
-        Resolved,
-
-        /// <summary>Đã hoàn tất và đóng.</summary>
-        Closed,
-
-        /// <summary>Không thể sửa được hoặc cần thêm thông tin.</summary>
-        OnHold
+        New,        // Staff vừa tạo
+        Pending,    // Admin đã duyệt, chờ gán Technician
+        InProgress, // Đã gán Technician, đang sửa
+        Resolved,   // Technician báo đã sửa xong, chờ Admin xác nhận
+        Closed,     // Admin đã xác nhận, trụ hoạt động lại
+        Cancelled   // Admin hủy bỏ báo cáo
     }
 }
