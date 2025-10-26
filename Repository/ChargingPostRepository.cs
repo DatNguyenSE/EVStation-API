@@ -39,7 +39,7 @@ namespace API.Repository
             await _context.SaveChangesAsync(); // để có Id
 
             // Generate QR sau khi có Id
-            var feUrl = $"http://localhost:4200/charging-post/{postModel.Id}"; // 💥💥💥CÓ THỂ SỬA SAU KHI CHỐT URL TRÊN FE💥💥💥💥
+            var feUrl = $"http://localhost:4200/thongtinsac/{postModel.Id}"; // 💥💥💥CÓ THỂ SỬA SAU KHI CHỐT URL TRÊN FE💥💥💥💥
             postModel.QRCode = _qrService.GenerateQRCode(feUrl);
 
             _context.ChargingPosts.Update(postModel); // tạo rồi nhưng chưa có QR, giờ update mới có QR

@@ -10,6 +10,8 @@ using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using API.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Services
 {
@@ -17,11 +19,13 @@ namespace API.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IVehicleRepository _vehicleRepo;
-
-        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository)
+        private readonly IHubContext<ReservationHub> _hubContext;
+        
+        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository, IHubContext<ReservationHub> hubContext)
         {
             _uow = uow;
             _vehicleRepo = vehicleRepository;
+            _hubContext = hubContext;
         }
 
         public async Task<ReservationResponseDto> CancelReservationAsync(int reservationId, string driverId)
@@ -171,6 +175,10 @@ namespace API.Services
                 }
 
                 await transaction.CommitAsync();
+// đẩy vô reservationHub
+                var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+                await _hubContext.Clients.Group(driverId)
+                    .SendAsync("UpdateUpcomingReservations", upcomingReservations);
 
                 return reservation.ToReservationResponseDto();
             }

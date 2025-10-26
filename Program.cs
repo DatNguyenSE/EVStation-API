@@ -13,6 +13,7 @@ using System.Security.Claims;
 using API.Entities.Email;
 using API.Helpers;
 using API.Hubs;
+using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,22 @@ builder.Services.AddAuthentication(options =>
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
         ),
     };
+    options.Events = new JwtBearerEvents // WebSocket không cho phép trình duyệt thêm 'custom header' -> dùng (Authorization: Bearer ...)
+    {
+
+        OnMessageReceived = context => // mỗi khi có request yêu cầu xthuc jwt
+        {
+            var accessToken = context.Request.Query["access_token"];//Lấy giá trị token nằm trong query string của request
+
+            var path = context.HttpContext.Request.Path; //Lấy đường dẫn của request hiện tại: /hubs/presence [?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6...]
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 
@@ -150,15 +167,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-.WithOrigins("https://localhost:4200", "http://localhost:4200")); //set connect
-
-// Thêm endpoint cho hub
-app.MapHub<ChargingHub>("/hubs/charging");
+.WithOrigins("https://localhost:4200", "http://localhost:4200")
+  .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials());
+//  //set connect
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
+
+//DatNguyen-SignalR
+app.MapHub<PresenceHub>("hubs/presence");
+app.MapHub<ReservationHub>("hubs/reservation");
 
 app.Run();
 
