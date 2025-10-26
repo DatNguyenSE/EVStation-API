@@ -106,7 +106,7 @@ namespace API.Controllers
             var reportsDto = await _reportService.GetNewReportsAsync();
             return Ok(reportsDto);
         }
-        
+
         // (Technician) Lấy danh sách việc của tôi
         [HttpGet("mytasks")]
         [Authorize(Roles = AppConstant.Roles.Technician)]
@@ -115,6 +115,21 @@ namespace API.Controllers
             var technicianId = GetCurrentUserId();
             var reportsDto = await _reportService.GetMyTasksAsync(technicianId!);
             return Ok(reportsDto);
+        }
+
+        [HttpPost("{id}/start-repair")]
+        [Authorize(Roles = AppConstant.Roles.Technician)] // Chỉ KTV
+        public async Task<IActionResult> StartRepair(int id)
+        {
+            var technicianId = GetCurrentUserId(); // Lấy ID KTV đang đăng nhập
+            var result = await _reportService.StartRepairAsync(id, technicianId!);
+            if (!result)
+            {
+                // Service sẽ throw Exception nếu có lỗi nghiêm trọng
+                // Trường hợp trả về false có thể xử lý riêng nếu cần
+                return BadRequest("Không thể bắt đầu sửa chữa.");
+            }
+            return Ok(new { message = $"Đã bắt đầu sửa chữa báo cáo {id}, trụ sạc đã chuyển sang bảo trì." });
         }
     }
 }

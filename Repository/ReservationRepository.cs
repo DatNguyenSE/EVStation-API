@@ -173,5 +173,18 @@ namespace API.Repository
                             r.TimeSlotStart > DateTime.UtcNow)
                 .ToListAsync();
         }
+
+        public async Task<List<Reservation>> GetConflictingReservationsAsync(int postId, DateTime maintenanceStart, DateTime maintenanceEnd)
+        {
+            return await _context.Reservations
+                .Include(r => r.Vehicle) // Cần để lấy OwnerId
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            // Logic kiểm tra sự trùng lặp thời gian:
+                            // (StartA < EndB) and (EndA > StartB)
+                            r.TimeSlotStart < maintenanceEnd && 
+                            r.TimeSlotEnd > maintenanceStart) 
+                .ToListAsync();
+        }
     }
 }

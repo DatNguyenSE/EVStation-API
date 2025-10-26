@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ namespace API.Repository
             return await _context.Reports
                 .Where(r => r.TechnicianId == technicianId && r.Status == Helpers.Enums.ReportStatus.InProgress)
                 .Include(r => r.ChargingPost)
-                .OrderBy(r => r.ScheduledTime) // Ưu tiên các việc có lịch hẹn
+                .OrderBy(r => r.MaintenanceStartTime) // Ưu tiên task có lịch hẹn sớm hơn
                 .ToListAsync();
         }
 
@@ -62,6 +63,20 @@ namespace API.Repository
             return await _context.Reports
                 .Include(r => r.ChargingPost)
                 .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        // Hàm kiểm tra lịch bảo trì
+        public async Task<bool> IsPostScheduledForMaintenanceAsync(int postId, DateTime requestedStart, DateTime requestedEnd)
+        {
+            // Tìm xem có Report nào đang chờ xử lý (Pending) hoặc đang xử lý (InProgress)
+            return await _context.Reports
+                .AnyAsync(r => r.PostId == postId &&
+                               (r.Status == ReportStatus.Pending || r.Status == ReportStatus.InProgress) &&
+                               r.MaintenanceStartTime != null &&
+                               r.MaintenanceEndTime != null &&
+                               // Logic kiểm tra trùng lặp: (StartA < EndB) and (EndA > StartB)
+                               requestedStart < r.MaintenanceEndTime.Value &&
+                               requestedEnd > r.MaintenanceStartTime.Value);
         }
     }
 }

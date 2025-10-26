@@ -17,8 +17,9 @@ namespace API.Interfaces
         
         // Hàm lấy report mới cho Admin 
         Task<IEnumerable<Report>> GetNewReportsAsync();
-        
+
         // Hàm lấy task cho Technician 
         Task<IEnumerable<Report>> GetMyTasksAsync(string technicianId);
+        Task<bool> IsPostScheduledForMaintenanceAsync(int postId, DateTime requestedStart, DateTime requestedEnd);
     }
 }
