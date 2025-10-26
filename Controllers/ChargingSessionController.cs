@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
+using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]  // Route: api/chargingsessions
+    [Route("api/charging-session")]  // Route: api/chargingsessions
     public class ChargingSessionsController : ControllerBase
     {
         private readonly IChargingSessionService _service;
@@ -20,7 +22,8 @@ namespace API.Controllers
         }
 
         // API tạo session: POST api/chargingsessions
-        [HttpPost]
+        [HttpPost("start")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -34,14 +37,14 @@ namespace API.Controllers
             }
         }
 
-        // API cập nhật năng lượng: POST api/chargingsessions/update-energy
-        [HttpPost("update-energy")]
-        public async Task<ActionResult> UpdateEnergy(EnergyUpdateDto dto)
+        [HttpPost("{sessionId}/update-plate")]
+        // [Authorize(Roles = AppConstant.Roles.Operator)]
+        public async Task<IActionResult> UpdatePlate (int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
             {
-                await _service.UpdateEnergyAsync(dto);
-                return Ok();
+                var session = await _service.UpdatePlateAsync(sessionId, vehiclePlate.Plate);
+                return Ok(session);
             }
             catch (Exception ex)
             {
@@ -51,6 +54,7 @@ namespace API.Controllers
 
         // API kết thúc session: POST api/chargingsessions/{sessionId}/end
         [HttpPost("{sessionId}/end")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> EndSession(int sessionId)
         {
             try

@@ -12,5 +12,6 @@ namespace API.DTOs.ChargingSession
         public double BatteryPercentage { get; set; }
         public int TimeRemain { get; set; }
         public double Cost { get; set; }
+        public bool IsTempMode { get; set; }
     }
 }

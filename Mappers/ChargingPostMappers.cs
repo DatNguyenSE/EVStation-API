@@ -39,5 +39,18 @@ namespace API.Mappers
                 IsWalkIn = postDto.IsWalkIn
             };
         }
+
+        public static List<PostOfStationDto> ToPostOfStationDto(this List<ChargingPost> postModels)
+        {
+            return postModels.Select(post => new PostOfStationDto
+            {
+                Code = post.Code,
+                Type = post.Type,
+                PowerKW = post.PowerKW,
+                ConnectorType = post.ConnectorType,
+                Status = post.Status,
+                IsWalkIn = post.IsWalkIn
+            }).ToList();
+        }
     }
 }

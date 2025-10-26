@@ -11,5 +11,6 @@ namespace API.Interfaces
         Task<ChargingSession> CreateAsync(ChargingSession session);
         Task<ChargingSession?> GetByIdAsync(int id);
         void Update(ChargingSession session);
+        Task<ChargingSession?> GetActiveSessionByPostIdAsync(int postId);
     }
 }

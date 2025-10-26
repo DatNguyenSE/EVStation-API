@@ -40,7 +40,7 @@ namespace API.Repository
             return userPackageModel;
         }
 
-        public async Task<DriverPackage?> DeleteAsync(int id)
+        public async Task<DriverPackage?> DeactiveAsync(int id)
         {
             var userPackageModel = await _context.DriverPackages.FindAsync(id);
             if (userPackageModel == null)
@@ -48,8 +48,15 @@ namespace API.Repository
                 return null;
             }
 
-            _context.DriverPackages.Remove(userPackageModel);
+            userPackageModel.IsActive = false;
             return userPackageModel;
+        }
+
+        public async Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
+                                                       && dp.VehicleType == vehicleType
+                                                       && dp.IsActive == true);
         }
 
         public Task<List<DriverPackage>> GetAllAsync()

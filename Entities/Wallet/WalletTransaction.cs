@@ -17,7 +17,7 @@ namespace API.Entities.Wallet
         public int WalletId { get; set; }
 
         [ForeignKey(nameof(WalletId))]
-        public Wallet Wallet { get; set; }
+        public Wallet Wallet { get; set; } = null!;
 
         [Required]
         [MaxLength(50)]

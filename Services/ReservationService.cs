@@ -83,7 +83,7 @@ namespace API.Services
         public async Task<ReservationResponseDto> CreateReservationAsync(CreateReservationDto dto, string driverId)
         {
             // var now = DateTime.UtcNow.AddHours(AppConstant.ReservationRules.TimezoneOffsetHours);
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
 
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
@@ -111,7 +111,7 @@ namespace API.Services
                 throw new Exception("Trụ sạc không tồn tại.");
 
             // Kiểm tra trạng thái trụ
-            if (post.Status != Helpers.Enums.PostStatus.Available)
+            if (post.Status == PostStatus.Maintenance || post.Status == PostStatus.Offline)
                 throw new Exception($"Trụ sạc hiện đang ở trạng thái {post.Status}, không thể đặt chỗ.");
 
             // So sánh trực tiếp loại cổng sạc của xe và của trụ.

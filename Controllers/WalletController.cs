@@ -8,6 +8,7 @@ using API.DTOs.Wallet;
 using API.Entities;
 using API.Entities.Wallet;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +33,7 @@ namespace API.Controllers
 
         // Lấy ví của user
         [HttpGet("my")]
-        [Authorize]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetMyWallet()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -41,7 +42,7 @@ namespace API.Controllers
             // Gọi Service Layer
             var walletDto = await _walletService.GetWalletForUserAsync(userId);
 
-            if (walletDto == null) 
+            if (walletDto == null)
             {
                 // Nếu Service không thể tạo/tìm ví (lỗi DB hoặc user không tồn tại)
                 return StatusCode(500, "Không thể khởi tạo hoặc tìm ví.");
@@ -52,7 +53,7 @@ namespace API.Controllers
 
         // Lấy lịch sử giao dịch
         [HttpGet("transactions")]
-        [Authorize]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetTransaction()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,8 +67,12 @@ namespace API.Controllers
         }
 
         [HttpPost("top-up")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CreatePayment([FromBody] PaymentInformationModel model)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+                
             var username = User.GetUsername();
             var paymentUrl = await _walletService.CreatePaymentAsync(model, username, HttpContext);
             return Ok(new { paymentUrl });

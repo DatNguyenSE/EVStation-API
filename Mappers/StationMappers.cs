@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Station;
 using API.Entities;
+using API.Mappers;
 
 namespace API.Mappers
 {
@@ -11,6 +12,7 @@ namespace API.Mappers
     {
         public static StationDto ToStationDto(this Station stationModel)
         {
+            var postDtos = stationModel.Posts.Select(p => p.ToPostDto()).ToList();
             return new StationDto
             {
                 Id = stationModel.Id,
@@ -22,7 +24,8 @@ namespace API.Mappers
                 Description = stationModel.Description,
                 OpenTime = stationModel.OpenTime,
                 CloseTime = stationModel.CloseTime,
-                Status = stationModel.Status
+                Status = stationModel.Status,
+                ChargingPosts = stationModel.Posts.ToPostOfStationDto()
             };
         }
 

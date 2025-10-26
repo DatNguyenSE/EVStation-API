@@ -28,8 +28,5 @@ namespace API.DTOs.Account
         [DataType(DataType.Date)]
         [MinimumAge(18)]
         public DateTime DateOfBirth { get; set; }
-
-        // Danh sách xe
-        public List<VehicleDto> Vehicles { get; set; } = new();
     }
 }

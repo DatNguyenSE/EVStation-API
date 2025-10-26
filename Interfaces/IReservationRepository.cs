@@ -30,5 +30,7 @@ namespace API.Interfaces
 
         Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
         Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
+
+        Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId);
     }
 }

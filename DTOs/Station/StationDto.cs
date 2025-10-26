@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DTOs.ChargingPost;
 using API.Entities;
 using API.Helpers.Enums;
 
@@ -20,5 +21,6 @@ namespace API.DTOs.Station
         public TimeSpan OpenTime { get; set; }
         public TimeSpan CloseTime { get; set; }
         public StationStatus Status { get; set; }
+        public List<PostOfStationDto>? ChargingPosts { get; set; }
     }
 }

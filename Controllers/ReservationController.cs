@@ -13,7 +13,6 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/reservation")]
-    [Authorize(Roles = AppConstant.Roles.Driver)]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
@@ -27,6 +26,7 @@ namespace API.Controllers
         /// Đặt chỗ sạc xe (1–4 slot, mỗi slot = 1 tiếng)
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationDto dto)
         {
             try
@@ -53,6 +53,7 @@ namespace API.Controllers
 
 
         [HttpPost("{reservationId:int}/cancel")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CancelReservation([FromRoute] int reservationId)
         {
             try
@@ -78,6 +79,7 @@ namespace API.Controllers
         /// Lấy danh sách các lịch đặt chỗ SẮP TỚI (Confirmed) của tài xế đang đăng nhập.
         /// </summary>
         [HttpGet("upcoming")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetUpcomingReservations()
         {
             var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -97,6 +99,7 @@ namespace API.Controllers
         /// Lấy LỊCH SỬ đặt chỗ (Completed, Cancelled, Expired...) của tài xế.
         /// </summary>
         [HttpGet("history")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetReservationHistory()
         {
             var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -120,6 +123,7 @@ namespace API.Controllers
         /// Lấy thông tin CHI TIẾT của một lịch đặt cụ thể.
         /// </summary>
         [HttpGet("{reservationId:int}")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetReservationById([FromRoute] int reservationId)
         {
             var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);

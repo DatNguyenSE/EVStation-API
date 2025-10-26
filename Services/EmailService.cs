@@ -46,16 +46,16 @@ namespace API.Services
             {
                 // Log error
                 Console.WriteLine($"[EmailService] SendEmailAsync error: {ex}");
-    throw new InvalidOperationException($"Failed to send email: {ex.Message}");
+                throw new InvalidOperationException($"Failed to send email: {ex.Message}");
             }
         }
 
-        public async Task SendEmailConfirmationAsync(string toEmail, string userId,string token)
+        public async Task SendEmailConfirmationAsync(string toEmail, string userId, string token)
         {
             var frontendUrl = "http://localhost:4200";
             var encodeToken = Uri.EscapeDataString(token);
-            var confirmationLink = $"{frontendUrl}/confirm-email?userId={userId}&token={encodeToken}"; 
-            
+            var confirmationLink = $"{frontendUrl}/confirm-email?userId={userId}&token={encodeToken}";
+
             var subject = "Xác nhận địa chỉ Email của bạn";
             var body = $@"
                 <html>
