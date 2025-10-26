@@ -21,7 +21,9 @@ namespace API.DTOs.Report
     {
         [Required]
         public bool IsCritical { get; set; }
-        public DateTime? ScheduledTime { get; set; } // Bắt buộc nếu IsCritical = false
+        public DateTime? MaintenanceStartTime { get; set; } // Giờ bắt đầu bảo trì dự kiến
+        public DateTime? MaintenanceEndTime { get; set; }   // Giờ kết thúc bảo trì dự kiến
+        // (Hai trường này sẽ bắt buộc nếu IsCritical = false)
     }
 
     // DTO để Admin gán việc cho Technician
@@ -45,7 +47,8 @@ namespace API.DTOs.Report
         public string Status { get; set; } = string.Empty;
         public string Severity { get; set; } = string.Empty;
         public DateTime CreateAt { get; set; }
-        public DateTime? ScheduledTime { get; set; }
+        public DateTime? MaintenanceStartTime { get; set; }
+        public DateTime? MaintenanceEndTime { get; set; }
 
         // Thông tin trụ sạc
         public int PostId { get; set; }
@@ -65,7 +68,8 @@ namespace API.DTOs.Report
         public string Status { get; set; } = string.Empty;
         public string Severity { get; set; } = string.Empty;
         public DateTime CreateAt { get; set; }
-        public DateTime? ScheduledTime { get; set; }
+        public DateTime? MaintenanceStartTime { get; set; }
+        public DateTime? MaintenanceEndTime { get; set; }
         public DateTime? FixedAt { get; set; }
         public string? FixedNote { get; set; }
 

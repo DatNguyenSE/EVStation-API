@@ -17,5 +17,6 @@ namespace API.Interfaces
         Task<ReportDetailDto?> GetReportDetailsAsync(int id);
         Task<IEnumerable<ReportSummaryDto>> GetNewReportsAsync();
         Task<IEnumerable<ReportSummaryDto>> GetMyTasksAsync(string technicianId);
+        Task<bool> StartRepairAsync(int reportId, string technicianId);
     }
 }

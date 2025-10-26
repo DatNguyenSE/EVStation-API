@@ -89,7 +89,6 @@ namespace API.Services
                     // 2. Cập nhật Trụ sạc -> BẢO TRÌ (Quan trọng)
                     report.ChargingPost.Status = PostStatus.Maintenance;
 
-
                     // 3. Hủy các Reservation (đặt chỗ) trong tương lai
                     var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsForPostAsync(report.PostId);
                     // var notifiedUserIds = new List<string>();
@@ -102,8 +101,6 @@ namespace API.Services
                     // 4. Lấy thông tin user của phiên sạc đang chạy (nếu có)
                     if (activeSession != null)
                     {
-                        // activeSession.Status = SessionStatus.Completed; // Dừng phiên
-                        // activeSession.EndTime = DateTime.UtcNow.AddHours(7);
                         // activeSession.StopReason = "Trụ sạc bảo trì khẩn cấp.";
                         if (activeSession.VehicleId != null && activeSession.Vehicle != null)
                         {
@@ -115,30 +112,6 @@ namespace API.Services
                     // (Lưu: Report, Trụ sạc, Reservation)
                     await _uow.Complete();
                     await transaction.CommitAsync();
-
-                    // Logic SignalR (GIỮ NGUYÊN)
-                    // foreach (var userId in notifiedUserIds.Distinct())
-                    // {
-                    //     // 1. GỬI SIGNALR
-                    //     var message = $"Lượt đặt/phiên sạc của bạn tại trụ {report.ChargingPost.Code} đã bị hủy/dừng do bảo trì khẩn cấp.";
-                    //     await _notificationHubContext.Clients.User(userId).ReservationCancelled(message);
-
-                    //     // 2. GỬI EMAIL
-                    //     var user = await _userManager.FindByIdAsync(userId);
-                    //     if (user != null && !string.IsNullOrEmpty(user.Email))
-                    //     {
-                    //         var subject = "Thông báo khẩn: Hủy lượt sạc/đặt chỗ EV Station";
-                    //         var body = $@"
-                    //         <p>Xin chào {user.FullName},</p>
-                    //         <p>{message}</p>
-                    //         <p>Chúng tôi thành thật xin lỗi vì sự bất tiện này. Vui lòng kiểm tra ứng dụng để đặt lại lịch hoặc tìm trụ sạc khác.</p>
-                    //         <p>Trân trọng,</p>
-                    //         <p>Đội ngũ EV Station.</p>";
-
-                    //         // Dùng kỹ thuật "Fire-and-Forget" để không làm chậm API
-                    //         _ = _emailService.SendEmailAsync(user.Email, subject, body);
-                    //     }
-                    // }
                 }
                 catch (Exception ex)
                 {
@@ -188,12 +161,20 @@ namespace API.Services
             else
             {
                 // === LUỒNG NO (KHÔNG KHẨN CẤP) ===
-                if (dto.ScheduledTime == null)
-                    throw new Exception("Scheduled time is required for non-critical reports");
+                if (dto.MaintenanceStartTime == null || dto.MaintenanceEndTime == null)
+                    throw new Exception("Cần cung cấp thời gian bắt đầu và kết thúc bảo trì dự kiến.");
+
+                if (dto.MaintenanceEndTime <= dto.MaintenanceStartTime)
+                    throw new Exception("Thời gian kết thúc phải sau thời gian bắt đầu.");
+
+                // Kiểm tra xem thời gian bắt đầu có phải trong tương lai không
+                if (dto.MaintenanceStartTime <= DateTime.UtcNow)
+                    throw new Exception("Thời gian bắt đầu bảo trì phải ở trong tương lai.");
 
                 report.Severity = ReportSeverity.Normal;
                 report.Status = ReportStatus.Pending;
-                report.ScheduledTime = dto.ScheduledTime;
+                report.MaintenanceStartTime = dto.MaintenanceStartTime;
+                report.MaintenanceEndTime = dto.MaintenanceEndTime;
 
                 // === CHANGED ===
                 await _uow.Complete(); // Lưu thay đổi
@@ -205,13 +186,38 @@ namespace API.Services
         public async Task<bool> AssignTechnicianAsync(int reportId, AssignTechnicianDto dto)
         {
             // === CHANGED ===
-            var report = await _uow.Reports.GetByIdAsync(reportId);
+            var report = await _uow.Reports.GetReportWithPostAsync(reportId);
             if (report == null || report.Status != ReportStatus.Pending)
                 throw new Exception("Report not found or invalid status");
 
             var techUser = await _userManager.FindByIdAsync(dto.TechnicianId);
             if (techUser == null || !await _userManager.IsInRoleAsync(techUser, AppConstant.Roles.Technician))
                 throw new Exception("Invalid technician");
+
+            var notifiedUserIds = new List<string>();
+
+            if (report.MaintenanceStartTime != null && report.MaintenanceEndTime != null)
+            {
+                // Dùng trực tiếp thời gian Admin đã ước lượng
+                var maintenanceStart = report.MaintenanceStartTime.Value;
+                var maintenanceEnd = report.MaintenanceEndTime.Value;
+
+                var conflictingReservations = await _uow.Reservations.GetConflictingReservationsAsync(report.PostId, maintenanceStart, maintenanceEnd);
+                if (conflictingReservations.Any())
+                {
+                    foreach (var res in conflictingReservations)
+                    {
+                        res.Status = ReservationStatus.Cancelled;
+                        if (res.Vehicle != null && !string.IsNullOrEmpty(res.Vehicle.OwnerId))
+                        {
+                            notifiedUserIds.Add(res.Vehicle.OwnerId);
+                        }
+                    }
+                    // Lưu thay đổi việc hủy đặt chỗ
+                    await _uow.Complete();
+                    Console.WriteLine($"Cancelled {conflictingReservations.Count} conflicting reservations for report {reportId}");
+                }
+            }
 
             report.TechnicianId = dto.TechnicianId;
             report.Status = ReportStatus.InProgress;
@@ -220,8 +226,19 @@ namespace API.Services
             await _uow.Complete();
 
             // Logic SignalR 
-            await _notificationHubContext.Clients.User(dto.TechnicianId).NewTaskAssigned(
-                $"Bạn có một công việc sửa chữa mới tại trụ {report.PostId}");
+            foreach (var userId in notifiedUserIds.Distinct())
+            {
+                var message = $"Lượt đặt chỗ của bạn tại trụ {report.ChargingPost.Code} đã bị hủy do trùng lịch bảo trì.";
+                await _notificationHubContext.Clients.User(userId).ReservationCancelled(message);
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    var subject = "Thông báo: Hủy đặt chỗ do trùng lịch bảo trì";
+                    var body = $@"<p>Xin chào {user.FullName},</p><p>{message}</p><p>Vui lòng kiểm tra ứng dụng để chọn lại khung giờ khác. Xin lỗi vì sự bất tiện này.</p>";
+                    _ = _emailService.SendEmailAsync(user.Email, subject, body);
+                }
+            }
 
             return true;
         }
@@ -294,7 +311,8 @@ namespace API.Services
                 Status = report.Status.ToString(), // Chuyển Enum thành string
                 Severity = report.Severity.ToString(),
                 CreateAt = report.CreateAt,
-                ScheduledTime = report.ScheduledTime,
+                MaintenanceStartTime = report.MaintenanceStartTime,
+                MaintenanceEndTime = report.MaintenanceEndTime,
                 FixedAt = report.FixedAt,
                 FixedNote = report.FixedNote,
 
@@ -338,7 +356,8 @@ namespace API.Services
                 Status = report.Status.ToString(),
                 Severity = report.Severity.ToString(),
                 CreateAt = report.CreateAt,
-                ScheduledTime = report.ScheduledTime,
+                MaintenanceStartTime = report.MaintenanceStartTime,
+                MaintenanceEndTime = report.MaintenanceEndTime,
                 PostId = report.ChargingPost.Id,
                 PostCode = report.ChargingPost.Code
             });
@@ -355,10 +374,97 @@ namespace API.Services
                 Status = report.Status.ToString(),
                 Severity = report.Severity.ToString(),
                 CreateAt = report.CreateAt,
-                ScheduledTime = report.ScheduledTime,
+                MaintenanceStartTime = report.MaintenanceStartTime,
+                MaintenanceEndTime = report.MaintenanceEndTime,
                 PostId = report.ChargingPost.Id,
                 PostCode = report.ChargingPost.Code
             });
+        }
+
+        public async Task<bool> StartRepairAsync(int reportId, string technicianId)
+        {
+            var report = await _uow.Reports.GetReportWithPostAsync(reportId);
+
+            if (report == null)
+                throw new Exception("Không tìm thấy báo cáo.");
+            if (report.Status != ReportStatus.InProgress)
+                throw new Exception("Báo cáo không ở trạng thái 'Đang xử lý'.");
+            if (report.TechnicianId != technicianId)
+                throw new Exception("Bạn không phải KTV được gán cho công việc này.");
+
+            if (report.ChargingPost.Status == PostStatus.Maintenance)
+            {
+                Console.WriteLine($"Trụ {report.PostId} đã ở trạng thái Maintenance.");
+                return true; // Đã xử lý rồi, coi như thành công
+            }
+
+            var activeSession = await _uow.ChargingSessions.GetActiveSessionByPostIdAsync(report.PostId);
+            var notifiedUserIds = new List<string>();
+
+            // --- BẮT ĐẦU TRANSACTION ---
+            await using var transaction = await _uow.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            try
+            {
+                // 1. Chuyển trạng thái trụ -> BẢO TRÌ
+                report.ChargingPost.Status = PostStatus.Maintenance;
+
+                // 2. Lấy OwnerId (nếu có session đang chạy)
+                if (activeSession != null && activeSession.Vehicle != null)
+                {
+                    notifiedUserIds.Add(activeSession.Vehicle.OwnerId);
+                }
+
+                // 3. Lưu thay đổi trạng thái trụ
+                await _uow.Complete();
+                await transaction.CommitAsync();
+                Console.WriteLine($"Đã chuyển Trụ {report.PostId} sang Maintenance.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Lỗi khi chuyển trạng thái trụ sang Maintenance: {ex.Message}");
+            }
+            // --- KẾT THÚC TRANSACTION ---
+
+            // --- HẬU XỬ LÝ (NGOÀI TRANSACTION) ---
+            try
+            {
+                // 4. Dừng Simulation (nếu có)
+                if (activeSession != null)
+                {
+                    Console.WriteLine($"Tiến hành dừng session {activeSession.Id} do KTV bắt đầu sửa.");
+                    await _simulationService.StopSimulationAsync(activeSession.Id, setCompleted: true);
+
+                    // Gửi thông báo cho UI sạc
+                    await _chargingHubContext.Clients.Group($"session-{activeSession.Id}")
+                        .SendAsync("ReceiveSessionEnded", activeSession.Id, SessionStatus.Completed); // Hoặc trạng thái khác nếu muốn phân biệt
+                }
+
+                // 5. Gửi thông báo cho người dùng bị ảnh hưởng (nếu có)
+                foreach (var userId in notifiedUserIds.Distinct()) // Chỉ có user đang sạc
+                {
+                    var message = $"Phiên sạc của bạn tại trụ {report.ChargingPost.Code} đã bị dừng do KTV bắt đầu bảo trì.";
+
+                    // Gửi SignalR (NotificationHub)
+                    await _notificationHubContext.Clients.User(userId).ReservationCancelled(message); // Có thể tạo sự kiện mới nếu muốn
+
+                    // Gửi Email
+                    var user = await _userManager.FindByIdAsync(userId);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        var subject = "Thông báo: Dừng phiên sạc do bảo trì";
+                        var body = $@"<p>Xin chào {user.FullName},</p><p>{message}</p><p>Chúng tôi sẽ thông báo khi trụ hoạt động trở lại. Xin lỗi vì sự bất tiện này.</p>";
+                        _ = _emailService.SendEmailAsync(user.Email, subject, body);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ReportService] Lỗi khi dừng simulation hoặc gửi thông báo (StartRepair): {ex.Message}");
+                // Không throw lỗi ở đây vì trạng thái trụ đã được cập nhật thành công
+            }
+
+            return true;
         }
     }
 }
