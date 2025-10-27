@@ -11,6 +11,7 @@ using API.Hubs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using X.PagedList;
 
 namespace API.Services
 {
@@ -465,6 +466,54 @@ namespace API.Services
             }
 
             return true;
+        }
+
+        public async Task<IPagedList<ReportSummaryDto>> GetAllReportsAsync(ReportFilterParams filterParams)
+        {
+            // 1. Gọi Repository để lấy dữ liệu (IPagedList<Report>)
+            var pagedReports = await _uow.Reports.GetAllReportsAsync(filterParams);
+
+            // 2. Map (chuyển đổi) danh sách Items từ Report -> ReportSummaryDto
+            var reportDtos = pagedReports.Select(report => new ReportSummaryDto
+            {
+                Id = report.Id,
+                Description = report.Description,
+                Status = report.Status.ToString(),
+                Severity = report.Severity.ToString(),
+                CreateAt = report.CreateAt,
+                MaintenanceStartTime = report.MaintenanceStartTime,
+                MaintenanceEndTime = report.MaintenanceEndTime,
+                PostId = report.ChargingPost.Id,
+                PostCode = report.ChargingPost.Code
+            });
+
+            // 3. Tạo PagedList<ReportSummaryDto> mới để trả về
+            // Dùng StaticPagedList để "bọc" lại danh sách DTO
+            // và sao chép metadata (TotalCount, PageCount, v.v.) từ PagedList gốc
+            return new StaticPagedList<ReportSummaryDto>(
+                reportDtos,
+                pagedReports // Lấy metadata từ kết quả của repo
+            );
+        }
+
+        public async Task<IEnumerable<ReportSummaryDto>> GetReportHistoryForPostAsync(int postId)
+        {
+            // 1. Gọi hàm repo đã hoàn thành ở trên
+            var reports = await _uow.Reports.GetReportHistoryByPostIdAsync(postId);
+            // 2. Map sang DTO
+            return reports.Select(report => new ReportSummaryDto
+            {
+                Id = report.Id,
+                Description = report.Description,
+                Status = report.Status.ToString(),
+                Severity = report.Severity.ToString(),
+                CreateAt = report.CreateAt,
+                FixedAt = report.FixedAt,           // Thêm thông tin này cho Lịch sử
+                FixedNote = report.FixedNote,       // Thêm thông tin này
+                PostId = report.PostId,
+                PostCode = report.ChargingPost.Code,      // Lấy từ Include
+                TechnicianName = report.Technician?.FullName // Lấy từ Include
+            });
         }
     }
 }

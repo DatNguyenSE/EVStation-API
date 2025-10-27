@@ -29,10 +29,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = AppConstant.Roles.Admin)]
-        [Authorize(Roles = AppConstant.Roles.Manager)]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
-        [Authorize(Roles = AppConstant.Roles.Technician)]
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetAll()
         {
             var packages = await _uow.ChargingPackages.GetAllAsync();
@@ -41,7 +38,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -179,10 +176,7 @@ namespace API.Controllers
         }
 
         [HttpGet("available")]
-        [Authorize(Roles = AppConstant.Roles.Admin)]
-        [Authorize(Roles = AppConstant.Roles.Manager)]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
-        [Authorize(Roles = AppConstant.Roles.Technician)]
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetAvailable()
         {
             // Gọi thẳng đến service để lấy và xử lý dữ liệu

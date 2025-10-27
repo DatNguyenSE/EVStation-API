@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs.Report;
 using API.Entities;
 using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList;
+using X.PagedList.EF;
 
 namespace API.Repository
 {
@@ -20,6 +23,62 @@ namespace API.Repository
         public void Add(Report report)
         {
             _context.Reports.Add(report);
+        }
+
+        public async Task<IPagedList<Report>> GetAllReportsAsync(ReportFilterParams filterParams)
+        {
+            var query = _context.Reports
+                .Include(r => r.ChargingPost)
+                .Include(r => r.Technician)
+                .Include(r => r.CreatedByStaff)
+                .AsQueryable();
+
+            // --- Áp dụng Filter (giữ nguyên logic) ---
+            if (!string.IsNullOrEmpty(filterParams.PostCode))
+            {
+                query = query.Where(r => r.ChargingPost.Code.Contains(filterParams.PostCode));
+            }
+            if (filterParams.Status.HasValue)
+            {
+                query = query.Where(r => r.Status == filterParams.Status.Value);
+            }
+            if (filterParams.Severity.HasValue)
+            {
+                query = query.Where(r => r.Severity == filterParams.Severity.Value);
+            }
+            if (!string.IsNullOrEmpty(filterParams.TechnicianId))
+            {
+                query = query.Where(r => r.TechnicianId == filterParams.TechnicianId);
+            }
+            if (filterParams.FromDate.HasValue)
+            {
+                query = query.Where(r => r.CreateAt >= filterParams.FromDate.Value);
+            }
+            if (filterParams.ToDate.HasValue)
+            {
+                query = query.Where(r => r.CreateAt <= filterParams.ToDate.Value.AddDays(1));
+            }
+
+            // --- Sắp xếp ---
+            query = query.OrderByDescending(r => r.CreateAt);
+
+            // --- THỰC THI QUERY VÀ PHÂN TRANG ---
+            return await query.ToPagedListAsync(
+                filterParams.PageNumber,
+                filterParams.PageSize
+            );
+        }
+
+        public async Task<IEnumerable<Report>> GetReportHistoryByPostIdAsync(int postId)
+        {
+            return await _context.Reports
+                .Where(r => r.PostId == postId)
+                .Include(r => r.ChargingPost) // Include để lấy PostCode
+                .Include(r => r.Technician)   // Include để lấy TechnicianName
+                                            // Lịch sử là các report đã đóng hoặc đã hủy
+                .Where(r => r.Status == ReportStatus.Closed || r.Status == ReportStatus.Cancelled)
+                .OrderByDescending(r => r.CreateAt)
+                .ToListAsync();
         }
 
         public async Task<Report?> GetByIdAsync(int id)
@@ -77,6 +136,11 @@ namespace API.Repository
                                // Logic kiểm tra trùng lặp: (StartA < EndB) and (EndA > StartB)
                                requestedStart < r.MaintenanceEndTime.Value &&
                                requestedEnd > r.MaintenanceStartTime.Value);
+        }
+
+        public void Update(Report report)
+        {
+            _context.Entry(report).State = EntityState.Modified;
         }
     }
 }
