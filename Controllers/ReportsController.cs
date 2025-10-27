@@ -8,6 +8,9 @@ using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using X.PagedList; // <--- Rất quan trọng, chứa IPagedList và PaginationMetaData
+using System.Text.Json; // <--- Dùng để serialize header
+using Microsoft.AspNetCore.Http; // <--- Dùng để truy cập Response.Headers
 
 namespace API.Controllers
 {
@@ -29,13 +32,62 @@ namespace API.Controllers
             return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
+        private void AddPaginationHeader(PaginationMetaData metaData)
+        {
+            // Cấu hình để serialize tên thuộc tính thành camelCase (vd: totalItemCount)
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var paginationHeader = JsonSerializer.Serialize(metaData, jsonOptions);
+
+            Response.Headers["X-Pagination"] = paginationHeader; 
+            Response.Headers["Access-Control-Expose-Headers"] = "X-Pagination";
+        }
+
+        /// <summary>
+        /// [Admin] Lấy danh sách tất cả report (có phân trang và lọc)
+        /// </summary>
+        [HttpGet] // <-- Sẽ match route "api/reports"
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [ProducesResponseType(typeof(IEnumerable<ReportSummaryDto>), 200)]
+        public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetAllReports(
+            [FromQuery] ReportFilterParams filterParams)
+        {
+            // 1. Service trả về IPagedList
+            var pagedReports = await _reportService.GetAllReportsAsync(filterParams);
+
+            // 2. Dùng hàm helper để thêm metadata vào Header
+            // (Sửa lỗi "obsolete" bằng cách dùng constructor)
+            AddPaginationHeader(new PaginationMetaData(pagedReports));
+
+            // 3. Trả về OK(pagedReports).
+            // X.PagedList sẽ tự động chỉ serialize mảng data
+            return Ok(pagedReports);
+        }
+        
+        /// <summary>
+        /// [Admin, Technician] Lấy lịch sử sự cố/bảo trì của một trụ sạc
+        /// </summary>
+        [HttpGet("post/{postId}/history")] // <-- Route: api/reports/post/123/history
+        [Authorize(Roles = $"{AppConstant.Roles.Admin},{AppConstant.Roles.Technician}")]
+        [ProducesResponseType(typeof(IEnumerable<ReportSummaryDto>), 200)]
+        public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetReportHistoryForPost(int postId)
+        {
+            var result = await _reportService.GetReportHistoryForPostAsync(postId);
+            
+            // Hàm này không phân trang, cứ trả về OK
+            return Ok(result);
+        }
+
         // --- CÁC HÀNH ĐỘNG (POST) THEO LUỒNG NGHIỆP VỤ ---
 
         // 1. (Staff) Tạo báo cáo
 
         // Angular sẽ gọi API này
         [HttpPost]
-        [Authorize(Roles = AppConstant.Roles.Operator)]
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}")]
         public async Task<IActionResult> CreateReport([FromBody] CreateReportDto dto)
         {
             var staffId = GetCurrentUserId();
@@ -90,7 +142,8 @@ namespace API.Controllers
 
         // (Lấy chi tiết 1 report)
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Staff,Technician")] // Cả 3 vai trò đều có thể xem
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}")]
+        // Cả 3 vai trò đều có thể xem
         public async Task<IActionResult> GetReportById(int id)
         {
             var reportDetailDto = await _reportService.GetReportDetailsAsync(id);

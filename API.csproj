@@ -19,6 +19,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="QRCoder" Version="1.7.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+    <PackageReference Include="X.PagedList.EF" Version="10.5.9" />
   </ItemGroup>
 
 </Project>

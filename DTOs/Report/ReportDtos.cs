@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Helpers;
 using API.Helpers.Enums;
 
 namespace API.DTOs.Report
@@ -44,15 +45,27 @@ namespace API.DTOs.Report
     {
         public int Id { get; set; }
         public string? Description { get; set; }
+
+        // Chúng ta dùng string thay vì Enum để FE dễ hiển thị
         public string Status { get; set; } = string.Empty;
         public string Severity { get; set; } = string.Empty;
+
         public DateTime CreateAt { get; set; }
+
+        // Thời gian bảo trì dự kiến (cho các task 'Pending')
         public DateTime? MaintenanceStartTime { get; set; }
         public DateTime? MaintenanceEndTime { get; set; }
 
-        // Thông tin trụ sạc
+        // Thông tin khi đã sửa xong (cho 'History')
+        public DateTime? FixedAt { get; set; }
+        public string? FixedNote { get; set; }
+
+        // Thông tin liên kết đến Trụ sạc
         public int PostId { get; set; }
-        public string? PostCode { get; set; }
+        public string PostCode { get; set; } = string.Empty;
+
+        // Thông tin Kỹ thuật viên (có thể null nếu chưa gán)
+        public string? TechnicianName { get; set; }
     }
     public class UserSummaryDto
     {
@@ -86,5 +99,14 @@ namespace API.DTOs.Report
         public string Status { get; set; } = string.Empty;
         public int StationId { get; set; }
         // Bạn có thể thêm StationName nếu repo có Include Station
+    }
+    public class ReportFilterParams : PagingParams
+    {
+        public string? PostCode { get; set; }
+        public string? TechnicianId { get; set; }
+        public ReportStatus? Status { get; set; }
+        public ReportSeverity? Severity { get; set; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
     }
 }
