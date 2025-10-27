@@ -243,25 +243,30 @@ public class AppDbContext : IdentityDbContext<AppUser>
             new ChargingPost { Id = 2, StationId = 1, Code = "Q1-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
             new ChargingPost { Id = 3, StationId = 1, Code = "Q1-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
             new ChargingPost { Id = 4, StationId = 1, Code = "Q1-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 5, StationId = 1, Code = "Q1-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 6, StationId = 1, Code = "Q1-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 5, StationId = 1, Code = "Q1-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 6, StationId = 1, Code = "Q1-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 7, StationId = 1, Code = "Q1-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 8, StationId = 1, Code = "Q1-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
             // ==== Trạm 2: Thủ Đức ====
-            new ChargingPost { Id = 7, StationId = 2, Code = "TD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 8, StationId = 2, Code = "TD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 9, StationId = 2, Code = "TD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 10, StationId = 2, Code = "TD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 11, StationId = 2, Code = "TD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 12, StationId = 2, Code = "TD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 9, StationId = 2, Code = "TD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 10, StationId = 2, Code = "TD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 11, StationId = 2, Code = "TD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 12, StationId = 2, Code = "TD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 13, StationId = 2, Code = "TD-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 14, StationId = 2, Code = "TD-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 15, StationId = 2, Code = "TD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 16, StationId = 2, Code = "TD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
             // ==== Trạm 3: Bình Dương ====
-            new ChargingPost { Id = 13, StationId = 3, Code = "BD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 14, StationId = 3, Code = "BD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 15, StationId = 3, Code = "BD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 16, StationId = 3, Code = "BD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 17, StationId = 3, Code = "BD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 18, StationId = 3, Code = "BD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
+            new ChargingPost { Id = 17, StationId = 3, Code = "BD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 18, StationId = 3, Code = "BD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 19, StationId = 3, Code = "BD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 20, StationId = 3, Code = "BD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 21, StationId = 3, Code = "BD-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 22, StationId = 3, Code = "BD-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 23, StationId = 3, Code = "BD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 24, StationId = 3, Code = "BD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
         );
-
     }
 }

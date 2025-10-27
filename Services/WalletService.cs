@@ -85,7 +85,7 @@ namespace API.Services
                 TransactionType = Helpers.Enums.TransactionType.Topup,
                 Amount = (decimal)model.Amount,
                 BalanceBefore = wallet.Balance,
-                BalanceAfter = wallet.Balance + (decimal)model.Amount,
+                BalanceAfter = wallet.Balance,
                 Description = "Nạp tiền vào ví",
                 Status = Helpers.Enums.TransactionStatus.Pending,
                 PaymentMethod = "VNPAY",
@@ -117,6 +117,7 @@ namespace API.Services
             {
                 txn.Status = Helpers.Enums.TransactionStatus.Success;
                 wallet.Balance += txn.Amount;
+                txn.BalanceAfter = wallet.Balance;
 
                 await _uow.WalletTransactions.UpdateTransactionAsync(txn);
                 await _uow.Wallets.UpdateWalletAsync(wallet);
