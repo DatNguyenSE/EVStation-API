@@ -25,7 +25,7 @@ namespace API.Entities
         public DateTime TimeSlotEnd { get; set; }
         [Column(TypeName = "nvarchar(20)")]
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
         [ForeignKey(nameof(VehicleId))]
         public Vehicle Vehicle { get; set; } = null!;
         [ForeignKey(nameof(ChargingPostId))]
