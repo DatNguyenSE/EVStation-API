@@ -20,10 +20,12 @@ namespace API.Interfaces
         IVehicleModelRepository VehicleModels { get; }
         IChargingSessionRepository ChargingSessions { get; }
         IPricingRepository Pricings { get; }
+        IReceiptRepository Receipts { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 
         // Hàm duy nhất thực hiện SaveChangesAsync cho toàn bộ DbContext
         Task<bool> Complete();
+        void DetachAllEntities();
     }
 }

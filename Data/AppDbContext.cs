@@ -26,6 +26,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ChargingSession> ChargingSessions { get; set; }
     public DbSet<VehicleModel> VehicleModels { get; set; }
     public DbSet<Pricing> Pricings { get; set; }
+    public DbSet<Receipt> Receipts { get; set; }
 
     private static readonly DateTime effectiveDate = new DateTime(2025, 1, 1);
     private static readonly DateTime expiryDate = new DateTime(2099, 12, 31);
@@ -60,6 +61,16 @@ public class AppDbContext : IdentityDbContext<AppUser>
         builder.Entity<Pricing>()
         .Property(p => p.PriceType)
         .HasConversion<string>(); // <-- Lưu enum dưới dạng chuỗi
+
+        builder.Entity<Receipt>()
+            .HasMany(r => r.ChargingSessions)
+            .WithOne(s => s.Receipt)
+            .HasForeignKey(s => s.ReceiptId)
+            // Nếu Receipt bị xóa thì:
+            // .OnDelete(DeleteBehavior.SetNull); // giữ session, but set ReceiptId = null
+            // hoặc .OnDelete(DeleteBehavior.Restrict); // không cho xóa Receipt khi có session
+            // hoặc .OnDelete(DeleteBehavior.Cascade); // xóa luôn session theo Receipt (cẩn thận!)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<Pricing>().HasData(
             new Pricing

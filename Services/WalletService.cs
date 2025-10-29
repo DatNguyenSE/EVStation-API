@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
 using API.Entities;
 using API.Entities.Wallet;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
@@ -129,6 +131,75 @@ namespace API.Services
 
             await _uow.Complete();
             return response;
+        }
+
+        public async Task<(bool Success, string Message)> PayingChargeWalletAsync(int receiptId, string driverId, int total, TransactionType transactionType = TransactionType.PayCharging)
+        {
+            await using var dbTransaction = await _uow.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            try
+            {
+                var receiptOfSession = await _uow.Receipts.GetByIdAsync(receiptId);
+                if (receiptOfSession == null || receiptOfSession.Status == ReceiptStatus.Paid)
+                {
+                    return (false, "Biên lai không tồn tại hoặc đã được thanh toán.");
+                }
+
+                // Tìm ví của người dùng
+                var userWallet = await _uow.Wallets.GetWalletByUserIdAsync(driverId);
+                if (userWallet == null)
+                {
+                    return (false, "Không tìm thấy ví của người dùng.");
+                }
+
+                // Kiểm tra số dư
+                if (userWallet.Balance < total)
+                {
+                    return (false, "Số dư trong ví không đủ để thực hiện giao dịch."); // mốt có nợ thì bỏ vô nợ
+                }
+
+                // XỬ LÝ GIAO DỊCH VÀ CẬP NHẬT DỮ LIỆU
+                var balanceBefore = userWallet.Balance;
+
+                // Trừ tiền trong ví
+                userWallet.Balance -= total;
+                // Tạo WalletTransaction
+                var transaction = new WalletTransaction
+                {
+                    WalletId = userWallet.Id,
+                    TransactionType = transactionType,
+                    Amount = total,
+                    BalanceBefore = balanceBefore,
+                    BalanceAfter = userWallet.Balance,
+                    Description = $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))}",
+                    ReferenceId = receiptOfSession.Id,
+                    Status = TransactionStatus.Success,
+                    PaymentMethod = "Wallet",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _uow.WalletTransactions.AddTransactionAsync(transaction);
+
+                // Tạo DriverPackage
+                await _uow.Receipts.UpdateStatusAsync(receiptId, ReceiptStatus.Paid);
+                await _uow.ChargingSessions.UpdatePayingStatusAsync(receiptOfSession.ChargingSessions.Select(cs => cs.Id).ToList());
+
+                //LƯU THAY ĐỔI VÀ COMMIT TRANSACTION
+                if (await _uow.Complete())
+                {
+                    // nếu lưu thành công => commit transaction
+                    await dbTransaction.CommitAsync();
+                    return (true, "Thanh toán thành công.");
+                }
+                
+                // Nếu không lưu được, rollback và báo lỗi
+                await dbTransaction.RollbackAsync();
+                return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
+                
+            }
+            catch (Exception e)
+            {
+                await dbTransaction.RollbackAsync();
+                return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
+            }
         }
     }
 }

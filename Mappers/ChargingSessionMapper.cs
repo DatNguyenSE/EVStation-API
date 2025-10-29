@@ -20,8 +20,10 @@ namespace API.Mappers
                 ReservationId = session.ReservationId,
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,
-                StartBatteryPercentage = session.StartBatteryPercentage,
-                EndBatteryPercentage = session.EndBatteryPercentage,
+                StartBatteryPercentage = (float) session.StartBatteryPercentage,
+                EndBatteryPercentage = session.EndBatteryPercentage.HasValue
+                        ? (float)session.EndBatteryPercentage.Value
+                        : (float?)null,
                 EnergyConsumed = session.EnergyConsumed,
                 Status = session.Status,
                 Cost = session.Cost

@@ -113,6 +113,7 @@ builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
 builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
 builder.Services.AddScoped<IPricingRepository, PricingRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -135,6 +136,8 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 // đăng ký service check status gói của người dùng mỗi 24h
 builder.Services.AddHostedService<PackageStatusChecker>();
 builder.Services.AddHostedService<ReservationCleanupService>();
+builder.Services.AddHostedService<IdleFeeService>();
+builder.Services.AddHostedService<ReservationMonitorService>();
 
 // Đăng ký SignalR
 builder.Services.AddSignalR();

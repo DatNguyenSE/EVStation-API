@@ -152,8 +152,8 @@ namespace API.Repository
 
                     // Station
                     StationId = x.station.Id,
-                    StationName = x.station.Name, 
-                    StationAddress = x.station.Address 
+                    StationName = x.station.Name,
+                    StationAddress = x.station.Address
                 })
                 .FirstOrDefaultAsync(); // Chỉ lấy một kết quả
 
@@ -163,6 +163,16 @@ namespace API.Repository
             }
 
             return result;
+        }
+
+        public async Task<List<Reservation>> GetAllAsync()
+        {
+            return await _context.Reservations.ToListAsync();
+        }
+
+        public void Update(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
         }
     }
 }

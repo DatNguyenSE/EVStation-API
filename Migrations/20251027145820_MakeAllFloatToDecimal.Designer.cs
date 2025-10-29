@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027145820_MakeAllFloatToDecimal")]
+    partial class MakeAllFloatToDecimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -496,9 +499,6 @@ namespace API.Migrations
                     b.Property<int?>("OverstayFee")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ReceiptId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
@@ -525,8 +525,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChargingPostId");
-
-                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("ReservationId");
 
@@ -671,6 +669,9 @@ namespace API.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ChargingSessionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
@@ -719,6 +720,8 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
+
+                    b.HasIndex("ChargingSessionId");
 
                     b.HasIndex("PackageId");
 
@@ -1476,11 +1479,6 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Entities.Receipt", "Receipt")
-                        .WithMany("ChargingSessions")
-                        .HasForeignKey("ReceiptId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("API.Entities.Reservation", "Reservation")
                         .WithMany()
                         .HasForeignKey("ReservationId");
@@ -1490,8 +1488,6 @@ namespace API.Migrations
                         .HasForeignKey("VehicleId");
 
                     b.Navigation("ChargingPost");
-
-                    b.Navigation("Receipt");
 
                     b.Navigation("Reservation");
 
@@ -1523,11 +1519,19 @@ namespace API.Migrations
                         .WithMany("Receipts")
                         .HasForeignKey("AppUserId");
 
+                    b.HasOne("API.Entities.ChargingSession", "ChargingSession")
+                        .WithMany()
+                        .HasForeignKey("ChargingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId");
 
                     b.Navigation("AppUser");
+
+                    b.Navigation("ChargingSession");
 
                     b.Navigation("Package");
                 });
@@ -1680,8 +1684,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Receipt", b =>
                 {
-                    b.Navigation("ChargingSessions");
-
                     b.Navigation("WalletTransactions");
                 });
 
