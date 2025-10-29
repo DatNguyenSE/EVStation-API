@@ -23,7 +23,7 @@ namespace API.Controllers
         }
 
         [HttpPost("start")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
+        // [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> Start([FromBody] CreateChargingSessionDto dto)
         {
             try

@@ -162,7 +162,6 @@ builder.Services.AddHostedService<ReservationMonitorService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 
 
 var app = builder.Build();
@@ -182,7 +181,6 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
  //set connect
 
 // Thêm endpoint cho hub
-app.MapHub<ChargingHub>("/hubs/charging");
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
 

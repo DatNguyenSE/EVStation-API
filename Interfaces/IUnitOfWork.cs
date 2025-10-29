@@ -20,11 +20,8 @@ namespace API.Interfaces
         IVehicleModelRepository VehicleModels { get; }
         IChargingSessionRepository ChargingSessions { get; }
         IPricingRepository Pricings { get; }
-<<<<<<< HEAD
         IReceiptRepository Receipts { get; }
-=======
         IReportRepository Reports { get; }
->>>>>>> a39fc31 (seed operator, manager, technician account and completed report flow)
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 

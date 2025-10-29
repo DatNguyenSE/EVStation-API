@@ -31,11 +31,8 @@ namespace API.Interfaces
 
         Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
         Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
-<<<<<<< HEAD
         void Update(Reservation reservation);
-=======
 
         Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId);
->>>>>>> a39fc31 (seed operator, manager, technician account and completed report flow)
     }
 }
