@@ -162,7 +162,6 @@ builder.Services.AddHostedService<ReservationMonitorService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 
 
 var app = builder.Build();
@@ -192,6 +191,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
+
+//DatNguyen-SignalR
+app.MapHub<PresenceHub>("hubs/presence");
+app.MapHub<ReservationHub>("hubs/reservation");
 
 //DatNguyen-SignalR
 app.MapHub<PresenceHub>("hubs/presence");

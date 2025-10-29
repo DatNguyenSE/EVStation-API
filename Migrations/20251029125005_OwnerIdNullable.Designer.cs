@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029125005_OwnerIdNullable")]
+    partial class OwnerIdNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -264,7 +267,7 @@ namespace API.Migrations
 
                     b.Property<decimal>("PowerKW")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<byte[]>("QRCode")
                         .HasColumnType("varbinary(max)");
@@ -342,30 +345,6 @@ namespace API.Migrations
                         new
                         {
                             Id = 5,
-                            Code = "Q1-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 1,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Code = "Q1-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 1,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 7,
                             Code = "Q1-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -377,7 +356,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 6,
                             Code = "Q1-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -389,7 +368,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 9,
+                            Id = 7,
                             Code = "TD-Type2-A",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
@@ -401,7 +380,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 8,
                             Code = "TD-Type2-B",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
@@ -413,7 +392,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 9,
                             Code = "TD-CCS2-A",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
@@ -425,7 +404,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 10,
                             Code = "TD-CCS2-B",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
@@ -437,31 +416,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 13,
-                            Code = "TD-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 2,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Code = "TD-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 2,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 15,
+                            Id = 11,
                             Code = "TD-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -473,7 +428,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 16,
+                            Id = 12,
                             Code = "TD-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -485,7 +440,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 17,
+                            Id = 13,
                             Code = "BD-Type2-A",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
@@ -497,7 +452,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 14,
                             Code = "BD-Type2-B",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
@@ -509,7 +464,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 15,
                             Code = "BD-CCS2-A",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
@@ -521,7 +476,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 16,
                             Code = "BD-CCS2-B",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
@@ -533,31 +488,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 21,
-                            Code = "BD-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 3,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 22,
-                            Code = "BD-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 3,
-                            StationName = "",
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 23,
+                            Id = 17,
                             Code = "BD-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -569,7 +500,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 18,
                             Code = "BD-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -878,12 +809,6 @@ namespace API.Migrations
                     b.Property<string>("FixedNote")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("MaintenanceEndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("MaintenanceStartTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -1062,23 +987,15 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Plate")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("RegistrationStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("VehicleRegistrationImageUrl")
-                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -1742,8 +1659,7 @@ namespace API.Migrations
                     b.HasOne("API.Entities.AppUser", "Owner")
                         .WithMany("Vehicles")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
                 });

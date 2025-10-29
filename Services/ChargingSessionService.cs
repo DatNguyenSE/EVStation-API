@@ -328,7 +328,7 @@ namespace API.Services
 
                 receipt = new Receipt
                 {
-                    DriverId = null,
+                    DriverId = session.Vehicle?.OwnerId ?? string.Empty,
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
@@ -339,7 +339,8 @@ namespace API.Services
                     PricingName = pricing?.Name ?? string.Empty,
                     PricePerKwhSnapshot = (decimal)pricing.PricePerKwh,
                     CreateAt = DateTime.UtcNow,
-                    Status = ReceiptStatus.Pending
+                    Status = ReceiptStatus.Pending,
+                    AppUser = session.Vehicle?.Owner
                 };
                 foreach (var s in unpaid)
                 {
@@ -349,6 +350,13 @@ namespace API.Services
                 await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
                 await _uow.Receipts.AddAsync(receipt);
                 await _uow.Complete();
+
+                // send email if available
+                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
+                {
+                    var dto = receipt.MapToDto();
+                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
+                }
             }
             else // reservation session
             {
@@ -481,7 +489,8 @@ namespace API.Services
                     BatteryCapacityKWh = randomModel.BatteryCapacityKWh,
                     MaxChargingPowerKW = (double)(randomModel.Type == VehicleType.Car ? randomModel.MaxChargingPowerDC_KW : randomModel.MaxChargingPowerKW),
                     ConnectorType = randomModel.ConnectorType,
-                    Plate = plate
+                    Plate = plate,
+                    OwnerId = null
                 };
                 var vehicleModel = await _uow.Vehicles.AddVehicleAsync(newVehicle);
                 await _uow.Complete();

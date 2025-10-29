@@ -26,7 +26,7 @@ namespace API.Entities
         public string Plate { get; set; } = string.Empty;
 
         // Quan hệ với AppUser
-        public string OwnerId { get; set; } = string.Empty;                   // FK tới AppUser.Id
+        public string? OwnerId { get; set; } = string.Empty;                   // FK tới AppUser.Id
         public AppUser Owner { get; set; } = null!;            // navigation property
 
         // Để đánh dấu trạng thái thay vì xóa
