@@ -40,7 +40,7 @@ namespace API.Services
 
         private async Task CheckForOverdueReservations()
         {
-            _logger.LogInformation("Checking for overdue reservations at {time}", DateTime.UtcNow);
+            _logger.LogInformation("Checking for overdue reservations at {time}", DateTime.UtcNow.AddHours(7));
 
             // BƯỚC 1: TẠO SCOPE MỚI ĐỂ SỬ DỤNG UNIT OF WORK
             using (var scope = _scopeFactory.CreateScope())

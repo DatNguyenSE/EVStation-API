@@ -131,6 +131,7 @@ builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
 builder.Services.AddScoped<IPricingRepository, PricingRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -144,6 +145,7 @@ builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
 builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -177,7 +179,12 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
   .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials());
-//  //set connect
+ //set connect
+
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
+// Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
+app.MapHub<NotificationHub>("/hubs/notification");
 
 app.UseAuthentication();
 app.UseAuthorization();

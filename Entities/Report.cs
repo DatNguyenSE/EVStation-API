@@ -13,6 +13,7 @@ namespace API.Entities
         public string? Description { get; set; }
         public ReportSeverity Severity { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.UtcNow.AddHours(7);
+        public DateTime? ScheduledTime { get; set; }
         public DateTime? FixedAt { get; set; }
         public ReportStatus Status { get; set; }
         public string? FixedNote { get; set; }

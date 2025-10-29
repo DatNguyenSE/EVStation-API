@@ -27,6 +27,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<VehicleModel> VehicleModels { get; set; }
     public DbSet<Pricing> Pricings { get; set; }
     public DbSet<Receipt> Receipts { get; set; }
+    public DbSet<Report> Reports { get; set; }
 
     private static readonly DateTime effectiveDate = new DateTime(2025, 1, 1);
     private static readonly DateTime expiryDate = new DateTime(2099, 12, 31);
@@ -161,7 +162,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             new IdentityRole {Id = "1", Name = "Admin", NormalizedName = "ADMIN"},
             new IdentityRole {Id = "2", Name = "Driver", NormalizedName = "DRIVER"},
             new IdentityRole {Id = "3", Name = "Manager", NormalizedName = "MANAGER"},
-            new IdentityRole {Id = "4", Name = "Staff", NormalizedName = "STAFF"},
+            new IdentityRole {Id = "4", Name = "Operator", NormalizedName = "OPERATOR"},
             new IdentityRole {Id = "5", Name = "Technician", NormalizedName = "TECHNICIAN"},
         };
         builder.Entity<IdentityRole>().HasData(roles);
@@ -179,20 +180,67 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 FullName = "System Administrator",
                 DateOfBirth = new DateTime(1990, 1, 1),
                 PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                SecurityStamp = "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D", 
+                SecurityStamp = "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D",
                 ConcurrencyStamp = "F2A4C7B8-9E1D-5B6C-8F7A-6D5E4B3C2A1F",
                 PhoneNumber = "0900000000",
                 PhoneNumberConfirmed = true,
                 Vehicles = new List<Vehicle>()
+            },
+            new AppUser
+            {
+                Id = "2",
+                UserName = "operator",
+                NormalizedUserName = "OPERATOR",
+                Email = "operator@evsystem.com",
+                NormalizedEmail = "OPERATOR@EVSYSTEM.COM",
+                EmailConfirmed = true,
+                FullName = "Trạm Operator",
+                DateOfBirth = new DateTime(1995, 5, 5),
+                PasswordHash = "AQAAAAIAAYagAAAAEPti/a9dQXrb7L6sjniNdM3QWjQhWtlZLB7tQwUaCxsyewD+D8MBhuXsE4afjntGfg==",
+                SecurityStamp = "A1111111-B222-4333-C444-D55555555555",
+                ConcurrencyStamp = "11111111-2222-3333-4444-555555555555",
+                PhoneNumber = "0911111111",
+                PhoneNumberConfirmed = true
+            },
+            new AppUser
+            {
+                Id = "3",
+                UserName = "manager",
+                NormalizedUserName = "MANAGER",
+                Email = "manager@evsystem.com",
+                NormalizedEmail = "MANAGER@EVSYSTEM.COM",
+                EmailConfirmed = true,
+                FullName = "Khu vực Manager",
+                DateOfBirth = new DateTime(1992, 3, 3),
+                PasswordHash = "AQAAAAIAAYagAAAAENMyFIG2LA4//qtHgDgkZB8TC+wvdKnkwxiD6JHIkMCX0dd+twv8zV7ea/CMfQnChw==",
+                SecurityStamp = "B1111111-C222-4333-D444-E55555555555",
+                ConcurrencyStamp = "66666666-7777-8888-9999-AAAAAAAAAAAA",
+                PhoneNumber = "0922222222",
+                PhoneNumberConfirmed = true
+            },
+            new AppUser
+            {
+                Id = "4",
+                UserName = "technician",
+                NormalizedUserName = "TECHNICIAN",
+                Email = "technician@evsystem.com",
+                NormalizedEmail = "TECHNICIAN@EVSYSTEM.COM",
+                EmailConfirmed = true,
+                FullName = "Kỹ thuật viên bảo trì",
+                DateOfBirth = new DateTime(1994, 8, 8),
+                PasswordHash = "AQAAAAIAAYagAAAAEKV4vb55tRNp0q0sO0pF/Ua5A46af0IC1l5PZuNofciWemJVAk7vjQYutf5YQKjxfQ==",
+                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
+                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                PhoneNumber = "0933333333",
+                PhoneNumberConfirmed = true
             }
         );
         builder.Entity<IdentityUserRole<string>>().HasData(
-                new IdentityUserRole<string>
-                {
-                    RoleId = "1",
-                    UserId = "1"
-                }
-            );
+            new IdentityUserRole<string> { RoleId = "1", UserId = "1" }, // Admin
+            new IdentityUserRole<string> { RoleId = "4", UserId = "2" }, // Staff (Operator)
+            new IdentityUserRole<string> { RoleId = "3", UserId = "3" }, // Manager
+            new IdentityUserRole<string> { RoleId = "5", UserId = "4" }  // Technician
+        );
 
         builder.Entity<Station>().HasData(
             new Station { Id = 1, Name = "Trạm sạc VinFast Quận 1", Code = "Q1HCM", Address = "12 Lê Lợi, Quận 1, TP.HCM", Latitude = 10.7769, Longitude = 106.7009, Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC", OpenTime = new TimeSpan(6, 0, 0), CloseTime = new TimeSpan(22, 0, 0), Status = StationStatus.Active },

@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251025152801_seedAccount")]
+    partial class seedAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,10 +275,6 @@ namespace API.Migrations
                     b.Property<int>("StationId")
                         .HasColumnType("int");
 
-                    b.Property<string>("StationName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
@@ -299,7 +298,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -311,7 +309,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -323,7 +320,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -335,7 +331,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -347,7 +342,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
@@ -359,7 +353,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 1,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
@@ -371,7 +364,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -383,7 +375,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -395,7 +386,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -407,7 +397,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -419,7 +408,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
@@ -431,7 +419,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 2,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
@@ -443,7 +430,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -455,7 +441,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
@@ -467,7 +452,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -479,7 +463,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -491,7 +474,6 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
@@ -503,7 +485,6 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 3,
-                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         });
@@ -520,14 +501,11 @@ namespace API.Migrations
                     b.Property<int>("ChargingPostId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("CompletedTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("EndBatteryPercentage")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<float?>("EndBatteryPercentage")
+                        .HasColumnType("real");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
@@ -535,32 +513,11 @@ namespace API.Migrations
                     b.Property<double>("EnergyConsumed")
                         .HasColumnType("float");
 
-                    b.Property<int>("IdleFee")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("IdleFeeStartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsOverstay")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsWalkInSession")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("OverstayFee")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ReceiptId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("StartBatteryPercentage")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<float>("StartBatteryPercentage")
+                        .HasColumnType("real");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -568,9 +525,6 @@ namespace API.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
-
-                    b.Property<int?>("StopReason")
-                        .HasColumnType("int");
 
                     b.Property<int?>("VehicleId")
                         .HasColumnType("int");
@@ -582,8 +536,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChargingPostId");
-
-                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("ReservationId");
 
@@ -728,6 +680,9 @@ namespace API.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ChargingSessionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
@@ -735,10 +690,11 @@ namespace API.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("DriverId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("EnergyConsumed")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<double>("EnergyConsumed")
+                        .HasColumnType("float");
 
                     b.Property<decimal>("EnergyCost")
                         .HasColumnType("decimal(18, 2)");
@@ -752,9 +708,6 @@ namespace API.Migrations
                     b.Property<DateTime?>("IdleStartTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("OverstayFee")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int?>("PackageId")
                         .HasColumnType("int");
 
@@ -766,9 +719,13 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Status")
-                        .HasMaxLength(15)
+                    b.Property<int>("SessionId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18, 2)");
@@ -777,9 +734,11 @@ namespace API.Migrations
 
                     b.HasIndex("AppUserId");
 
+                    b.HasIndex("ChargingSessionId");
+
                     b.HasIndex("PackageId");
 
-                    b.ToTable("Receipts");
+                    b.ToTable("Receipt");
                 });
 
             modelBuilder.Entity("API.Entities.Report", b =>
@@ -1552,11 +1511,6 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Entities.Receipt", "Receipt")
-                        .WithMany("ChargingSessions")
-                        .HasForeignKey("ReceiptId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("API.Entities.Reservation", "Reservation")
                         .WithMany()
                         .HasForeignKey("ReservationId");
@@ -1566,8 +1520,6 @@ namespace API.Migrations
                         .HasForeignKey("VehicleId");
 
                     b.Navigation("ChargingPost");
-
-                    b.Navigation("Receipt");
 
                     b.Navigation("Reservation");
 
@@ -1599,11 +1551,19 @@ namespace API.Migrations
                         .WithMany("Receipts")
                         .HasForeignKey("AppUserId");
 
+                    b.HasOne("API.Entities.ChargingSession", "ChargingSession")
+                        .WithMany()
+                        .HasForeignKey("ChargingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId");
 
                     b.Navigation("AppUser");
+
+                    b.Navigation("ChargingSession");
 
                     b.Navigation("Package");
                 });
@@ -1757,8 +1717,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Receipt", b =>
                 {
-                    b.Navigation("ChargingSessions");
-
                     b.Navigation("WalletTransactions");
                 });
 

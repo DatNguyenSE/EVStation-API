@@ -8,7 +8,6 @@ using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace API.Repository
 {
     public class ChargingSessionRepository : IChargingSessionRepository
@@ -22,6 +21,18 @@ namespace API.Repository
         {
             await _context.ChargingSessions.AddAsync(sessionModel);
             return sessionModel;
+        }
+
+        public async Task<ChargingSession?> GetActiveSessionByPostIdAsync(int postId)
+        {
+            // Lấy session kèm theo Vehicle (quan trọng để lấy OwnerId)
+            return await _context.ChargingSessions
+                .Include(s => s.Vehicle)
+                .Where(s => s.ChargingPostId == postId &&
+                            (s.Status == SessionStatus.Charging || s.Status == SessionStatus.Full))
+                // === THÊM DÒNG NÀY ===
+                .OrderByDescending(s => s.StartTime) // Lấy session mới nhất
+                .FirstOrDefaultAsync();
         }
 
         public async Task<ChargingSession?> GetByIdAsync(int id)
