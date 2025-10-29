@@ -176,7 +176,7 @@ namespace API.Controllers
         }
 
         [HttpGet("available")]
-        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}, {AppConstant.Roles.Admin}")]
+        [Authorize]
         public async Task<IActionResult> GetAvailable()
         {
             // Gọi thẳng đến service để lấy và xử lý dữ liệu
