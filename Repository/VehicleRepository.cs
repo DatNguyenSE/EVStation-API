@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,9 +35,27 @@ namespace API.Repository
             return await _context.Vehicles.FirstOrDefaultAsync(v => v.Plate == plate);
         }
 
+        public async Task<IEnumerable<Vehicle>> GetPendingVehiclesWithOwnersAsync()
+        {
+            return await _context.Vehicles
+                .Include(v => v.Owner) 
+                .Where(v => v.RegistrationStatus == VehicleRegistrationStatus.Pending)
+                .OrderByDescending(v => v.Id)
+                .ToListAsync();
+        }
+
         public async Task<Vehicle?> GetVehicleByIdAsync(int id)
         {
             return await _context.Vehicles.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Vehicle>> GetVehiclesApprovedByUserAsync(string userId)
+        {
+            return await _context.Vehicles
+                        .Where(v => v.OwnerId == userId &&
+                            v.IsActive &&
+                            v.RegistrationStatus == VehicleRegistrationStatus.Approved)
+                        .ToListAsync();
         }
 
         public async Task<IEnumerable<Vehicle>> GetVehiclesByUserAsync(string userId)

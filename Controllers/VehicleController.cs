@@ -23,16 +23,18 @@ namespace API.Controllers
     {
         private readonly IUnitOfWork _uow;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public VehicleController(IUnitOfWork uow, UserManager<AppUser> userManager)
+        public VehicleController(IUnitOfWork uow, UserManager<AppUser> userManager, IWebHostEnvironment webHostEnvironment)
         {
             _uow = uow;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpPost("add")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<IActionResult> AddVehicle([FromBody] VehicleDto vehicleDto)
+        public async Task<IActionResult> AddVehicle([FromForm] AddVehicleRequestDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -47,20 +49,55 @@ namespace API.Controllers
             }
 
             // Kiểm tra trùng biển số
-            if (await _uow.Vehicles.PlateExistsAsync(vehicleDto.Plate))
+            if (await _uow.Vehicles.PlateExistsAsync(dto.Plate))
             {
                 return BadRequest("Biển số xe đã tồn tại.");
             }
 
+            // ----- 5. LOGIC LƯU FILE ẢNH -----
+            string imageUrl = string.Empty;
+            try
+            {
+                // Tạo thư mục nếu chưa có
+                // Đường dẫn sẽ là: {thư mục gốc}/wwwroot/uploads/vehicles
+                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "vehicles");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                // Tạo tên file duy nhất để tránh trùng lặp
+                string uniqueFileName = $"{Guid.NewGuid()}_{dto.RegistrationImage.FileName}";
+                string filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                // Lưu file vào server
+                await using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.RegistrationImage.CopyToAsync(fileStream);
+                }
+
+                // 6. Tạo đường dẫn URL tương đối để lưu vào DB
+                // (Phải bật Static Files trong Program.cs: app.UseStaticFiles();)
+                imageUrl = $"/uploads/vehicles/{uniqueFileName}";
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi (ex)
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500, "Lỗi xảy ra khi đang tải ảnh lên.");
+            }
+
             var vehicle = new Vehicle
             {
-                Model = vehicleDto.Model,
-                Type = vehicleDto.Type,
-                BatteryCapacityKWh = vehicleDto.BatteryCapacityKWh,
-                MaxChargingPowerKW = vehicleDto.MaxChargingPowerKW,
-                ConnectorType = vehicleDto.ConnectorType,
-                Plate = vehicleDto.Plate,
+                Model = dto.Model,
+                Type = dto.Type,
+                BatteryCapacityKWh = dto.BatteryCapacityKWh,
+                MaxChargingPowerKW = dto.MaxChargingPowerKW,
+                ConnectorType = dto.ConnectorType,
+                Plate = dto.Plate,
                 OwnerId = appUser.Id,
+                VehicleRegistrationImageUrl = imageUrl,
+                RegistrationStatus = VehicleRegistrationStatus.Pending
             };
 
             var created = await _uow.Vehicles.AddVehicleAsync(vehicle);
@@ -89,6 +126,29 @@ namespace API.Controllers
             }
 
             var vehicles = await _uow.Vehicles.GetVehiclesByUserAsync(appUser.Id);
+
+            if (!vehicles.Any())
+                return Ok(new List<VehicleResponseDto>()); // hoặc trả thông báo rỗng
+
+            // Map sang DTO
+            var result = vehicles.Select(v => v.ToVehicleResponseDto());
+
+            return Ok(result);
+        }
+
+        [HttpGet("my-approved")]
+        [Authorize]
+        public async Task<IActionResult> GetMyVehiclesApproved()
+        {
+            var username = User.GetUsername();
+            var appUser = await _userManager.FindByNameAsync(username);
+
+            if (appUser == null)
+            {
+                return Unauthorized();
+            }
+
+            var vehicles = await _uow.Vehicles.GetVehiclesApprovedByUserAsync(appUser.Id);
 
             if (!vehicles.Any())
                 return Ok(new List<VehicleResponseDto>()); // hoặc trả thông báo rỗng
@@ -180,6 +240,95 @@ namespace API.Controllers
             var result = await _uow.Complete();
             if (!result) return BadRequest("Vô hiệu hóa xe thất bại.");
             return Ok(new { message = "Xe đã được vô hiệu hóa (inactive)." });
+        }
+
+        /**
+         * [ADMIN] Lấy danh sách tất cả xe đang chờ duyệt
+         */
+        [HttpGet("pending")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> GetPendingVehicles()
+        {
+            var pendingVehicles = await _uow.Vehicles.GetPendingVehiclesWithOwnersAsync();
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            // Chuyển đổi sang DTO để trả về cho Admin
+            var dtos = pendingVehicles.Select(v => new PendingVehicleDto
+            {
+                VehicleId = v.Id,
+                Model = v.Model,
+                Plate = v.Plate,
+                VehicleType = v.Type.ToString(),
+                OwnerName = v.Owner.UserName!,
+                OwnerEmail = v.Owner.Email!,
+                // Tạo URL tuyệt đối để Admin có thể xem ảnh
+                RegistrationImageUrl = string.IsNullOrEmpty(v.VehicleRegistrationImageUrl)
+                                        ? null
+                                        : $"{baseUrl}{v.VehicleRegistrationImageUrl}"
+            });
+
+            return Ok(dtos);
+        }
+
+        /**
+        * [ADMIN] Phê duyệt một xe
+        */
+        [HttpPost("{vehicleId:int}/approve")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> ApproveVehicle(int vehicleId)
+        {
+            var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(vehicleId);
+            if (vehicle == null)
+            {
+                return NotFound("Không tìm thấy xe.");
+            }
+
+            if (vehicle.RegistrationStatus != VehicleRegistrationStatus.Pending)
+            {
+                return BadRequest("Xe này không ở trạng thái chờ duyệt.");
+            }
+
+            // Cập nhật trạng thái
+            vehicle.RegistrationStatus = VehicleRegistrationStatus.Approved;
+
+            if (await _uow.Complete())
+            {
+                // (Nâng cao): Gửi thông báo SignalR cho chủ xe (vehicle.OwnerId)
+                return Ok(new { message = "Đã duyệt xe thành công." });
+            }
+
+            return StatusCode(500, "Lỗi hệ thống khi cập nhật trạng thái.");
+        }
+
+        /**
+         * [ADMIN] Từ chối một xe (không cần lý do)
+         */
+        [HttpPost("{vehicleId:int}/reject")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> RejectVehicle(int vehicleId)
+        {
+            var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(vehicleId);
+            if (vehicle == null)
+            {
+                return NotFound("Không tìm thấy xe.");
+            }
+
+            if (vehicle.RegistrationStatus != VehicleRegistrationStatus.Pending)
+            {
+                return BadRequest("Xe này không ở trạng thái chờ duyệt.");
+            }
+
+            // Cập nhật trạng thái
+            vehicle.RegistrationStatus = VehicleRegistrationStatus.Rejected;
+            
+            if (await _uow.Complete())
+            {
+                // (Nâng cao): Gửi thông báo SignalR cho chủ xe (vehicle.OwnerId)
+                return Ok(new { message = "Đã từ chối xe thành công." });
+            }
+
+            return StatusCode(500, "Lỗi hệ thống khi cập nhật trạng thái.");
         }
     }
 }

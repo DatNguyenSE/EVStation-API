@@ -184,12 +184,14 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 app.MapHub<ChargingHub>("/hubs/charging");
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
+// Bật tính năng này để có thể truy cập ảnh từ URL
+app.UseStaticFiles();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 //DatNguyen-SignalR
 app.MapHub<PresenceHub>("hubs/presence");

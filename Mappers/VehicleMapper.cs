@@ -19,7 +19,8 @@ namespace API.Mappers
                 BatteryCapacityKWh = vehicleModel.BatteryCapacityKWh,
                 MaxChargingPowerKW = vehicleModel.MaxChargingPowerKW,
                 ConnectorType = vehicleModel.ConnectorType,
-                Plate = vehicleModel.Plate
+                Plate = vehicleModel.Plate,
+                RegistrationStatus = vehicleModel.RegistrationStatus.ToString()
             };
         }
     }
