@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,7 +40,7 @@ namespace API.Repository
             return userPackageModel;
         }
 
-        public async Task<DriverPackage?> DeleteAsync(int id)
+        public async Task<DriverPackage?> DeactiveAsync(int id)
         {
             var userPackageModel = await _context.DriverPackages.FindAsync(id);
             if (userPackageModel == null)
@@ -47,8 +48,15 @@ namespace API.Repository
                 return null;
             }
 
-            _context.DriverPackages.Remove(userPackageModel);
+            userPackageModel.IsActive = false;
             return userPackageModel;
+        }
+
+        public async Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
+                                                       && dp.VehicleType == vehicleType
+                                                       && dp.IsActive == true);
         }
 
         public Task<List<DriverPackage>> GetAllAsync()
@@ -64,6 +72,15 @@ namespace API.Repository
         public Task<List<DriverPackage>> GetByUserAsync(string userId)
         {
             return _context.DriverPackages.Where(p => p.AppUserId == userId).Include(p => p.Package).ToListAsync();
+        }
+
+        public async Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.AnyAsync(d =>
+                d.AppUserId == userId &&
+                d.VehicleType == vehicleType &&
+                d.IsActive &&
+                d.EndDate > DateTime.UtcNow);
         }
     }
 }

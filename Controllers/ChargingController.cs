@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/charging")]
-    [Authorize]
+    [Authorize(Roles = AppConstant.Roles.Driver)]
     public class ChargingController : ControllerBase
     {
         private readonly IChargingService _chargingService;

@@ -32,6 +32,6 @@ namespace API.Entities
         public bool IsActive { get; set; } = true;
 
         // Ngày tạo
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
     }
 }

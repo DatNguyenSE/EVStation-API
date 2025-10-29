@@ -29,6 +29,11 @@ namespace API.Repository
             _context.Vehicles.Update(vehicle);
         }
 
+        public async Task<Vehicle?> GetByPlateAsync(string plate)
+        {
+            return await _context.Vehicles.FirstOrDefaultAsync(v => v.Plate == plate);
+        }
+
         public async Task<Vehicle?> GetVehicleByIdAsync(int id)
         {
             return await _context.Vehicles.FindAsync(id);

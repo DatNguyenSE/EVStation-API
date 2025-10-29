@@ -33,7 +33,7 @@ namespace API.Services
             var post = await _uow.ChargingPosts.GetByIdAsync(postId);
             if (post == null)
             {
-                return (false, "Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.");
+                return (false, " Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.");
             }
 
             // Phân luồng logic dựa vào thuộc tính IsWalkIn
@@ -48,46 +48,54 @@ namespace API.Services
                     return (false, $"Trụ đang ở trạng thái {post.Status}. Vui lòng thử lại sau.");
                 }
             }
-            else
+
+            // Nếu là trụ đặt chỗ
+            var now = DateTime.UtcNow.AddHours(7);
+            var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
+                r.DriverId == driverId &&
+                r.ChargingPostId == postId &&
+                r.Status == Entities.ReservationStatus.Confirmed);
+
+            // Nếu không có đơn hợp lệ
+            if (reservation == null)
             {
-                var now = DateTime.UtcNow;
+                return (false, " Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
+            }
 
+            // Kiểm tra khung giờ (cho phép check-in sớm 15 phút)
+            bool isEarly = now < reservation.TimeSlotStart.AddMinutes(-15);
+            bool isLate = now > reservation.TimeSlotEnd;
 
-                // Tìm đơn đặt chỗ hợp lệ: đúng người, đúng trụ, đúng trạng thái và TRONG KHUNG GIỜ
-                // Cho phép tài xế check-in sớm 15 phút
-                var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
-                    r.DriverId == driverId &&
-                    r.ChargingPostId == postId &&
-                    r.Status == Entities.ReservationStatus.Confirmed &&
-                    now >= r.TimeSlotStart.AddMinutes(-15) &&
-                    now <= r.TimeSlotEnd);
+            if (isEarly)
+            {
+                return (false,
+                    $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            }
 
-                // Kiểm tra kết quả
-                if (reservation == null)
-                {
-                    return (false, "Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
-                }
+            if (isLate)
+            {
+                return (false,
+                    $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            }
 
-                // Người dùng đã có lịch hợp lệ, BÂY GIỜ mới kiểm tra xem trụ có sẵn sàng không.
-                switch (post.Status)
-                {
-                    case PostStatus.Available:
-                    case PostStatus.Reserved: // Trạng thái Reserved vẫn được coi là sẵn sàng cho người đã đặt.
-                        // Hợp lệ, cho phép sạc
-                        return (true, "Xác thực đặt chỗ thành công. Bạn có thể bắt đầu sạc.");
+            // Người dùng có đặt chỗ hợp lệ, kiểm tra trạng thái trụ
+            switch (post.Status)
+            {
+                case PostStatus.Available:
+                    return (true,
+                        $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
 
-                    case PostStatus.Occupied: // Đang sạc hoặc đã sạc xong nhưng chưa rời đi
-                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang được sử dụng bởi phiên sạc trước. Vui lòng đợi.");
+                case PostStatus.Occupied:
+                    return (false, " Lịch đặt hợp lệ, nhưng trụ đang được sử dụng. Vui lòng đợi.");
 
-                    case PostStatus.Maintenance:
-                    case PostStatus.Offline:
-                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang bảo trì hoặc bị lỗi. Vui lòng liên hệ hỗ trợ.");
+                case PostStatus.Maintenance:
+                case PostStatus.Offline:
+                    return (false, " Trụ đang bảo trì hoặc offline. Vui lòng liên hệ hỗ trợ.");
 
-                    default:
-                        return (false, $"Trụ đang ở trạng thái không xác định ({post.Status}).");
-                }
-                
+                default:
+                    return (false, $" Trụ đang ở trạng thái không xác định ({post.Status}).");
             }
         }
+
     }
 }

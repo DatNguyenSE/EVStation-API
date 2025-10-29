@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Helpers.Enums;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -20,6 +21,7 @@ namespace API.Controllers
         }
 
         [HttpGet("details")]
+        [Authorize]
         public async Task<IActionResult> GetVehicleModelDetails([FromQuery] string modelName)
         {
             var model = await _uow.VehicleModels.GetByModelNameAsync(modelName);

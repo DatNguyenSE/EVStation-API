@@ -14,6 +14,7 @@ namespace API.Mappers
             return new ChargingPostDto
             {
                 Id = postModel.Id,
+                StationId = postModel.StationId,
                 Code = postModel.Code,
                 Type = postModel.Type,
                 PowerKW = postModel.PowerKW,
@@ -37,6 +38,19 @@ namespace API.Mappers
                 Status = postDto.Status,
                 IsWalkIn = postDto.IsWalkIn
             };
+        }
+
+        public static List<PostOfStationDto> ToPostOfStationDto(this List<ChargingPost> postModels)
+        {
+            return postModels.Select(post => new PostOfStationDto
+            {
+                Code = post.Code,
+                Type = post.Type,
+                PowerKW = post.PowerKW,
+                ConnectorType = post.ConnectorType,
+                Status = post.Status,
+                IsWalkIn = post.IsWalkIn
+            }).ToList();
         }
     }
 }

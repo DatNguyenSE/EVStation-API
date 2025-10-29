@@ -77,7 +77,7 @@ namespace API.Controllers
 
         // lấy thông tin xe của User
         [HttpGet("my")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize]
         public async Task<IActionResult> GetMyVehicles()
         {
             var username = User.GetUsername();
@@ -100,6 +100,7 @@ namespace API.Controllers
         }
 
         [HttpGet("models")]
+        [Authorize]
         public async Task<IActionResult> GetVehicleModels([FromQuery] VehicleType vehicleType)
         {
             var vehicleModelObjects = await _uow.VehicleModels.GetByTypeAsync(vehicleType);

@@ -11,5 +11,6 @@ namespace API.Interfaces
     {
         Task<List<VehicleModel>> GetByTypeAsync(VehicleType vehicleType);
         Task<VehicleModel?> GetByModelNameAsync(string vehicleModel);
+        Task<IEnumerable<VehicleModel>> GetCompatibleModelsAsync(ConnectorType connectorType);
     }
 }

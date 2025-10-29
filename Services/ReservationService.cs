@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Resources;
 using System.Threading.Tasks;
 using API.DTOs.Reservation;
 using API.Entities;
@@ -23,10 +24,62 @@ namespace API.Services
             _vehicleRepo = vehicleRepository;
         }
 
+        public async Task<ReservationResponseDto> CancelReservationAsync(int reservationId, string driverId)
+        {
+            // Bắt đầu transaction để đảm bảo tất cả thay đổi đều thành công hoặc không gì cả
+            await using var transaction = await _uow.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                // kiểm tra có lịch đặt ko
+                var reservation = await _uow.Reservations.GetReservationByIdAsync(reservationId);
+                if (reservation == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy lịch đặt chỗ.");
+                }
+
+                // Kiểm tra quyền sở hữu
+                if (reservation.DriverId != driverId)
+                {
+                    throw new UnauthorizedAccessException("Bạn không có quyền hủy lịch đặt của người khác.");
+                }
+
+                // 3. Kiểm tra trạng thái hợp lệ để hủy
+                if (reservation.Status != ReservationStatus.Confirmed)
+                    throw new InvalidOperationException($"Không thể hủy lịch đặt ở trạng thái '{reservation.Status}'.");
+
+                // 4. (Rule nghiệp vụ) Kiểm tra thời gian cho phép hủy
+                // Không cho phép hủy nếu lịch đặt sắp bắt đầu trong vòng 20 phút
+                var cutoffTime = reservation.TimeSlotStart.AddMinutes(-AppConstant.ReservationRules.CancellationCutoffMinutes);
+                if (DateTime.UtcNow >= cutoffTime)
+                    throw new InvalidOperationException($"Không thể hủy khi còn ít hơn {AppConstant.ReservationRules.CancellationCutoffMinutes} giờ là đến giờ hẹn.");
+
+                // === Bắt đầu thay đổi trạng thái ===
+                //Cập nhật trạng thái của lịch đặt thành Canceled
+                reservation.Status = ReservationStatus.Cancelled;
+                
+                // Lưu tất cả thay đổi vào database
+                if (!await _uow.Complete())
+                {
+                    throw new Exception("Lỗi hệ thống: Không thể lưu các thay đổi khi hủy đặt chỗ.");
+                }
+
+                // Commit transaction nếu mọi thứ thành công
+                await transaction.CommitAsync();
+
+                return reservation.ToReservationResponseDto();
+                
+            } catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                // Ném lại lỗi để Controller xử lý
+                throw;
+            }
+        }
+
         public async Task<ReservationResponseDto> CreateReservationAsync(CreateReservationDto dto, string driverId)
         {
             // var now = DateTime.UtcNow.AddHours(AppConstant.ReservationRules.TimezoneOffsetHours);
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
 
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
@@ -54,7 +107,7 @@ namespace API.Services
                 throw new Exception("Trụ sạc không tồn tại.");
 
             // Kiểm tra trạng thái trụ
-            if (post.Status != Helpers.Enums.PostStatus.Available)
+            if (post.Status == PostStatus.Maintenance || post.Status == PostStatus.Offline)
                 throw new Exception($"Trụ sạc hiện đang ở trạng thái {post.Status}, không thể đặt chỗ.");
 
             // So sánh trực tiếp loại cổng sạc của xe và của trụ.
@@ -110,9 +163,6 @@ namespace API.Services
                 };
                 // Thêm Reservation vào Context (chưa lưu)
                 await _uow.Reservations.AddReservationAsync(reservation);
-                // Cập nhật trạng thái trụ
-                post.Status = Helpers.Enums.PostStatus.Reserved;
-                await _uow.ChargingPosts.UpdateStatusAsync(post.Id, Helpers.Enums.PostStatus.Reserved);
 
                 // Lưu và commit
                 if (!await _uow.Complete())
@@ -133,6 +183,29 @@ namespace API.Services
                 // Ném lại exception để các lớp cao hơn (Controller, Middleware) xử lý
                 throw;
             }
+        }
+
+        public async Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId)
+        {
+            var details = await _uow.Reservations.GetReservationDetailsAsync(reservationId);
+            return details;
+        }
+
+        public async Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId)
+        {
+            var historyReservationModels = await _uow.Reservations.GetReservationHistoryByDriverAsync(driverId);
+
+            return historyReservationModels
+                .Select(r => r.ToReservationResponseDto())
+                .ToList();
+        }
+
+        public async Task<List<ReservationResponseDto>> GetUpcomingReservationsByDriverAsync(string driverId)
+        {
+            var upcomingReservationModels = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+            return upcomingReservationModels
+                .Select(r => r.ToReservationResponseDto())
+                .ToList();
         }
     }
 }

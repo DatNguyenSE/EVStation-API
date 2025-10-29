@@ -4,8 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs.Reservation;
 using API.Entities;
 using API.Interfaces;
+using API.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository
@@ -46,7 +48,7 @@ namespace API.Repository
         public async Task<Reservation?> GetActiveByPostIdAsync(int postId)
         {
             return await _context.Reservations
-                .Where(r => r.ChargingPostId == postId && 
+                .Where(r => r.ChargingPostId == postId &&
                             (r.Status == ReservationStatus.Confirmed))
                 .FirstOrDefaultAsync();
         }
@@ -73,6 +75,7 @@ namespace API.Repository
 
             return await _context.Reservations
                 .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
                             r.TimeSlotStart >= startOfDay &&
                             r.TimeSlotStart < endOfDay)
                 .ToListAsync();
@@ -81,6 +84,95 @@ namespace API.Repository
         public async Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate)
         {
             return await _context.Reservations.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes)
+        {
+            var now = DateTime.UtcNow;
+            var cutoffTime = now.AddMinutes(-gracePeriodMinutes);
+
+            return await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Confirmed && r.TimeSlotStart < cutoffTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Reservation>> GetUpcomingReservationsByDriverAsync(string driverId)
+        {
+            DateTime now = DateTime.UtcNow;
+            return await _context.Reservations
+                .Where(r => r.DriverId == driverId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            r.TimeSlotStart > now)
+                .ToListAsync();
+        }
+
+        public async Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId)
+        {
+            DateTime now = DateTime.UtcNow;
+            return await _context.Reservations
+                .Where(r => r.DriverId == driverId &&
+                            r.Status != ReservationStatus.Confirmed) // Lọc trạng thái không phải là Confirmed 
+                .OrderByDescending(r => r.TimeSlotEnd) // Sắp xếp theo thời gian kết thúc mới nhất
+                .ToListAsync();
+        }
+
+        public async Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId)
+        {
+            // Sử dụng Join (hoặc Include) và Select để chiếu dữ liệu trực tiếp sang DTO
+            var result = await _context.Reservations
+                .Where(r => r.Id == reservationId)
+                // Join với ChargingPosts
+                .Join(
+                    _context.ChargingPosts,
+                    reservation => reservation.ChargingPostId,
+                    post => post.Id,
+                    (reservation, post) => new { reservation, post }
+                )
+                // Join với Stations
+                .Join(
+                    _context.Stations,
+                    t => t.post.StationId,
+                    station => station.Id,
+                    (t, station) => new { t.reservation, t.post, station }
+                )
+                // Chiếu kết quả sang ReservationDetailDto
+                .Select(x => new ReservationDetailDto
+                {
+                    // Reservation
+                    Id = x.reservation.Id,
+                    DriverId = x.reservation.DriverId,
+                    TimeSlotStart = x.reservation.TimeSlotStart,
+                    TimeSlotEnd = x.reservation.TimeSlotEnd,
+                    Status = x.reservation.Status.ToString(), // Chuyển Enum sang String
+
+                    // Post
+                    PostId = x.post.Id,
+                    ConnectorType = x.post.ConnectorType.ToString(),
+                    PowerKW = x.post.PowerKW,
+
+                    // Station
+                    StationId = x.station.Id,
+                    StationName = x.station.Name,
+                    StationAddress = x.station.Address
+                })
+                .FirstOrDefaultAsync(); // Chỉ lấy một kết quả
+
+            if (result == null)
+            {
+                throw new KeyNotFoundException($"Không tìm thấy lịch đặt với ID: {reservationId}");
+            }
+
+            return result;
+        }
+
+        public async Task<List<Reservation>> GetAllAsync()
+        {
+            return await _context.Reservations.ToListAsync();
+        }
+
+        public void Update(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
         }
     }
 }

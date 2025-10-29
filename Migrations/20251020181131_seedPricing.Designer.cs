@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251014090234_modifyVehicle")]
-    partial class modifyVehicle
+    [Migration("20251020181131_seedPricing")]
+    partial class seedPricing
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -179,6 +179,61 @@ namespace API.Migrations
                     b.ToTable("ChargingPosts");
                 });
 
+            modelBuilder.Entity("API.Entities.ChargingSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChargingPostId")
+                        .HasColumnType("int")
+                        .HasColumnName("PostId");
+
+                    b.Property<int>("Cost")
+                        .HasColumnType("int");
+
+                    b.Property<float?>("EndBatteryPercentage")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("EnergyConsumed")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("StartBatteryPercentage")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int?>("VehicleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VehiclePlate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChargingPostId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("ChargingSessions");
+                });
+
             modelBuilder.Entity("API.Entities.DriverPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -189,7 +244,7 @@ namespace API.Migrations
 
                     b.Property<string>("AppUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -208,9 +263,100 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppUserId");
+
                     b.HasIndex("PackageId");
 
                     b.ToTable("DriverPackages");
+                });
+
+            modelBuilder.Entity("API.Entities.Pricing", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PricePerKwh")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("PricePerMinute")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("PriceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pricing");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Khách vãng lai - Sạc thường AC",
+                            PricePerKwh = 4000m,
+                            PriceType = "Guest_AC"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Khách vãng lai - Sạc nhanh DC",
+                            PricePerKwh = 4800m,
+                            PriceType = "Guest_DC"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Thành viên - Sạc thường AC",
+                            PricePerKwh = 3500m,
+                            PriceType = "Member_AC"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Thành viên - Sạc nhanh DC",
+                            PricePerKwh = 4200m,
+                            PriceType = "Member_DC"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EffectiveTo = new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Phí chiếm dụng",
+                            PricePerKwh = 0m,
+                            PricePerMinute = 1000m,
+                            PriceType = "OccupancyFee"
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.Reservation", b =>
@@ -342,6 +488,243 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("Vehicles");
+                });
+
+            modelBuilder.Entity("API.Entities.VehicleModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("BatteryCapacityKWh")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ConnectorType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("HasDualBattery")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("MaxChargingPowerAC_KW")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("MaxChargingPowerDC_KW")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("MaxChargingPowerKW")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VehicleModels");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Theon S",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Vento S",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Vento Neo",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Klara S2 (2022)",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BatteryCapacityKWh = 2.0,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Klara Neo",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Feliz S",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BatteryCapacityKWh = 2.0,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Feliz Neo/Lite",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BatteryCapacityKWh = 2.3999999999999999,
+                            ConnectorType = 2,
+                            HasDualBattery = true,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Feliz 2025",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 9,
+                            BatteryCapacityKWh = 3.5,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Evo 200/200 Lite",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 10,
+                            BatteryCapacityKWh = 2.3999999999999999,
+                            ConnectorType = 2,
+                            HasDualBattery = true,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Evo Grand",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 11,
+                            BatteryCapacityKWh = 2.0,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Evo Neo/Lite Neo",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 12,
+                            BatteryCapacityKWh = 2.0,
+                            ConnectorType = 2,
+                            HasDualBattery = false,
+                            MaxChargingPowerKW = 1.2,
+                            Model = "Motio",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 13,
+                            BatteryCapacityKWh = 18.640000000000001,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 7.4000000000000004,
+                            MaxChargingPowerDC_KW = 60.0,
+                            Model = "VF 3",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 14,
+                            BatteryCapacityKWh = 37.229999999999997,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 7.4000000000000004,
+                            MaxChargingPowerDC_KW = 60.0,
+                            Model = "VF 5 Plus",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 15,
+                            BatteryCapacityKWh = 42.0,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 7.4000000000000004,
+                            MaxChargingPowerDC_KW = 60.0,
+                            Model = "VF e34",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 16,
+                            BatteryCapacityKWh = 59.600000000000001,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 11.0,
+                            MaxChargingPowerDC_KW = 150.0,
+                            Model = "VF 6",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 17,
+                            BatteryCapacityKWh = 75.299999999999997,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 11.0,
+                            MaxChargingPowerDC_KW = 150.0,
+                            Model = "VF 7",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 18,
+                            BatteryCapacityKWh = 87.700000000000003,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 11.0,
+                            MaxChargingPowerDC_KW = 150.0,
+                            Model = "VF 8",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 19,
+                            BatteryCapacityKWh = 123.0,
+                            ConnectorType = 1,
+                            HasDualBattery = false,
+                            MaxChargingPowerAC_KW = 11.0,
+                            MaxChargingPowerDC_KW = 250.0,
+                            Model = "VF 9",
+                            Type = 1
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.Wallet.Wallet", b =>
@@ -594,13 +977,44 @@ namespace API.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("API.Entities.ChargingSession", b =>
+                {
+                    b.HasOne("API.Entities.ChargingPost", "ChargingPost")
+                        .WithMany()
+                        .HasForeignKey("ChargingPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId");
+
+                    b.HasOne("API.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId");
+
+                    b.Navigation("ChargingPost");
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("API.Entities.DriverPackage", b =>
                 {
+                    b.HasOne("API.Entities.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.ChargingPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AppUser");
 
                     b.Navigation("Package");
                 });

@@ -52,7 +52,8 @@ namespace API.Controllers
             return Ok(station.ToStationDto());
         }
 
-        [HttpPost]
+        [HttpPost] 
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Create([FromBody] CreateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -69,6 +70,7 @@ namespace API.Controllers
 
         [HttpPut]
         [Route("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -87,6 +89,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}/status")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] StationStatus status)
         {
             var stationModel = await _uow.Stations.UpdateStatusAsync(id, status);
@@ -100,6 +103,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -179,7 +183,7 @@ namespace API.Controllers
 
             return Ok(posts.Select(p => p.ToPostDto()));
         }
-
+        
         [HttpGet("distance")]
         public async Task<IActionResult> GetDistanceKm([FromQuery] double lat1, [FromQuery] double lon1, [FromQuery] double lat2, [FromQuery] double lon2)
         {
@@ -188,5 +192,5 @@ namespace API.Controllers
                 distance = StationCodeHelper.GetDistanceKm(lat1, lon1, lat2, lon2)
             });
         }
-    }   
+    }
 }

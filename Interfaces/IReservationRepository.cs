@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using API.DTOs.Reservation;
 using API.Entities;
 
 namespace API.Interfaces
 {
     public interface IReservationRepository
     {
+        Task<List<Reservation>> GetAllAsync();
         // Thêm một đặt chỗ mới
         Task AddReservationAsync(Reservation reservation);
         // Lấy đặt chỗ theo ID
@@ -24,5 +26,11 @@ namespace API.Interfaces
         Task<List<Reservation>> GetReservationsForPostOnDateAsync(int postId, DateTime date);
 
         Task<Reservation?> GetFirstOrDefaultAsync(Expression<Func<Reservation, bool>> predicate);
+        Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes);
+        Task<List<Reservation>> GetUpcomingReservationsByDriverAsync(string driverId);
+
+        Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
+        Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
+        void Update(Reservation reservation);
     }
 }
