@@ -161,27 +161,29 @@ namespace API.Controllers
             }
 
             // chỉ lấy những trạm dành cho đặt trước
-            var posts = station.Posts.Where(p => p.IsWalkIn == false);
+            var postsQuery = station.Posts.Where(p => p.IsWalkIn == false);
+            var vehicleMaxPower = vehicle.MaxChargingPowerKW;
 
             // Nếu là xe ô tô và loại sạc CCS2
             if (vehicle.Type == VehicleType.Car && vehicle.ConnectorType == ConnectorType.CCS2)
             {
-                posts = posts
+                postsQuery = postsQuery
                     .Where(p => p.ConnectorType == ConnectorType.CCS2 || p.ConnectorType == ConnectorType.Type2)
-                    .ToList();
+                    .Where(p => p.PowerKW <= (decimal)vehicleMaxPower);
             }
             else if (vehicle.Type == VehicleType.Motorbike && vehicle.ConnectorType == ConnectorType.VinEScooter)
             {
-                posts = posts
+                postsQuery = postsQuery
                     .Where(p => p.ConnectorType == ConnectorType.VinEScooter)
-                    .ToList();
+                    .Where(p => p.PowerKW <= (decimal)vehicleMaxPower);
             }
             else
             {
-                posts = new List<ChargingPost>();
+                postsQuery = Enumerable.Empty<ChargingPost>().AsQueryable();
             }
+            var compatiblePosts = postsQuery.ToList();
 
-            return Ok(posts.Select(p => p.ToPostDto()));
+            return Ok(compatiblePosts.Select(p => p.ToPostDto()));
         }
         
         [HttpGet("distance")]

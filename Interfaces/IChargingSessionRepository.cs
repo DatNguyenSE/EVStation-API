@@ -17,5 +17,6 @@ namespace API.Interfaces
         Task<ChargingSession?> FindLatestIdleSessionAtPostAsync(int postId);
         Task UpdatePayingStatusAsync(List<int> sessionId);
         Task<ChargingSession?> GetByIdAsyncNoTracking(int id);
+        Task<ChargingSession?> GetActiveSessionByPostIdAsync(int postId);
     }
 }

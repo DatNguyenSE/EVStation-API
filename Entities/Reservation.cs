@@ -18,14 +18,14 @@ namespace API.Entities
         [Required]
         public int ChargingPostId { get; set; }
         [Required]
-        public string? DriverId { get; set; }
+        public string DriverId { get; set; } = string.Empty;
         [Required]
         public DateTime TimeSlotStart { get; set; }
         [Required]
         public DateTime TimeSlotEnd { get; set; }
         [Column(TypeName = "nvarchar(20)")]
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
         [ForeignKey(nameof(VehicleId))]
         public Vehicle Vehicle { get; set; } = null!;
         [ForeignKey(nameof(ChargingPostId))]
@@ -35,6 +35,7 @@ namespace API.Entities
     public enum ReservationStatus
     {
         Confirmed, // Đã xác nhận và đang chờ đến giờ sạc
+        InProgress, // đã đến trụ và sạc
         Cancelled, // Đã hủy (trước hoặc sau khi hết giờ)
         Completed, // Đã hoàn thành phiên sạc
         Expired    // Đã quá giờ bắt đầu mà xe không đến

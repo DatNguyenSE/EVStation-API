@@ -90,7 +90,7 @@ namespace API.Services
                     ReferenceId = packageToPurchase.Id,
                     Status = TransactionStatus.Success,
                     PaymentMethod = "Wallet",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 await _uow.WalletTransactions.AddTransactionAsync(transaction);
 
@@ -110,7 +110,7 @@ namespace API.Services
                 return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
                 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await dbTransaction.RollbackAsync();
                 return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");

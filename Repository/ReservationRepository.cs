@@ -88,7 +88,7 @@ namespace API.Repository
 
         public async Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
             var cutoffTime = now.AddMinutes(-gracePeriodMinutes);
 
             return await _context.Reservations
@@ -173,6 +173,28 @@ namespace API.Repository
         public void Update(Reservation reservation)
         {
             _context.Reservations.Update(reservation);
+        }
+
+        public async Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId)
+        {
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            r.TimeSlotStart > DateTime.UtcNow)
+                .ToListAsync();
+        }
+
+        public async Task<List<Reservation>> GetConflictingReservationsAsync(int postId, DateTime maintenanceStart, DateTime maintenanceEnd)
+        {
+            return await _context.Reservations
+                .Include(r => r.Vehicle) // Cần để lấy OwnerId
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            // Logic kiểm tra sự trùng lặp thời gian:
+                            // (StartA < EndB) and (EndA > StartB)
+                            r.TimeSlotStart < maintenanceEnd && 
+                            r.TimeSlotEnd > maintenanceStart) 
+                .ToListAsync();
         }
     }
 }

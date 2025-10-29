@@ -16,10 +16,12 @@ namespace API.Controllers
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
+        private readonly IUnitOfWork _uow;
 
-        public ReservationController(IReservationService reservationService)
+        public ReservationController(IReservationService reservationService, IUnitOfWork uow)
         {
             _reservationService = reservationService;
+            _uow = uow;
         }
 
         /// <summary>
@@ -28,7 +30,12 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationDto dto)
-        {
+        {   
+            bool isMaintenanceScheduled = await _uow.Reports.IsPostScheduledForMaintenanceAsync(dto.ChargingPostId, dto.TimeSlotStart, dto.TimeSlotStart.AddHours(dto.SlotCount));
+            if (isMaintenanceScheduled)
+            {
+                return BadRequest(new ProblemDetails { Title = "Trụ đang được lên lịch bảo trì vào thời gian này. Vui lòng chọn khung giờ khác." });
+            }
             try
             {
                 // Lấy driverId từ JWT 

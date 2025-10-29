@@ -21,6 +21,7 @@ namespace API.Interfaces
         IChargingSessionRepository ChargingSessions { get; }
         IPricingRepository Pricings { get; }
         IReceiptRepository Receipts { get; }
+        IReportRepository Reports { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 
