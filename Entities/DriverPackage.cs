@@ -24,7 +24,7 @@ namespace API.Entities
         public ChargingPackage Package { get; set; } = null!;
 
         // Ngày bắt đầu hiệu lực
-        public DateTime StartDate { get; set; } = DateTime.UtcNow;
+        public DateTime StartDate { get; set; } = DateTime.UtcNow.AddHours(7);
 
         // Ngày hết hạn
         public DateTime EndDate { get; set; }

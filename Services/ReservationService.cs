@@ -98,8 +98,8 @@ namespace API.Services
 
             // Kiểm tra xe có tồn tại không
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
-            if (vehicle == null)
-                throw new Exception("Xe không tồn tại.");
+            if (vehicle == null || vehicle.RegistrationStatus != VehicleRegistrationStatus.Approved)
+                throw new Exception("Xe không tồn tại hoặc chưa được xác thực.");
 
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)

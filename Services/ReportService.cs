@@ -54,7 +54,7 @@ namespace API.Services
                 CreatedById = staffId,
                 Status = ReportStatus.New,
                 Severity = ReportSeverity.Normal,
-                CreateAt = DateTime.UtcNow
+                CreateAt = DateTime.UtcNow.AddHours(7)
             };
 
             _uow.Reports.Add(report); // Dùng repo
@@ -257,7 +257,7 @@ namespace API.Services
 
             report.Status = ReportStatus.Resolved;
             report.FixedNote = dto.FixedNote;
-            report.FixedAt = DateTime.UtcNow;
+            report.FixedAt = DateTime.UtcNow.AddHours(7);
 
             // === CHANGED ===
             await _uow.Complete();
