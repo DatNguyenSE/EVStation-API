@@ -11,6 +11,7 @@ namespace API.Entities
     {
         public int Id { get; set; }
         public int StationId { get; set; }
+        public string StationName { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         [Column(TypeName = "nvarchar(20)")]   // set type cho column chứ không nó để thành int
         public PostType Type { get; set; }

@@ -152,8 +152,8 @@ namespace API.Repository
 
                     // Station
                     StationId = x.station.Id,
-                    StationName = x.station.Name, 
-                    StationAddress = x.station.Address 
+                    StationName = x.station.Name,
+                    StationAddress = x.station.Address
                 })
                 .FirstOrDefaultAsync(); // Chỉ lấy một kết quả
 
@@ -182,9 +182,19 @@ namespace API.Repository
                             r.Status == ReservationStatus.Confirmed &&
                             // Logic kiểm tra sự trùng lặp thời gian:
                             // (StartA < EndB) and (EndA > StartB)
-                            r.TimeSlotStart < maintenanceEnd && 
-                            r.TimeSlotEnd > maintenanceStart) 
+                            r.TimeSlotStart < maintenanceEnd &&
+                            r.TimeSlotEnd > maintenanceStart)
                 .ToListAsync();
+        }
+        
+        public async Task<List<Reservation>> GetAllAsync()
+        {
+            return await _context.Reservations.ToListAsync();
+        }
+
+        public void Update(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
         }
     }
 }

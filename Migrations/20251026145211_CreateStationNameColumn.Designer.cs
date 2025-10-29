@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026145211_CreateStationNameColumn")]
+    partial class CreateStationNameColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,63 +115,6 @@ namespace API.Migrations
                             SecurityStamp = "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D",
                             TwoFactorEnabled = false,
                             UserName = "admin"
-                        },
-                        new
-                        {
-                            Id = "2",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "11111111-2222-3333-4444-555555555555",
-                            DateOfBirth = new DateTime(1995, 5, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trạm Operator",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPti/a9dQXrb7L6sjniNdM3QWjQhWtlZLB7tQwUaCxsyewD+D8MBhuXsE4afjntGfg==",
-                            PhoneNumber = "0911111111",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1111111-B222-4333-C444-D55555555555",
-                            TwoFactorEnabled = false,
-                            UserName = "operator"
-                        },
-                        new
-                        {
-                            Id = "3",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "66666666-7777-8888-9999-AAAAAAAAAAAA",
-                            DateOfBirth = new DateTime(1992, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Khu vực Manager",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER",
-                            PasswordHash = "AQAAAAIAAYagAAAAENMyFIG2LA4//qtHgDgkZB8TC+wvdKnkwxiD6JHIkMCX0dd+twv8zV7ea/CMfQnChw==",
-                            PhoneNumber = "0922222222",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "B1111111-C222-4333-D444-E55555555555",
-                            TwoFactorEnabled = false,
-                            UserName = "manager"
-                        },
-                        new
-                        {
-                            Id = "4",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
-                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "technician@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Kỹ thuật viên bảo trì",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECHNICIAN@EVSYSTEM.COM",
-                            NormalizedUserName = "TECHNICIAN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKV4vb55tRNp0q0sO0pF/Ua5A46af0IC1l5PZuNofciWemJVAk7vjQYutf5YQKjxfQ==",
-                            PhoneNumber = "0933333333",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
-                            TwoFactorEnabled = false,
-                            UserName = "technician"
                         });
                 });
 
@@ -264,7 +210,7 @@ namespace API.Migrations
 
                     b.Property<decimal>("PowerKW")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<byte[]>("QRCode")
                         .HasColumnType("varbinary(max)");
@@ -342,28 +288,6 @@ namespace API.Migrations
                         new
                         {
                             Id = 5,
-                            Code = "Q1-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 1,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Code = "Q1-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 1,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 7,
                             Code = "Q1-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -375,7 +299,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 6,
                             Code = "Q1-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -387,7 +311,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 9,
+                            Id = 7,
                             Code = "TD-Type2-A",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
@@ -399,7 +323,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 8,
                             Code = "TD-Type2-B",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
@@ -411,7 +335,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 9,
                             Code = "TD-CCS2-A",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
@@ -423,7 +347,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 10,
                             Code = "TD-CCS2-B",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
@@ -435,29 +359,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 13,
-                            Code = "TD-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 2,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Code = "TD-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 2,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 15,
+                            Id = 11,
                             Code = "TD-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -469,7 +371,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 16,
+                            Id = 12,
                             Code = "TD-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -481,7 +383,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 17,
+                            Id = 13,
                             Code = "BD-Type2-A",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
@@ -493,7 +395,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 14,
                             Code = "BD-Type2-B",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
@@ -505,7 +407,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 15,
                             Code = "BD-CCS2-A",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
@@ -517,7 +419,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 16,
                             Code = "BD-CCS2-B",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
@@ -529,29 +431,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 21,
-                            Code = "BD-ULTRA-A",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = false,
-                            PowerKW = 150m,
-                            StationId = 3,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 22,
-                            Code = "BD-ULTRA-B",
-                            ConnectorType = "CCS2",
-                            IsWalkIn = true,
-                            PowerKW = 150m,
-                            StationId = 3,
-                            Status = "Available",
-                            Type = "Fast"
-                        },
-                        new
-                        {
-                            Id = 23,
+                            Id = 17,
                             Code = "BD-SC-A",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
@@ -563,7 +443,7 @@ namespace API.Migrations
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 18,
                             Code = "BD-SC-B",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
@@ -592,8 +472,8 @@ namespace API.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("EndBatteryPercentage")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<float?>("EndBatteryPercentage")
+                        .HasColumnType("real");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
@@ -619,14 +499,11 @@ namespace API.Migrations
                     b.Property<int?>("OverstayFee")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ReceiptId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("StartBatteryPercentage")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<float>("StartBatteryPercentage")
+                        .HasColumnType("real");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -648,8 +525,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChargingPostId");
-
-                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("ReservationId");
 
@@ -794,6 +669,9 @@ namespace API.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ChargingSessionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
@@ -801,10 +679,11 @@ namespace API.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("DriverId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("EnergyConsumed")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<double>("EnergyConsumed")
+                        .HasColumnType("float");
 
                     b.Property<decimal>("EnergyCost")
                         .HasColumnType("decimal(18, 2)");
@@ -832,6 +711,9 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasMaxLength(15)
                         .HasColumnType("int");
@@ -842,6 +724,8 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
+
+                    b.HasIndex("ChargingSessionId");
 
                     b.HasIndex("PackageId");
 
@@ -872,12 +756,6 @@ namespace API.Migrations
                     b.Property<string>("FixedNote")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("MaintenanceEndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("MaintenanceStartTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -898,7 +776,7 @@ namespace API.Migrations
 
                     b.HasIndex("TechnicianId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Report");
                 });
 
             modelBuilder.Entity("API.Entities.Reservation", b =>
@@ -1053,23 +931,15 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Plate")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("RegistrationStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("VehicleRegistrationImageUrl")
-                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -1453,8 +1323,8 @@ namespace API.Migrations
                         new
                         {
                             Id = "4",
-                            Name = "Operator",
-                            NormalizedName = "OPERATOR"
+                            Name = "Staff",
+                            NormalizedName = "STAFF"
                         },
                         new
                         {
@@ -1555,21 +1425,6 @@ namespace API.Migrations
                         {
                             UserId = "1",
                             RoleId = "1"
-                        },
-                        new
-                        {
-                            UserId = "2",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "3",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "4",
-                            RoleId = "5"
                         });
                 });
 
@@ -1628,11 +1483,6 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Entities.Receipt", "Receipt")
-                        .WithMany("ChargingSessions")
-                        .HasForeignKey("ReceiptId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("API.Entities.Reservation", "Reservation")
                         .WithMany()
                         .HasForeignKey("ReservationId");
@@ -1642,8 +1492,6 @@ namespace API.Migrations
                         .HasForeignKey("VehicleId");
 
                     b.Navigation("ChargingPost");
-
-                    b.Navigation("Receipt");
 
                     b.Navigation("Reservation");
 
@@ -1675,11 +1523,19 @@ namespace API.Migrations
                         .WithMany("Receipts")
                         .HasForeignKey("AppUserId");
 
+                    b.HasOne("API.Entities.ChargingSession", "ChargingSession")
+                        .WithMany()
+                        .HasForeignKey("ChargingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId");
 
                     b.Navigation("AppUser");
+
+                    b.Navigation("ChargingSession");
 
                     b.Navigation("Package");
                 });
@@ -1733,8 +1589,7 @@ namespace API.Migrations
                     b.HasOne("API.Entities.AppUser", "Owner")
                         .WithMany("Vehicles")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
                 });
@@ -1833,8 +1688,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Receipt", b =>
                 {
-                    b.Navigation("ChargingSessions");
-
                     b.Navigation("WalletTransactions");
                 });
 

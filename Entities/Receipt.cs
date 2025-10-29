@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Entities.Wallet;
+using API.Helpers.Enums;
 
 namespace API.Entities
 {
@@ -12,20 +13,19 @@ namespace API.Entities
     {
         [Key]
         public int Id { get; set; }
-        public int SessionId { get; set; }
-        public ChargingSession ChargingSession { get; set; } = null!;
+
         public DateTime CreateAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [MaxLength(15)]
-        public string Status { get; set; } = "Pending";// Trạng thái thanh toán: Paid, Pending, Refunded, etc.
+        public ReceiptStatus Status { get; set; } = ReceiptStatus.Pending;
 
-        [Required]
         public string? DriverId { get; set; }
         public AppUser? AppUser { get; set; }
-        public int? PackageId { get; set; } // FK DriverPackageId
+        public int? PackageId { get; set; }
         public DriverPackage? Package { get; set; }
 
-        public double EnergyConsumed { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal EnergyConsumed { get; set; }
         [Column(TypeName = "decimal(18, 2)")]
         public decimal EnergyCost { get; set; }
 
@@ -33,6 +33,7 @@ namespace API.Entities
         public DateTime? IdleEndTime { get; set; }
         [Column(TypeName = "decimal(18, 2)")]
         public decimal IdleFee { get; set; }
+        public decimal OverstayFee { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal DiscountAmount { get; set; }
@@ -40,14 +41,16 @@ namespace API.Entities
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TotalCost { get; set; }
 
-        // Rất quan trọng, để đảm bảo hóa đơn không bị thay đổi khi bảng Pricing cập nhật giá mới
         [Required]
         [MaxLength(100)]
-        public string PricingName { get; set; } = string.Empty; // Tên của Bảng giá (ví dụ: "Giờ cao điểm")
+        public string PricingName { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal PricePerKwhSnapshot { get; set; } // Giá điện tại thời điểm đó
+        public decimal PricePerKwhSnapshot { get; set; }
 
         public ICollection<WalletTransaction> WalletTransactions { get; set; } = new List<WalletTransaction>();
+
+        // 1 Receipt -> N ChargingSessions
+        public ICollection<ChargingSession> ChargingSessions { get; set; } = new List<ChargingSession>();
     }
 }

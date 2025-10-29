@@ -21,10 +21,12 @@ namespace API.Interfaces
         IChargingSessionRepository ChargingSessions { get; }
         IPricingRepository Pricings { get; }
         IReportRepository Reports { get; }
+        IReceiptRepository Receipts { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 
         // Hàm duy nhất thực hiện SaveChangesAsync cho toàn bộ DbContext
         Task<bool> Complete();
+        void DetachAllEntities();
     }
 }

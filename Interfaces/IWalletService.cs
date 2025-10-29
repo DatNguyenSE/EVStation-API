@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
+using API.Helpers.Enums;
 
 namespace API.Interfaces
 {
@@ -14,5 +15,6 @@ namespace API.Interfaces
 
         Task<string> CreatePaymentAsync(PaymentInformationModel model, string username, HttpContext context);
         Task<PaymentResponseModel> HandleVnpayCallbackAsync(IQueryCollection query);
+        Task<(bool Success, string Message)> PayingChargeWalletAsync(int receiptId, string driverId, int total, TransactionType transactionType);
     }
 }

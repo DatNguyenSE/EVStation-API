@@ -27,6 +27,7 @@ namespace API.Repository
         public IChargingSessionRepository ChargingSessions { get; }
         public IPricingRepository Pricings { get; }
         public IReportRepository Reports { get; }
+        public IReceiptRepository Receipts { get; }
 
         public UnitOfWork(
             AppDbContext context,
@@ -41,7 +42,8 @@ namespace API.Repository
             IVehicleModelRepository vehicleModels,
             IChargingSessionRepository chargingSession,
             IPricingRepository pricing,
-            IReportRepository report)
+            IReportRepository report,
+            IReceiptRepository receipts)
         {
             _context = context;
             Reservations = reservations;
@@ -56,6 +58,7 @@ namespace API.Repository
             ChargingSessions = chargingSession;
             Pricings = pricing;
             Reports = report;
+            Receipts = receipts;
         }
 
         public async Task<bool> Complete()
@@ -66,6 +69,15 @@ namespace API.Repository
         public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level)
         {
             return await _context.Database.BeginTransactionAsync(level);
+        }
+
+        public void DetachAllEntities()
+        {
+            var changedEntriesCopy = _context.ChangeTracker.Entries()
+                .ToList();
+
+            foreach (var entry in changedEntriesCopy)
+                entry.State = EntityState.Detached;
         }
     }
 }
