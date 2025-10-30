@@ -231,8 +231,8 @@ namespace API.Services
                             if (session != null)
                             {
                                 session.Status = SessionStatus.Idle;
-                                session.EndBatteryPercentage = (decimal) Math.Round(state.CurrentPercentage, 1);
-                                session.EndTime = DateTime.UtcNow;
+                                session.EndBatteryPercentage = (decimal)Math.Round(state.CurrentPercentage, 1);
+                                session.EndTime = DateTime.UtcNow.AddHours(7);
                                 session.StopReason = StopReason.InsufficientFunds;
                                 uow.ChargingSessions.Update(session);
                                 await uow.Complete();
@@ -305,14 +305,14 @@ namespace API.Services
             var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) return;
 
-            session.EndBatteryPercentage = (decimal) Math.Round(state.CurrentPercentage, 1);
+            session.EndBatteryPercentage = (decimal)Math.Round(state.CurrentPercentage, 1);
             session.EnergyConsumed = state.EnergyConsumed;
             session.Cost = state.Cost;
 
             if (fullFlush)
             {
                 session.Status = SessionStatus.Idle;
-                session.EndTime = DateTime.UtcNow;
+                session.EndTime = DateTime.UtcNow.AddHours(7);
                 session.StopReason = StopReason.BatteryFull;
             }
 

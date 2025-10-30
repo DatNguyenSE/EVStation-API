@@ -192,8 +192,8 @@ namespace API.Repository
                             r.Status == ReservationStatus.Confirmed &&
                             // Logic kiểm tra sự trùng lặp thời gian:
                             // (StartA < EndB) and (EndA > StartB)
-                            r.TimeSlotStart < maintenanceEnd && 
-                            r.TimeSlotEnd > maintenanceStart) 
+                            r.TimeSlotStart < maintenanceEnd &&
+                            r.TimeSlotEnd > maintenanceStart)
                 .ToListAsync();
         }
     }

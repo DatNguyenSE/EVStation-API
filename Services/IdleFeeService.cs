@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Entities;
+using API.Helpers;
 using API.Helpers.Enums;
 using API.Hubs;
 using API.Interfaces;
@@ -16,7 +17,6 @@ namespace API.Services
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IHubContext<ChargingHub> _hubContext;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
-        private const int GRACE_MINUTES = 15;
 
         public IdleFeeService(IServiceScopeFactory scopeFactory, IHubContext<ChargingHub> hubContext)
         {
@@ -33,7 +33,7 @@ namespace API.Services
                 var _pricingService = scope.ServiceProvider.GetRequiredService<IPricingService>();
 
                 var pricing = await _pricingService.GetCurrentActivePriceByTypeAsync(PriceType.OccupancyFee);
-                var IDLE_FEE_PER_MINUTE = (int) (pricing.PricePerKwh ?? 1000);
+                var IDLE_FEE_PER_MINUTE = (int) (pricing.PricePerMinute ?? 1000);
 
                 // Get Idle sessions that are not completed
                 var allSession = await _uow.ChargingSessions.GetAllAsync();
@@ -42,7 +42,7 @@ namespace API.Services
                     !s.CompletedTime.HasValue &&
                     s.EndTime.HasValue)).ToList();
 
-                foreach (var s in allSession)
+                foreach (var s in idleSessions)
                 {
                     // determine whether to apply grace
                     bool noGrace = false;
@@ -53,15 +53,15 @@ namespace API.Services
                         noGrace = true;
                     }
 
-                    DateTime endTime = DateTime.UtcNow;
+                    DateTime endTime = DateTime.UtcNow.AddHours(7);
                     if (s.EndTime!.HasValue)
                     {
                         endTime = s.EndTime!.Value;
                     }
-                    DateTime feeStart = noGrace ? endTime : endTime.AddMinutes(GRACE_MINUTES);
+                    DateTime feeStart = noGrace ? endTime : endTime.AddMinutes(AppConstant.ChargingRules.IDLE_GRACE_MINUTES);
                     s.IdleFeeStartTime ??= feeStart; // set if not set
 
-                    if (DateTime.UtcNow < feeStart)
+                    if (DateTime.UtcNow.AddHours(7) < feeStart)
                     {
                         // still in grace
                         if (s.IdleFee != 0)
@@ -73,7 +73,7 @@ namespace API.Services
                     }
 
                     // minutes since feeStart
-                    var minutes = (int)Math.Floor((DateTime.UtcNow - feeStart).TotalMinutes);
+                    var minutes = (int)Math.Floor((DateTime.UtcNow.AddHours(7) - feeStart).TotalMinutes);
                     if (minutes < 0) minutes = 0;
                     var newFee = minutes * IDLE_FEE_PER_MINUTE;
 

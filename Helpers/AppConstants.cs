@@ -8,6 +8,11 @@ namespace API.Helpers
 {
     public static class AppConstant
     {
+        public static class ChargingRules
+        {
+            public const int IDLE_GRACE_MINUTES = 1;
+        }
+        
         public static class ReservationRules
         {
             public const int TimezoneOffsetHours = 7;

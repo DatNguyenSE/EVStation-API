@@ -14,6 +14,7 @@ using MimeKit.Text;
 using Microsoft.EntityFrameworkCore;
 using API.DTOs.Receipt;
 using API.DTOs.Pricing;
+using API.Helpers;
 
 namespace API.Services
 {
@@ -25,8 +26,6 @@ namespace API.Services
         private readonly IChargingSimulationService _simulationService;
         private readonly IEmailService _emailService;
         private readonly IServiceScopeFactory _scopeFactory;
-
-        private const int IDLE_GRACE_MINUTES = 15;
 
         public ChargingSessionService(
             IUnitOfWork uow,
@@ -49,7 +48,7 @@ namespace API.Services
         {
             var chargingPost = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
             if (chargingPost == null) throw new Exception("Không tìm thấy trụ sạc");
-            var powerKW = (double) chargingPost.PowerKW;
+            var powerKW = (double)chargingPost.PowerKW;
             var connectorType = chargingPost.ConnectorType;
 
             // snapshot isWalkIn
@@ -71,14 +70,19 @@ namespace API.Services
                 existingIdle = await _uow.ChargingSessions.FindLatestIdleSessionAtPostAsync(dto.PostId);
             }
 
-            if (chargingPost.Status != PostStatus.Available && 
+            if(existingIdle != null)
+            {
+                existingIdle.Status = SessionStatus.Completed;
+            }
+
+            if (chargingPost.Status != PostStatus.Available &&
                 existingIdle == null) throw new Exception("Trụ không sẵn sàng");
 
             if (!isWalkIn && existingIdle != null)
             {
-                var end = existingIdle.EndTime ?? DateTime.UtcNow;
-                var minutes = (DateTime.UtcNow - end).TotalMinutes;
-                if (minutes <= IDLE_GRACE_MINUTES)
+                var end = existingIdle.EndTime ?? DateTime.UtcNow.AddHours(7);
+                var minutes = (DateTime.UtcNow.AddHours(7) - end).TotalMinutes;
+                if (minutes <= AppConstant.ChargingRules.IDLE_GRACE_MINUTES)
                 {
                     // Complete old session (create receipt, payment) BEFORE creating new session
                     await CompleteSessionAsync(existingIdle.Id);
@@ -117,7 +121,7 @@ namespace API.Services
                 VehiclePlate = dto.VehiclePlate,
                 ChargingPostId = dto.PostId,
                 ReservationId = dto.ReservationId,
-                StartTime = DateTime.UtcNow,
+                StartTime = DateTime.UtcNow.AddHours(7),
                 Status = SessionStatus.Charging,
                 EnergyConsumed = 0,
                 Cost = 0,
@@ -180,7 +184,7 @@ namespace API.Services
                 guestMode: isWalkIn,
                 chargerPowerKW: powerKW,
                 connectorType: connectorType,
-                initialPercentage: (double) session.StartBatteryPercentage,
+                initialPercentage: (double)session.StartBatteryPercentage,
                 initialEnergy: 0,
                 initialCost: 0,
                 ownerId: ownerId,
@@ -216,7 +220,7 @@ namespace API.Services
             session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) throw new Exception("Không tìm thấy session");
             session.Status = SessionStatus.Idle;
-            session.EndTime = DateTime.UtcNow;
+            session.EndTime = DateTime.UtcNow.AddHours(7);
             session.StopReason = stopReason;
 
             if (stopReason == StopReason.ReservationCompleted)
@@ -225,7 +229,7 @@ namespace API.Services
             }
             else
             {
-                session.IdleFeeStartTime = session.EndTime.Value.AddMinutes(15);
+                session.IdleFeeStartTime = session.EndTime.Value.AddMinutes(AppConstant.ChargingRules.IDLE_GRACE_MINUTES);
             }
 
             _uow.ChargingSessions.Update(session);
@@ -244,7 +248,7 @@ namespace API.Services
             if (session.Status != SessionStatus.Charging) return;
 
             session.Status = SessionStatus.Idle;
-            session.EndTime = DateTime.UtcNow;
+            session.EndTime = DateTime.UtcNow.AddHours(7);
             session.StopReason = StopReason.BatteryFull;
 
             _uow.ChargingSessions.Update(session);
@@ -269,6 +273,7 @@ namespace API.Services
             // reload
             session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) throw new Exception("Không tìm thấy phiên sạc");
+            int total = 0;
 
             // For walk-in
             Receipt receipt;
@@ -288,7 +293,7 @@ namespace API.Services
                     if (s.Status != SessionStatus.Completed)
                     {
                         s.Status = SessionStatus.Completed;
-                        s.CompletedTime = DateTime.UtcNow;
+                        s.CompletedTime = DateTime.UtcNow.AddHours(7);
                         _uow.ChargingSessions.Update(s);
                     }
                 }
@@ -296,11 +301,11 @@ namespace API.Services
                 await _uow.Complete();
 
                 // compute totals
-                decimal totalEnergyConsumed = (decimal) unpaid.Sum(x => x.EnergyConsumed);
+                decimal totalEnergyConsumed = (decimal)unpaid.Sum(x => x.EnergyConsumed);
                 int totalCost = unpaid.Sum(x => x.Cost);
                 int totalIdle = unpaid.Sum(x => x.IdleFee);
                 int totalOverstay = unpaid.Sum(x => x.OverstayFee ?? 0);
-                int grand = totalCost + totalIdle + totalOverstay;
+                total = totalCost + totalIdle + totalOverstay;
 
                 bool isAC = session.ChargingPost.ConnectorType == ConnectorType.Type2 || session.ChargingPost.ConnectorType == ConnectorType.VinEScooter;
                 bool isDC = !isAC;
@@ -332,13 +337,13 @@ namespace API.Services
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
-                    IdleEndTime = totalIdle > 0 ? DateTime.UtcNow : null,
+                    IdleEndTime = totalIdle > 0 ? DateTime.UtcNow.AddHours(7) : null,
                     IdleFee = totalIdle,
                     OverstayFee = totalOverstay,
-                    TotalCost = grand,
+                    TotalCost = total,
                     PricingName = pricing?.Name ?? string.Empty,
-                    PricePerKwhSnapshot = (decimal)pricing.PricePerKwh,
-                    CreateAt = DateTime.UtcNow,
+                    PricePerKwhSnapshot = pricing!.PricePerKwh,
+                    CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = ReceiptStatus.Pending,
                     AppUser = session.Vehicle?.Owner
                 };
@@ -348,27 +353,18 @@ namespace API.Services
                 }
 
                 await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
-                await _uow.Receipts.AddAsync(receipt);
-                await _uow.Complete();
-
-                // send email if available
-                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
-                {
-                    var dto = receipt.MapToDto();
-                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
-                }
             }
             else // reservation session
             {
-                decimal energyConsumed = (decimal) session.EnergyConsumed;
+                decimal energyConsumed = (decimal)session.EnergyConsumed;
                 int energyCost = session.Cost;
                 int idle = session.IdleFee;
                 int over = session.OverstayFee ?? 0;
-                int total = energyCost + idle + over;
+                total = energyCost + idle + over;
 
                 session.Status = SessionStatus.Completed;
-                session.CompletedTime = DateTime.UtcNow;
-                session.IsPaid = true; 
+                session.CompletedTime = DateTime.UtcNow.AddHours(7);
+                session.IsPaid = true;
 
                 _uow.ChargingSessions.Update(session);
 
@@ -396,37 +392,26 @@ namespace API.Services
                     Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
                 }
 
+                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId, session.Vehicle!.Type);
+
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
                     EnergyConsumed = energyConsumed,
                     EnergyCost = energyCost,
+                    IdleStartTime = idle > 0 ? session.IdleFeeStartTime : null,
+                    IdleEndTime = idle > 0 ? DateTime.UtcNow.AddHours(7) : null,
                     IdleFee = idle,
                     OverstayFee = over,
                     TotalCost = total,
                     PricingName = pricing?.Name ?? string.Empty,
-                    PricePerKwhSnapshot = (decimal)pricing.PricePerKwh,
-                    CreateAt = DateTime.UtcNow,
+                    PricePerKwhSnapshot = pricing!.PricePerKwh,
+                    CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = ReceiptStatus.Pending,
-                    AppUser = session.Vehicle?.Owner
+                    PackageId = driverPackage != null ? driverPackage.Package.Id : null,
+                    DiscountAmount = driverPackage != null ? total : 0
                 };
                 receipt.ChargingSessions.Add(session);
-
-                await _uow.Receipts.AddAsync(receipt);
-                await _uow.Complete();
-
-                // Wallet charge for reservation members
-                if (session.Vehicle?.OwnerId != null && total > 0)
-                {
-                    var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
-                }
-
-                // send email if available
-                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
-                {
-                    var dto = receipt.MapToDto();
-                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
-                }
 
                 // release post only if reservation completed or null
                 var post = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
@@ -434,8 +419,22 @@ namespace API.Services
                 {
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
                 }
+            }
+            await _uow.Receipts.AddAsync(receipt);
+            await _uow.Complete();
 
-                await _uow.Complete();
+            // Wallet charge for reservation members
+            if (session.Vehicle?.OwnerId != null && total > 0)
+            {
+                System.Console.WriteLine("***** thuc thi");
+                var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
+            }
+
+            // send email if available
+            if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
+            {
+                var dto = receipt.MapToDto();
+                await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
             }
 
             // signal
@@ -514,9 +513,9 @@ namespace API.Services
                 if (freshSession == null) throw new Exception("Session không tồn tại");
 
                 // DÙNG freshSession, KHÔNG DÙNG session cũ (có cache)
-                double currentPercentage = (double) (freshSession.EndBatteryPercentage ?? freshSession.StartBatteryPercentage);
-                
-                double chargedPercentage = (double) (currentPercentage - (double) session.StartBatteryPercentage);
+                double currentPercentage = (double)(freshSession.EndBatteryPercentage ?? freshSession.StartBatteryPercentage);
+
+                double chargedPercentage = (double)(currentPercentage - (double)session.StartBatteryPercentage);
                 if (chargedPercentage < 0) chargedPercentage = 0;
 
                 double energyConsumed = (batteryCapacity > 0) ? ((chargedPercentage / 100.0) * batteryCapacity) : 0.0;

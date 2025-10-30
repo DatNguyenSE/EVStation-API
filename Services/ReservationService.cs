@@ -163,7 +163,7 @@ namespace API.Services
                     TimeSlotStart = start,
                     TimeSlotEnd = end,
                     Status = ReservationStatus.Confirmed,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 // Thêm Reservation vào Context (chưa lưu)
                 await _uow.Reservations.AddReservationAsync(reservation);

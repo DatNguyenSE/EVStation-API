@@ -54,7 +54,7 @@ namespace API.Repository
 
         public async Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType)
         {
-            return await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
+            return await _context.DriverPackages.Include(dp => dp.Package).FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
                                                        && dp.VehicleType == vehicleType
                                                        && dp.IsActive == true);
         }

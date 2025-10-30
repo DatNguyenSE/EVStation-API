@@ -26,8 +26,13 @@ namespace API.Repository
         public IVehicleModelRepository VehicleModels { get; }
         public IChargingSessionRepository ChargingSessions { get; }
         public IPricingRepository Pricings { get; }
+<<<<<<< HEAD
         public IReceiptRepository Receipts { get; }
         public IReportRepository Reports { get; }
+=======
+        public IReportRepository Reports { get; }
+        public IReceiptRepository Receipts { get; }
+>>>>>>> 47e74898948af53b25e50ff2d61794ab9f0c2115
 
         public UnitOfWork(
             AppDbContext context,
@@ -42,8 +47,13 @@ namespace API.Repository
             IVehicleModelRepository vehicleModels,
             IChargingSessionRepository chargingSession,
             IPricingRepository pricing,
+<<<<<<< HEAD
             IReceiptRepository receipts,
             IReportRepository report)
+=======
+            IReportRepository report,
+            IReceiptRepository receipts)
+>>>>>>> 47e74898948af53b25e50ff2d61794ab9f0c2115
         {
             _context = context;
             Reservations = reservations;
