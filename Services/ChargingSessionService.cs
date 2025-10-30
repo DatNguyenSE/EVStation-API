@@ -95,7 +95,8 @@ namespace API.Services
             // For walk-in: if existing idle present, we do NOT auto-complete; but we will use EndBatteryPercentage as start if available
             if (isWalkIn && existingIdle != null)
             {
-                await CompleteSessionAsync(existingIdle.Id);
+                existingIdle.Status = SessionStatus.Completed;
+                existingIdle.CompletedTime = DateTime.UtcNow.AddHours(7);
                 if (existingIdle.EndBatteryPercentage.HasValue)
                     startBatteryPercentage = existingIdle.EndBatteryPercentage.Value;
                 if (existingIdle.VehicleId.HasValue)
@@ -323,7 +324,6 @@ namespace API.Services
                 }
                 catch (Exception px)
                 {
-                    // If pricing lookup fails, log and continue using last-known/default values (pricePerKWh = 0)
                     Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
                 }
 
