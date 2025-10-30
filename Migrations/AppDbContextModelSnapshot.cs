@@ -800,9 +800,6 @@ namespace API.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AppUserId1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
@@ -848,8 +845,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
-
-                    b.HasIndex("AppUserId1");
 
                     b.HasIndex("PackageId");
 
@@ -1679,13 +1674,9 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.Receipt", b =>
                 {
                     b.HasOne("API.Entities.AppUser", "AppUser")
-                        .WithMany()
+                        .WithMany("Receipts")
                         .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("API.Entities.AppUser", null)
-                        .WithMany("Receipts")
-                        .HasForeignKey("AppUserId1");
 
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()

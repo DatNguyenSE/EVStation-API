@@ -75,10 +75,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<Receipt>()
             .HasOne(r => r.AppUser)
-            .WithMany() // hoặc .WithMany(u => u.Receipts) nếu AppUser có ICollection<Receipt>
+            .WithMany(u => u.Receipts)
             .HasForeignKey(r => r.AppUserId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired(false);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Pricing>().HasData(
             new Pricing

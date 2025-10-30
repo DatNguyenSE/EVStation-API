@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class FixReceiptAppUserRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -251,7 +251,7 @@ namespace API.Migrations
                     MaxChargingPowerKW = table.Column<double>(type: "float", nullable: false),
                     ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Plate = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     VehicleRegistrationImageUrl = table.Column<string>(type: "nvarchar(500)", nullable: true),
                     RegistrationStatus = table.Column<string>(type: "nvarchar(20)", nullable: false)
@@ -383,7 +383,6 @@ namespace API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", maxLength: 15, nullable: false),
-                    DriverId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     PackageId = table.Column<int>(type: "int", nullable: true),
                     EnergyConsumed = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -404,7 +403,8 @@ namespace API.Migrations
                         name: "FK_Receipts_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Receipts_DriverPackages_PackageId",
                         column: x => x.PackageId,

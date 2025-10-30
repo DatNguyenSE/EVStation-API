@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251030102305_SyncModelChanges")]
-    partial class SyncModelChanges
+    [Migration("20251030114901_FixReceiptAppUserRelation")]
+    partial class FixReceiptAppUserRelation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1678,7 +1678,8 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Entities.AppUser", "AppUser")
                         .WithMany("Receipts")
-                        .HasForeignKey("AppUserId");
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()
