@@ -70,11 +70,6 @@ namespace API.Services
                 existingIdle = await _uow.ChargingSessions.FindLatestIdleSessionAtPostAsync(dto.PostId);
             }
 
-            if(existingIdle != null)
-            {
-                existingIdle.Status = SessionStatus.Completed;
-            }
-
             if (chargingPost.Status != PostStatus.Available &&
                 existingIdle == null) throw new Exception("Trụ không sẵn sàng");
 
@@ -100,6 +95,7 @@ namespace API.Services
             // For walk-in: if existing idle present, we do NOT auto-complete; but we will use EndBatteryPercentage as start if available
             if (isWalkIn && existingIdle != null)
             {
+                await CompleteSessionAsync(existingIdle.Id);
                 if (existingIdle.EndBatteryPercentage.HasValue)
                     startBatteryPercentage = existingIdle.EndBatteryPercentage.Value;
                 if (existingIdle.VehicleId.HasValue)
@@ -333,7 +329,7 @@ namespace API.Services
 
                 receipt = new Receipt
                 {
-                    AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
+                    AppUserId = session.Vehicle?.OwnerId ?? null,
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
@@ -473,7 +469,7 @@ namespace API.Services
             }
             else
             {
-                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType);
+                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal) powerKW);
                 if (compatibleModels?.Any() != true) throw new Exception("Không tìm thấy mẫu xe tương thích");
 
                 var random = new Random();

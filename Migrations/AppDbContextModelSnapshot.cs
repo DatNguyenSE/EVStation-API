@@ -1675,7 +1675,8 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Entities.AppUser", "AppUser")
                         .WithMany("Receipts")
-                        .HasForeignKey("AppUserId");
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()

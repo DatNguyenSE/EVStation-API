@@ -109,7 +109,7 @@ namespace API.Services
                         <tr><td style='padding: 6px;'>⚡ <strong>Gói cước:</strong></td><td style='text-align:right;'>{dto.PackageName ?? dto.PricingName}</td></tr>
                         <tr><td style='padding: 6px;'>🔋 <strong>Điện năng tiêu thụ:</strong></td><td style='text-align:right;'>{dto.EnergyConsumed:F2} kWh</td></tr>
                         <tr><td style='padding: 6px;'>💰 <strong>Đơn giá (VNĐ/kWh):</strong></td><td style='text-align:right;'>{dto.PricePerKwhSnapshot:N0}</td></tr>
-                        <tr><td style='padding: 6px;'>🕒 <strong>Thời gian tạo hóa đơn:</strong></td><td style='text-align:right;'>{dto.CreateAt.AddHours(7):HH:mm dd/MM/yyyy}</td></tr>
+                        <tr><td style='padding: 6px;'>🕒 <strong>Thời gian tạo hóa đơn:</strong></td><td style='text-align:right;'>{dto.CreateAt:HH:mm dd/MM/yyyy}</td></tr>
                         <tr><td style='padding: 6px;'>📅 <strong>Trạng thái:</strong></td><td style='text-align:right;'>{dto.Status}</td></tr>
                     </table>
 

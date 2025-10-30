@@ -73,6 +73,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             // hoặc .OnDelete(DeleteBehavior.Cascade); // xóa luôn session theo Receipt (cẩn thận!)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Entity<Receipt>()
+            .HasOne(r => r.AppUser)
+            .WithMany(u => u.Receipts)
+            .HasForeignKey(r => r.AppUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<Pricing>().HasData(
             new Pricing
             {

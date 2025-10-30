@@ -10,7 +10,7 @@ namespace API.Helpers
     {
         public static class ChargingRules
         {
-            public const int IDLE_GRACE_MINUTES = 1;
+            public const int IDLE_GRACE_MINUTES = 3;
         }
         
         public static class ReservationRules
