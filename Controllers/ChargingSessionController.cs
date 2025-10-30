@@ -24,7 +24,6 @@ namespace API.Controllers
 
         // API tạo session: POST api/chargingsessions
         [HttpPost("start")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try

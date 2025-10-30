@@ -212,7 +212,7 @@ namespace API.Services
                 await _simulationService.StopSimulationAsync(sessionId, setCompleted: true);
             }
 
-            _uow.DetachAllEntities(); // 💥 thêm dòng này ngay trước khi reload
+            _uow.DetachAllEntities(); // thêm dòng này ngay trước khi reload
             session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) throw new Exception("Không tìm thấy session");
             session.Status = SessionStatus.Idle;
@@ -422,7 +422,6 @@ namespace API.Services
             // Wallet charge for reservation members
             if (session.Vehicle?.OwnerId != null && total > 0)
             {
-                System.Console.WriteLine("***** thuc thi");
                 var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
             }
 

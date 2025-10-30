@@ -48,6 +48,14 @@ namespace API.Entities
         [Column(TypeName = "decimal(18, 2)")]
         public decimal PricePerKwhSnapshot { get; set; }
 
+        [MaxLength(50)]
+        public string? PaymentMethod { get; set; } // Ví dụ: "Cash", "Credit Card", "QR Code"
+
+        public string? ConfirmedByStaffId { get; set; } // ID của nhân viên đã xác nhận
+        public AppUser? ConfirmedByStaff { get; set; } // Navigation property đến user nhân viên
+
+        public DateTime? ConfirmationTime { get; set; } // Thời gian xác nhận
+
         public ICollection<WalletTransaction> WalletTransactions { get; set; } = new List<WalletTransaction>();
 
         // 1 Receipt -> N ChargingSessions
