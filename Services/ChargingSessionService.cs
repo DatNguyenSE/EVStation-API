@@ -328,7 +328,7 @@ namespace API.Services
 
                 receipt = new Receipt
                 {
-                    DriverId = session.Vehicle?.OwnerId ?? string.Empty,
+                    AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
@@ -398,7 +398,7 @@ namespace API.Services
 
                 receipt = new Receipt
                 {
-                    DriverId = session.Vehicle?.OwnerId ?? string.Empty,
+                    AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
                     EnergyConsumed = energyConsumed,
                     EnergyCost = energyCost,
                     IdleFee = idle,

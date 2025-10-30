@@ -806,9 +806,6 @@ namespace API.Migrations
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("DriverId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("EnergyConsumed")
                         .HasColumnType("decimal(18, 2)");
 
@@ -886,9 +883,6 @@ namespace API.Migrations
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("ScheduledTime")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("Severity")
                         .HasColumnType("int");
@@ -1062,7 +1056,6 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Plate")
@@ -1742,8 +1735,7 @@ namespace API.Migrations
                     b.HasOne("API.Entities.AppUser", "Owner")
                         .WithMany("Vehicles")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
                 });
