@@ -18,7 +18,7 @@ namespace API.Mappers
                 SessionIds = r.ChargingSessions.Select(cs => cs.Id).ToList(),
                 CreateAt = r.CreateAt,
                 Status = r.Status,
-                DriverId = r.DriverId,
+                DriverId = r.AppUserId,
                 DriverName = r.AppUser?.FullName,
                 DriverEmail = r.AppUser?.Email,
                 PackageId = r.PackageId,

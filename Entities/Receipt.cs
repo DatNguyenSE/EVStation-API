@@ -19,7 +19,7 @@ namespace API.Entities
         [MaxLength(15)]
         public ReceiptStatus Status { get; set; } = ReceiptStatus.Pending;
 
-        public string? DriverId { get; set; }
+        public string? AppUserId { get; set; }
         public AppUser? AppUser { get; set; }
         public int? PackageId { get; set; }
         public DriverPackage? Package { get; set; }

@@ -347,6 +347,7 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -358,6 +359,7 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -441,6 +443,7 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -452,6 +455,7 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -535,6 +539,7 @@ namespace API.Migrations
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -546,6 +551,7 @@ namespace API.Migrations
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
@@ -799,9 +805,6 @@ namespace API.Migrations
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18, 2)");
-
-                    b.Property<string>("DriverId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("EnergyConsumed")
                         .HasColumnType("decimal(18, 2)");
