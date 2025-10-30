@@ -13,10 +13,10 @@ namespace API.Interfaces
         Task<List<ChargingSession>> GetAllAsync();
         Task<ChargingSession?> GetByIdAsync(int id);
         void Update(ChargingSession session);
-        Task<ChargingSession?> GetActiveSessionByPostIdAsync(int postId);
         Task<ChargingSession?> FindIdleSessionForUserAtPost(string vehiclePlate, int postId);
         Task<ChargingSession?> FindLatestIdleSessionAtPostAsync(int postId);
         Task UpdatePayingStatusAsync(List<int> sessionId);
         Task<ChargingSession?> GetByIdAsyncNoTracking(int id);
+        Task<ChargingSession?> GetActiveSessionByPostIdAsync(int postId);
     }
 }

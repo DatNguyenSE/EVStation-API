@@ -165,6 +165,16 @@ namespace API.Repository
             return result;
         }
 
+        public async Task<List<Reservation>> GetAllAsync()
+        {
+            return await _context.Reservations.ToListAsync();
+        }
+
+        public void Update(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+        }
+
         public async Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId)
         {
             return await _context.Reservations
@@ -185,16 +195,6 @@ namespace API.Repository
                             r.TimeSlotStart < maintenanceEnd &&
                             r.TimeSlotEnd > maintenanceStart)
                 .ToListAsync();
-        }
-        
-        public async Task<List<Reservation>> GetAllAsync()
-        {
-            return await _context.Reservations.ToListAsync();
-        }
-
-        public void Update(Reservation reservation)
-        {
-            _context.Reservations.Update(reservation);
         }
     }
 }

@@ -20,8 +20,8 @@ namespace API.Interfaces
         IVehicleModelRepository VehicleModels { get; }
         IChargingSessionRepository ChargingSessions { get; }
         IPricingRepository Pricings { get; }
-        IReportRepository Reports { get; }
         IReceiptRepository Receipts { get; }
+        IReportRepository Reports { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 

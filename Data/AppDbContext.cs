@@ -26,8 +26,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ChargingSession> ChargingSessions { get; set; }
     public DbSet<VehicleModel> VehicleModels { get; set; }
     public DbSet<Pricing> Pricings { get; set; }
-    public DbSet<Report> Reports { get; set; }
     public DbSet<Receipt> Receipts { get; set; }
+    public DbSet<Report> Reports { get; set; }
 
     private static readonly DateTime effectiveDate = new DateTime(2025, 1, 1);
     private static readonly DateTime expiryDate = new DateTime(2099, 12, 31);
