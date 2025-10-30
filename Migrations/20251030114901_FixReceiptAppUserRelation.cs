@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class FixReceiptAppUserRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -71,6 +71,25 @@ namespace API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ChargingPackages", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Pricings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PriceType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PricePerKwh = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PricePerMinute = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pricings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -233,7 +252,9 @@ namespace API.Migrations
                     ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Plate = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    VehicleRegistrationImageUrl = table.Column<string>(type: "nvarchar(500)", nullable: true),
+                    RegistrationStatus = table.Column<string>(type: "nvarchar(20)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -253,7 +274,9 @@ namespace API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Dept = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsDept = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -297,15 +320,45 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Assignment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShiftDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ShiftStart = table.Column<TimeSpan>(type: "time", nullable: false),
+                    ShiftEnd = table.Column<TimeSpan>(type: "time", nullable: false),
+                    StaffId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StationId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Assignment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Assignment_AspNetUsers_StaffId",
+                        column: x => x.StaffId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignment_Stations_StationId",
+                        column: x => x.StationId,
+                        principalTable: "Stations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChargingPosts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StationId = table.Column<int>(type: "int", nullable: false),
+                    StationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(20)", nullable: false),
-                    PowerKW = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    PowerKW = table.Column<decimal>(type: "decimal(18,2)", precision: 5, scale: 2, nullable: false),
                     ConnectorType = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     IsWalkIn = table.Column<bool>(type: "bit", nullable: false),
@@ -323,30 +376,78 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WalletTransactions",
+                name: "Receipts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    WalletId = table.Column<int>(type: "int", nullable: false),
-                    TransactionType = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    ReferenceId = table.Column<int>(type: "int", nullable: true),
-                    BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BalanceAfter = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    PaymentMethod = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    VnpTxnRef = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", maxLength: 15, nullable: false),
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PackageId = table.Column<int>(type: "int", nullable: true),
+                    EnergyConsumed = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EnergyCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IdleStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IdleEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IdleFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    OverstayFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PricingName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PricePerKwhSnapshot = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WalletTransactions", x => x.Id);
+                    table.PrimaryKey("PK_Receipts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WalletTransactions_Wallets_WalletId",
-                        column: x => x.WalletId,
-                        principalTable: "Wallets",
+                        name: "FK_Receipts_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Receipts_DriverPackages_PackageId",
+                        column: x => x.PackageId,
+                        principalTable: "DriverPackages",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Severity = table.Column<int>(type: "int", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    MaintenanceStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MaintenanceEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FixedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    FixedNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TechnicianId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PostId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reports_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reports_AspNetUsers_TechnicianId",
+                        column: x => x.TechnicianId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Reports_ChargingPosts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "ChargingPosts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -383,32 +484,82 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WalletTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WalletId = table.Column<int>(type: "int", nullable: false),
+                    TransactionType = table.Column<int>(type: "int", maxLength: 50, nullable: false),
+                    ReferenceId = table.Column<int>(type: "int", nullable: true),
+                    BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BalanceAfter = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    VnpTxnRef = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ReceiptId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WalletTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WalletTransactions_Receipts_ReceiptId",
+                        column: x => x.ReceiptId,
+                        principalTable: "Receipts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WalletTransactions_Wallets_WalletId",
+                        column: x => x.WalletId,
+                        principalTable: "Wallets",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChargingSessions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VehicleId = table.Column<int>(type: "int", nullable: true),
-                    VehiclePlate = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ChargingPostId = table.Column<int>(type: "int", nullable: false),
                     ReservationId = table.Column<int>(type: "int", nullable: true),
+                    ReceiptId = table.Column<int>(type: "int", nullable: true),
+                    VehiclePlate = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    StartBatteryPercentage = table.Column<float>(type: "real", nullable: false),
-                    EndBatteryPercentage = table.Column<float>(type: "real", nullable: true),
+                    CompletedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StartBatteryPercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EndBatteryPercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     EnergyConsumed = table.Column<double>(type: "float", nullable: false),
+                    Cost = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(30)", nullable: false),
-                    Cost = table.Column<int>(type: "int", nullable: false)
+                    IdleFeeStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IdleFee = table.Column<int>(type: "int", nullable: false),
+                    StopReason = table.Column<int>(type: "int", nullable: true),
+                    IsWalkInSession = table.Column<bool>(type: "bit", nullable: false),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    IsOverstay = table.Column<bool>(type: "bit", nullable: false),
+                    OverstayFee = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ChargingSessions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChargingSessions_ChargingPosts_PostId",
-                        column: x => x.PostId,
+                        name: "FK_ChargingSessions_ChargingPosts_ChargingPostId",
+                        column: x => x.ChargingPostId,
                         principalTable: "ChargingPosts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChargingSessions_Receipts_ReceiptId",
+                        column: x => x.ReceiptId,
+                        principalTable: "Receipts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_ChargingSessions_Reservations_ReservationId",
                         column: x => x.ReservationId,
@@ -429,8 +580,41 @@ namespace API.Migrations
                     { "1", null, "Admin", "ADMIN" },
                     { "2", null, "Driver", "DRIVER" },
                     { "3", null, "Manager", "MANAGER" },
-                    { "4", null, "Staff", "STAFF" },
+                    { "4", null, "Operator", "OPERATOR" },
                     { "5", null, "Technician", "TECHNICIAN" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "DateOfBirth", "Email", "EmailConfirmed", "FullName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[,]
+                {
+                    { "1", 0, "F2A4C7B8-9E1D-5B6C-8F7A-6D5E4B3C2A1F", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@evsystem.com", true, "System Administrator", false, null, "ADMIN@EVSYSTEM.COM", "ADMIN", "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==", "0900000000", true, "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D", false, "admin" },
+                    { "2", 0, "11111111-2222-3333-4444-555555555555", new DateTime(1995, 5, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), "operator@evsystem.com", true, "Trạm Operator", false, null, "OPERATOR@EVSYSTEM.COM", "OPERATOR", "AQAAAAIAAYagAAAAEPti/a9dQXrb7L6sjniNdM3QWjQhWtlZLB7tQwUaCxsyewD+D8MBhuXsE4afjntGfg==", "0911111111", true, "A1111111-B222-4333-C444-D55555555555", false, "operator" },
+                    { "3", 0, "66666666-7777-8888-9999-AAAAAAAAAAAA", new DateTime(1992, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), "manager@evsystem.com", true, "Khu vực Manager", false, null, "MANAGER@EVSYSTEM.COM", "MANAGER", "AQAAAAIAAYagAAAAENMyFIG2LA4//qtHgDgkZB8TC+wvdKnkwxiD6JHIkMCX0dd+twv8zV7ea/CMfQnChw==", "0922222222", true, "B1111111-C222-4333-D444-E55555555555", false, "manager" },
+                    { "4", 0, "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF", new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified), "technician@evsystem.com", true, "Kỹ thuật viên bảo trì", false, null, "TECHNICIAN@EVSYSTEM.COM", "TECHNICIAN", "AQAAAAIAAYagAAAAEKV4vb55tRNp0q0sO0pF/Ua5A46af0IC1l5PZuNofciWemJVAk7vjQYutf5YQKjxfQ==", "0933333333", true, "C1111111-D222-4333-E444-F55555555555", false, "technician" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Pricings",
+                columns: new[] { "Id", "EffectiveFrom", "EffectiveTo", "IsActive", "Name", "PricePerKwh", "PricePerMinute", "PriceType" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Khách vãng lai - Sạc thường AC", 4000m, null, "Guest_AC" },
+                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Khách vãng lai - Sạc nhanh DC", 4800m, null, "Guest_DC" },
+                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Thành viên - Sạc thường AC", 3500m, null, "Member_AC" },
+                    { 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Thành viên - Sạc nhanh DC", 4200m, null, "Member_DC" },
+                    { 5, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2099, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Phí chiếm dụng", 0m, 1000m, "OccupancyFee" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Stations",
+                columns: new[] { "Id", "Address", "CloseTime", "Code", "Description", "Latitude", "Longitude", "Name", "OpenTime", "Status" },
+                values: new object[,]
+                {
+                    { 1, "12 Lê Lợi, Quận 1, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "Q1HCM", "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC", 10.776899999999999, 106.7009, "Trạm sạc VinFast Quận 1", new TimeSpan(0, 6, 0, 0, 0), "Active" },
+                    { 2, "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "TDHCM", "Trạm sạc khu vực Thủ Đức, gần Vincom", 10.849500000000001, 106.7689, "Trạm sạc VinFast Thủ Đức", new TimeSpan(0, 6, 0, 0, 0), "Active" },
+                    { 3, "88 Đại Lộ Bình Dương, Thuận An, Bình Dương", new TimeSpan(0, 22, 0, 0, 0), "BDBD", "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa", 10.949999999999999, 106.75, "Trạm sạc VinFast Bình Dương", new TimeSpan(0, 6, 0, 0, 0), "Active" }
                 });
 
             migrationBuilder.InsertData(
@@ -457,6 +641,48 @@ namespace API.Migrations
                     { 17, 75.299999999999997, 1, false, 11.0, 150.0, null, "VF 7", 1 },
                     { 18, 87.700000000000003, 1, false, 11.0, 150.0, null, "VF 8", 1 },
                     { 19, 123.0, 1, false, 11.0, 250.0, null, "VF 9", 1 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[,]
+                {
+                    { "1", "1" },
+                    { "4", "2" },
+                    { "3", "3" },
+                    { "5", "4" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ChargingPosts",
+                columns: new[] { "Id", "Code", "ConnectorType", "IsWalkIn", "PowerKW", "QRCode", "StationId", "StationName", "Status", "Type" },
+                values: new object[,]
+                {
+                    { 1, "Q1-Type2-A", "Type2", false, 11m, null, 1, "", "Available", "Normal" },
+                    { 2, "Q1-Type2-B", "Type2", true, 11m, null, 1, "", "Available", "Normal" },
+                    { 3, "Q1-CCS2-A", "CCS2", false, 60m, null, 1, "", "Available", "Fast" },
+                    { 4, "Q1-CCS2-B", "CCS2", true, 60m, null, 1, "", "Available", "Fast" },
+                    { 5, "Q1-ULTRA-A", "CCS2", false, 150m, null, 1, "", "Available", "Fast" },
+                    { 6, "Q1-ULTRA-B", "CCS2", true, 150m, null, 1, "", "Available", "Fast" },
+                    { 7, "Q1-SC-A", "VinEScooter", false, 1.2m, null, 1, "", "Available", "Scooter" },
+                    { 8, "Q1-SC-B", "VinEScooter", true, 1.2m, null, 1, "", "Available", "Scooter" },
+                    { 9, "TD-Type2-A", "Type2", false, 11m, null, 2, "", "Available", "Normal" },
+                    { 10, "TD-Type2-B", "Type2", true, 11m, null, 2, "", "Available", "Normal" },
+                    { 11, "TD-CCS2-A", "CCS2", false, 60m, null, 2, "", "Available", "Fast" },
+                    { 12, "TD-CCS2-B", "CCS2", true, 60m, null, 2, "", "Available", "Fast" },
+                    { 13, "TD-ULTRA-A", "CCS2", false, 150m, null, 2, "", "Available", "Fast" },
+                    { 14, "TD-ULTRA-B", "CCS2", true, 150m, null, 2, "", "Available", "Fast" },
+                    { 15, "TD-SC-A", "VinEScooter", false, 1.2m, null, 2, "", "Available", "Scooter" },
+                    { 16, "TD-SC-B", "VinEScooter", true, 1.2m, null, 2, "", "Available", "Scooter" },
+                    { 17, "BD-Type2-A", "Type2", false, 11m, null, 3, "", "Available", "Normal" },
+                    { 18, "BD-Type2-B", "Type2", true, 11m, null, 3, "", "Available", "Normal" },
+                    { 19, "BD-CCS2-A", "CCS2", false, 60m, null, 3, "", "Available", "Fast" },
+                    { 20, "BD-CCS2-B", "CCS2", true, 60m, null, 3, "", "Available", "Fast" },
+                    { 21, "BD-ULTRA-A", "CCS2", false, 150m, null, 3, "", "Available", "Fast" },
+                    { 22, "BD-ULTRA-B", "CCS2", true, 150m, null, 3, "", "Available", "Fast" },
+                    { 23, "BD-SC-A", "VinEScooter", false, 1.2m, null, 3, "", "Available", "Scooter" },
+                    { 24, "BD-SC-B", "VinEScooter", true, 1.2m, null, 3, "", "Available", "Scooter" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -499,14 +725,29 @@ namespace API.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Assignment_StaffId",
+                table: "Assignment",
+                column: "StaffId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignment_StationId",
+                table: "Assignment",
+                column: "StationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChargingPosts_StationId",
                 table: "ChargingPosts",
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChargingSessions_PostId",
+                name: "IX_ChargingSessions_ChargingPostId",
                 table: "ChargingSessions",
-                column: "PostId");
+                column: "ChargingPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChargingSessions_ReceiptId",
+                table: "ChargingSessions",
+                column: "ReceiptId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChargingSessions_ReservationId",
@@ -527,6 +768,31 @@ namespace API.Migrations
                 name: "IX_DriverPackages_PackageId",
                 table: "DriverPackages",
                 column: "PackageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Receipts_AppUserId",
+                table: "Receipts",
+                column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Receipts_PackageId",
+                table: "Receipts",
+                column: "PackageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reports_CreatedById",
+                table: "Reports",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reports_PostId",
+                table: "Reports",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reports_TechnicianId",
+                table: "Reports",
+                column: "TechnicianId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_ChargingPostId",
@@ -556,6 +822,11 @@ namespace API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_WalletTransactions_ReceiptId",
+                table: "WalletTransactions",
+                column: "ReceiptId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WalletTransactions_WalletId",
                 table: "WalletTransactions",
                 column: "WalletId");
@@ -580,10 +851,16 @@ namespace API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Assignment");
+
+            migrationBuilder.DropTable(
                 name: "ChargingSessions");
 
             migrationBuilder.DropTable(
-                name: "DriverPackages");
+                name: "Pricings");
+
+            migrationBuilder.DropTable(
+                name: "Reports");
 
             migrationBuilder.DropTable(
                 name: "VehicleModels");
@@ -598,7 +875,7 @@ namespace API.Migrations
                 name: "Reservations");
 
             migrationBuilder.DropTable(
-                name: "ChargingPackages");
+                name: "Receipts");
 
             migrationBuilder.DropTable(
                 name: "Wallets");
@@ -610,10 +887,16 @@ namespace API.Migrations
                 name: "Vehicles");
 
             migrationBuilder.DropTable(
+                name: "DriverPackages");
+
+            migrationBuilder.DropTable(
                 name: "Stations");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "ChargingPackages");
         }
     }
 }

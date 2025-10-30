@@ -98,8 +98,8 @@ namespace API.Services
 
             // Kiểm tra xe có tồn tại không
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
-            if (vehicle == null)
-                throw new Exception("Xe không tồn tại.");
+            if (vehicle == null || vehicle.RegistrationStatus != VehicleRegistrationStatus.Approved)
+                throw new Exception("Xe không tồn tại hoặc chưa được xác thực.");
 
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)
@@ -141,8 +141,10 @@ namespace API.Services
             // Kiểm tra driver đã đặt bao nhiêu lần trong ngày
             var today = now.Date;
             var countToday = await _uow.Reservations.CountByDriverInDateAsync(driverId, today);
-            if (countToday > AppConstant.ReservationRules.MaxReservationsPerDay)
+            if (countToday >= AppConstant.ReservationRules.MaxReservationsPerDay)
+            {
                 throw new Exception($"Mỗi tài xế chỉ được đặt tối đa {AppConstant.ReservationRules.MaxReservationsPerDay} lần mỗi ngày.");
+            }
 
             // Bắt đầu Transaction (mức cô lập cao để tránh 2 người cùng đặt)
             await using var transaction = await _uow.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -163,7 +165,7 @@ namespace API.Services
                     TimeSlotStart = start,
                     TimeSlotEnd = end,
                     Status = ReservationStatus.Confirmed,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 // Thêm Reservation vào Context (chưa lưu)
                 await _uow.Reservations.AddReservationAsync(reservation);

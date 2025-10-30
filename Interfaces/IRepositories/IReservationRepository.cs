@@ -11,6 +11,7 @@ namespace API.Interfaces
 {
     public interface IReservationRepository
     {
+        Task<List<Reservation>> GetAllAsync();
         // Thêm một đặt chỗ mới
         Task AddReservationAsync(Reservation reservation);
         // Lấy đặt chỗ theo ID
@@ -30,6 +31,7 @@ namespace API.Interfaces
 
         Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
         Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
+        void Update(Reservation reservation);
 
         Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId);
         Task<List<Reservation>> GetConflictingReservationsAsync(int postId, DateTime maintenanceStart, DateTime maintenanceEnd);

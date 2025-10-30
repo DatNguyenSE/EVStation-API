@@ -159,7 +159,6 @@ namespace API.Controllers
             var reportsDto = await _reportService.GetNewReportsAsync();
             return Ok(reportsDto);
         }
-
         // (Technician) Lấy danh sách việc của tôi
         [HttpGet("mytasks")]
         [Authorize(Roles = AppConstant.Roles.Technician)]

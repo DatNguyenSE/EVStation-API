@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
 using API.Helpers;
+using API.Helpers.Enums;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/charging-session")]  // Route: api/chargingsessions
+    [Route("api/charging-sessions")]
     public class ChargingSessionsController : ControllerBase
     {
         private readonly IChargingSessionService _service;
@@ -23,7 +24,6 @@ namespace API.Controllers
 
         // API tạo session: POST api/chargingsessions
         [HttpPost("start")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -31,41 +31,40 @@ namespace API.Controllers
                 var session = await _service.CreateSessionAsync(dto);
                 return Ok(session);
             }
-            catch (Exception ex)
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("{sessionId}/stop")]
+        public async Task<IActionResult> Stop(int sessionId)
+        {
+            try
             {
-                return BadRequest(ex.Message);
+                await _service.StopChargingAsync(sessionId, StopReason.ManualStop);
+                return Ok();
             }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("{sessionId}/complete")]
+        public async Task<IActionResult> Complete(int sessionId)
+        {
+            try
+            {
+                var receipt = await _service.CompleteSessionAsync(sessionId);
+                return Ok(receipt);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
         [HttpPost("{sessionId}/update-plate")]
-        // [Authorize(Roles = AppConstant.Roles.Operator)]
-        public async Task<IActionResult> UpdatePlate (int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
+        public async Task<IActionResult> UpdatePlate(int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
             {
-                var session = await _service.UpdatePlateAsync(sessionId, vehiclePlate.Plate);
-                return Ok(session);
+                var s = await _service.UpdatePlateAsync(sessionId, vehiclePlate.Plate);
+                return Ok(s);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // API kết thúc session: POST api/chargingsessions/{sessionId}/end
-        [HttpPost("{sessionId}/end")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<ActionResult<ChargingSessionDto>> EndSession(int sessionId)
-        {
-            try
-            {
-                var session = await _service.EndSessionAsync(sessionId);
-                return Ok(session);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
     }
 }

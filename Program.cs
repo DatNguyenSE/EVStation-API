@@ -130,6 +130,7 @@ builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
 builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
 builder.Services.AddScoped<IPricingRepository, PricingRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 // Đăng ký Unit of Work
@@ -154,11 +155,12 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 // đăng ký service check status gói của người dùng mỗi 24h
 builder.Services.AddHostedService<PackageStatusChecker>();
 builder.Services.AddHostedService<ReservationCleanupService>();
+builder.Services.AddHostedService<IdleFeeService>();
+builder.Services.AddHostedService<ReservationMonitorService>();
 
 // Đăng ký SignalR
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 
 
@@ -177,15 +179,19 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
     .AllowAnyMethod()
     .AllowCredentials()); //set connect
 
-// Thêm endpoint cho hub
-app.MapHub<ChargingHub>("/hubs/charging");
+
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
+// Bật tính năng này để có thể truy cập ảnh từ URL
+app.UseStaticFiles();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
 
 
 //DatNguyen-SignalR
