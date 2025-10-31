@@ -293,5 +293,72 @@ namespace API.Controllers
             await _signInManager.SignOutAsync();
             return Ok(new { message = "Đăng xuất thành công." });
         }
+
+        [HttpGet("drivers")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetDriversAsync()
+        {
+            string targetRole = AppConstant.Roles.Driver;
+
+            var allUsers = await _userManager.Users.ToListAsync();
+
+            var drivers = new List<AppUser>();
+            foreach (var user in allUsers)
+            {
+                if (await _userManager.IsInRoleAsync(user, targetRole))
+                {
+                    drivers.Add(user);
+                }
+            }
+
+            var driverDtos = drivers.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email ?? string.Empty,
+                DateOfBirth = u.DateOfBirth,
+                EmailConfirmed = u.EmailConfirmed,
+            });
+
+            return Ok(driverDtos);
+        }
+        
+        [HttpGet("staffs")]
+        [Authorize(Roles = AppConstant.Roles.Admin)] 
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetStaffsAsync()
+        {
+            var staffRolesOrder = new List<string>
+            {
+                AppConstant.Roles.Manager,
+                AppConstant.Roles.Operator,
+                AppConstant.Roles.Technician
+            };
+
+            var staffDtos = new List<UserDto>();
+            var processedUserIds = new HashSet<string>(); // Dùng để theo dõi User đã được thêm vào danh sách
+
+            foreach (var roleName in staffRolesOrder)
+            {
+                var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
+                
+                foreach (var user in usersInRole)
+                {
+                    if (processedUserIds.Add(user.Id.ToString())) 
+                    {
+                        var userDto = new UserDto
+                        {
+                            Id = user.Id,
+                            FullName = user.FullName,
+                            Email = user.Email ?? string.Empty,
+                            DateOfBirth = user.DateOfBirth,
+                            Roles = roleName 
+                        };
+                        staffDtos.Add(userDto);
+                    }
+                }
+            }
+
+            return Ok(staffDtos);
+        }
     }
 }
