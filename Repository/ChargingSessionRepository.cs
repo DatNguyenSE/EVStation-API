@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs.ChargingSession;
 using API.Entities;
 using API.Helpers.Enums;
 using API.Interfaces;
+using API.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository
@@ -82,11 +84,20 @@ namespace API.Repository
             
         }
 
-        public async Task<ChargingSession?> GetByIdAsyncNoTracking(int id)
+        public async Task<List<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId)
         {
-            return await _context.ChargingSessions
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(x => x.Id == id);
+            var result = await _context.ChargingSessions
+                                        .AsNoTracking()
+                                        .Include(cs => cs.ChargingPost)
+                                        .Where(cs => cs.Vehicle != null && cs.Vehicle.OwnerId == ownerId).ToListAsync();
+
+            List<ChargingSessionHistoryDto> mySessions = new();
+            foreach (var session in result)
+            {
+                mySessions.Add(session.MapToHistoryDto());
+            }
+
+            return mySessions;
         }
     }
 }
