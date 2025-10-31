@@ -54,7 +54,7 @@ namespace API.Entities
         public string? ConfirmedByStaffId { get; set; } // ID của nhân viên đã xác nhận
         public AppUser? ConfirmedByStaff { get; set; } // Navigation property đến user nhân viên
 
-        public DateTime? ConfirmationTime { get; set; } // Thời gian xác nhận
+        public DateTime? ConfirmedAt { get; set; } // Thời gian xác nhận
 
         public ICollection<WalletTransaction> WalletTransactions { get; set; } = new List<WalletTransaction>();
 

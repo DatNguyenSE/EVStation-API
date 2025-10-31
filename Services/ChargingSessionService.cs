@@ -388,7 +388,7 @@ namespace API.Services
                     Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
                 }
 
-                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId, session.Vehicle!.Type);
+                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
 
                 receipt = new Receipt
                 {
