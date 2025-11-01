@@ -8,9 +8,13 @@ using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
 using API.Entities;
 using API.Entities.Wallet;
+using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
+using API.Interfaces.IServices;
 using Microsoft.AspNetCore.Identity;
+using X.PagedList;
+using X.PagedList.EF;
 
 namespace API.Services
 {
@@ -25,7 +29,7 @@ namespace API.Services
             _uow = uow;
             _vnPayService = vnPayService;
             _userManager = userManager;
-        }   
+        }
         public async Task<WalletDto?> GetWalletForUserAsync(string userId)
         {
             var wallet = await _uow.Wallets.GetWalletByUserIdAsync(userId);
@@ -38,13 +42,13 @@ namespace API.Services
                     wallet = await _uow.Wallets.GetWalletByUserIdAsync(userId);
                 }
             }
-            
+
             if (wallet == null) return null;
 
             return new WalletDto { Balance = wallet.Balance };
         }
-        
-        public async Task<IEnumerable<TransactionDto>> GetUserTransactionsAsync(string userId)
+
+        public async Task<ServiceResult<IPagedList<TransactionDto>>> GetUserTransactionsAsync(string userId, PagingParams paging)
         {
             var wallet = await _uow.Wallets.GetWalletByUserIdAsync(userId);
             if (wallet == null)
@@ -52,20 +56,28 @@ namespace API.Services
                 // Tạo ví mới nếu chưa có, nhưng coi như không có giao dịch cũ
                 await _uow.Wallets.CreateWalletAsync(userId);
                 await _uow.Complete();
-                return Enumerable.Empty<TransactionDto>();
+                return ServiceResult<IPagedList<TransactionDto>>.Success(
+                    new PagedList<TransactionDto>(new List<TransactionDto>(), paging.PageNumber, paging.PageSize)
+                );
             }
 
-            var transactions = await _uow.WalletTransactions.GetTransactionsByWalletIdAsync(wallet.Id);
-            return transactions.Select(t => new TransactionDto
-            {
-                TransactionType = t.TransactionType,
-                BalanceBefore = t.BalanceBefore,
-                BalanceAfter = t.BalanceAfter,
-                Amount = t.Amount,
-                Description = t.Description,
-                CreatedAt = t.CreatedAt,
-                Status = t.Status,
-            });
+            var query = _uow.WalletTransactions.GetTransactionsQueryableByWalletId(wallet.Id)
+                .OrderByDescending(t => t.CreatedAt);
+
+            var pagedList = await query
+                .Select(t => new TransactionDto
+                {
+                    TransactionType = t.TransactionType,
+                    BalanceBefore = t.BalanceBefore,
+                    BalanceAfter = t.BalanceAfter,
+                    Amount = t.Amount,
+                    Description = t.Description,
+                    CreatedAt = t.CreatedAt,
+                    Status = t.Status,
+                })
+                .ToPagedListAsync(paging.PageNumber, paging.PageSize);
+
+            return ServiceResult<IPagedList<TransactionDto>>.Success(pagedList);
         }
 
         public async Task<string> CreatePaymentAsync(PaymentInformationModel model, string username, HttpContext context)
@@ -102,7 +114,7 @@ namespace API.Services
             }
             // Gán thông tin bổ sung
             model.Name = username;
-            model.OrderType = "other"; 
+            model.OrderType = "other";
             // Tạo URL thanh toán
             return _vnPayService.CreatePaymentUrl(model, context, txnRef);
         }
@@ -183,7 +195,7 @@ namespace API.Services
                 // Tạo DriverPackage
                 await _uow.Receipts.UpdateStatusAsync(receiptId, ReceiptStatus.Paid);
                 var receipt = await _uow.Receipts.GetByIdAsync(receiptId);
-                if(receipt != null ) receipt.WalletTransactions.Add(transaction);
+                if (receipt != null) receipt.WalletTransactions.Add(transaction);
                 await _uow.ChargingSessions.UpdatePayingStatusAsync(receiptOfSession.ChargingSessions.Select(cs => cs.Id).ToList());
 
                 //LƯU THAY ĐỔI VÀ COMMIT TRANSACTION
@@ -205,7 +217,7 @@ namespace API.Services
                 return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
             }
         }
-        
+
         /// <summary>
         /// Tạo một giao dịch HOÀN TIỀN (cộng tiền vào ví).
         /// Hàm này KHÔNG gọi _uow.Complete() để đảm bảo tính toàn vẹn 
