@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DTOs.Receipt;
 using API.DTOs.Vnpay;
 using API.DTOs.Wallet;
 using API.Entities;
@@ -181,6 +182,8 @@ namespace API.Services
 
                 // Tạo DriverPackage
                 await _uow.Receipts.UpdateStatusAsync(receiptId, ReceiptStatus.Paid);
+                var receipt = await _uow.Receipts.GetByIdAsync(receiptId);
+                if(receipt != null ) receipt.WalletTransactions.Add(transaction);
                 await _uow.ChargingSessions.UpdatePayingStatusAsync(receiptOfSession.ChargingSessions.Select(cs => cs.Id).ToList());
 
                 //LƯU THAY ĐỔI VÀ COMMIT TRANSACTION

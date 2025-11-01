@@ -318,7 +318,7 @@ namespace API.Services
                 PricingDto? pricing = null;
                 try
                 {
-                    using var pricingScope = _scopeFactory.CreateScope();
+                    using var pricingScope = _scopeFactory.CreateScope();   
                     var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
                     pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
                 }
@@ -341,7 +341,8 @@ namespace API.Services
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = ReceiptStatus.Pending,
-                    AppUser = session.Vehicle?.Owner
+                    AppUser = session.Vehicle?.Owner,
+                    PaymentMethod = session.Vehicle?.OwnerId != null ? "Ví tiền" : null
                 };
                 foreach (var s in unpaid)
                 {
@@ -411,7 +412,8 @@ namespace API.Services
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
                     PackageId = driverPackage != null ? driverPackage.Package.Id : null,
-                    DiscountAmount = discountAmount
+                    DiscountAmount = discountAmount,
+                    PaymentMethod = "Ví tiền"
                 };
                 receipt.ChargingSessions.Add(session);
 

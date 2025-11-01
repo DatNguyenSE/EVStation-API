@@ -9,6 +9,7 @@ using API.Helpers.Enums;
 using API.Interfaces;
 using API.Interfaces.IServices;
 using API.Mappers;
+using Microsoft.EntityFrameworkCore;
 using X.PagedList;
 using X.PagedList.EF;
 
@@ -98,7 +99,6 @@ namespace API.Services
         public async Task<ServiceResult<IPagedList<ReceiptSummaryDto>>> GetAllReceiptsForAdminAsync(ReceiptFilterParams filterParams, PagingParams pagingParams)
         {
             var query = _uow.Receipts.GetReceiptsQuery(); // Lấy IQueryable
-
             // Lọc
             if (filterParams.Status.HasValue)
                 query = query.Where(r => r.Status == filterParams.Status.Value);
@@ -108,6 +108,12 @@ namespace API.Services
                 query = query.Where(r => r.CreateAt.Date <= filterParams.EndDate.Value.Date);
             if (filterParams.IsWalkInOnly == true)
                 query = query.Where(r => r.AppUserId == null);
+            if (!string.IsNullOrEmpty(filterParams.AppUserName))
+            {
+                query = query.Where(r => r.AppUser != null &&
+                                         EF.Functions.Like(r.AppUser.FullName, $"%{filterParams.AppUserName}%"));
+            }
+
 
             // Sắp xếp
             query = query.OrderByDescending(r => r.CreateAt);
@@ -115,13 +121,13 @@ namespace API.Services
             // THAY ĐỔI: Thực thi truy vấn và Phân trang thủ công
             // 1. Phân trang trên IQueryable<Receipt> trước
             var pagedEntities = await query.ToPagedListAsync(pagingParams.PageNumber, pagingParams.PageSize);
-            
+
             // 2. Map danh sách đã phân trang sang DTO
             var dtoList = pagedEntities.Select(r => r.ToReceiptSummaryDto()).ToList();
 
             // 3. Tạo PagedList tĩnh (StaticPagedList) từ DTO list
             var pagedResult = new StaticPagedList<ReceiptSummaryDto>(dtoList, pagedEntities);
-            
+
             return ServiceResult<IPagedList<ReceiptSummaryDto>>.Success(pagedResult);
         }
 
@@ -181,7 +187,7 @@ namespace API.Services
 
             // 3. Tạo StaticPagedList
             var pagedResult = new StaticPagedList<ReceiptSummaryDto>(dtoList, pagedEntities);
-            
+
             return ServiceResult<IPagedList<ReceiptSummaryDto>>.Success(pagedResult);
         }
 

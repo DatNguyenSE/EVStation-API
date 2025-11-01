@@ -117,7 +117,6 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserReceipts([FromQuery] PagingParams pagingParams)
         {
-            Console.WriteLine($"🔹 Received PageNumber={pagingParams.PageNumber}, PageSize={pagingParams.PageSize}");
             var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(appUserId))
             {
@@ -176,7 +175,15 @@ namespace API.Controllers
             [FromQuery] PagingParams pagingParams)
         {
             var result = await _receiptService.GetAllReceiptsForAdminAsync(filterParams, pagingParams);
-            return Ok(result.Data);
+            var paged = result.Data;
+            return Ok(new
+            {
+                items = paged.ToList(),
+                pageNumber = paged.PageNumber,
+                pageSize = paged.PageSize,
+                totalItemCount = paged.TotalItemCount,
+                pageCount = paged.PageCount
+            });
         }
 
         /// <summary>
