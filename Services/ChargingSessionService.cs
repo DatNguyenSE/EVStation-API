@@ -80,7 +80,7 @@ namespace API.Services
                 if (minutes <= AppConstant.ChargingRules.IDLE_GRACE_MINUTES)
                 {
                     // Complete old session (create receipt, payment) BEFORE creating new session
-                    await CompleteSessionAsync(existingIdle.Id);
+                    await CompleteSessionAsync(existingIdle.Id, false);
                     // Copy battery value
                     if (existingIdle.EndBatteryPercentage.HasValue)
                         startBatteryPercentage = existingIdle.EndBatteryPercentage.Value;
@@ -256,7 +256,7 @@ namespace API.Services
         }
 
         // Complete session: user pressed "Complete" (rời trụ) -> create receipt, payment, release post if allowed
-        public async Task<ReceiptDto> CompleteSessionAsync(int sessionId)
+        public async Task<ReceiptDto> CompleteSessionAsync(int sessionId, bool endReservation)
         {
             var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) throw new Exception("Không tìm thấy phiên sạc");
@@ -422,9 +422,12 @@ namespace API.Services
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
                 }
 
-                if(session.Reservation != null)
+                if(endReservation == true)
                 {
-                    var reservation = session.Reservation.Status = ReservationStatus.Completed;
+                    if(session.Reservation != null)
+                    {
+                        var reservation = session.Reservation.Status = ReservationStatus.Completed;
+                    }
                 }
             }
             await _uow.Receipts.AddAsync(receipt);
