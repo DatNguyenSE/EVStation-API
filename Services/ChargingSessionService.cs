@@ -357,6 +357,14 @@ namespace API.Services
                 int idle = session.IdleFee;
                 int over = session.OverstayFee ?? 0;
                 total = energyCost + idle + over;
+                var discountAmount = 0;
+
+                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
+                if(driverPackage != null)
+                {
+                    discountAmount = total;
+                    total = 0;
+                }
 
                 session.Status = SessionStatus.Completed;
                 session.CompletedTime = DateTime.UtcNow.AddHours(7);
@@ -388,8 +396,6 @@ namespace API.Services
                     Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
                 }
 
-                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
-
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
@@ -403,9 +409,9 @@ namespace API.Services
                     PricingName = pricing?.Name ?? string.Empty,
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
-                    Status = ReceiptStatus.Pending,
+                    Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
                     PackageId = driverPackage != null ? driverPackage.Package.Id : null,
-                    DiscountAmount = driverPackage != null ? total : 0
+                    DiscountAmount = discountAmount
                 };
                 receipt.ChargingSessions.Add(session);
 
@@ -414,6 +420,11 @@ namespace API.Services
                 if (post != null)
                 {
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
+                }
+
+                if(session.Reservation != null)
+                {
+                    var reservation = session.Reservation.Status = ReservationStatus.Completed;
                 }
             }
             await _uow.Receipts.AddAsync(receipt);

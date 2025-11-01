@@ -38,8 +38,9 @@ namespace API.Repository
         public async Task<ChargingSession?> GetByIdAsync(int id)
         {
             return await _context.ChargingSessions.Include(s => s.ChargingPost)
-                                                  .Include(s => s.Vehicle)
-                                                        .ThenInclude(v => v!.Owner).FirstOrDefaultAsync(s => s.Id == id);
+                                                .Include(s => s.Reservation)
+                                                .Include(s => s.Vehicle)
+                                                    .ThenInclude(v => v!.Owner).FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public void Update(ChargingSession session)
