@@ -9,6 +9,7 @@ namespace API.Helpers.Enums
     {
         Pending,
         Paid,
-        Refunded
+        Refunded,
+        Cancelled
     }
 }

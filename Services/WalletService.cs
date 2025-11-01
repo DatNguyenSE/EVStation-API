@@ -85,7 +85,7 @@ namespace API.Services
             {
                 WalletId = wallet.Id,
                 TransactionType = Helpers.Enums.TransactionType.Topup,
-                Amount = (decimal)model.Amount,
+                Amount = (decimal)model.Amount!,
                 BalanceBefore = wallet.Balance,
                 BalanceAfter = wallet.Balance,
                 Description = "Nạp tiền vào ví",
@@ -109,7 +109,7 @@ namespace API.Services
         public async Task<PaymentResponseModel> HandleVnpayCallbackAsync(IQueryCollection query)
         {
             var response = _vnPayService.PaymentExecute(query);
-            var txn = await _uow.WalletTransactions.GetByVnpTxnRefAsync(response.OrderId);
+            var txn = await _uow.WalletTransactions.GetByVnpTxnRefAsync(response.OrderId!);
             if (txn == null)
                 throw new Exception("Không tìm thấy giao dịch");
 
@@ -190,17 +190,62 @@ namespace API.Services
                     await dbTransaction.CommitAsync();
                     return (true, "Thanh toán thành công.");
                 }
-                
+
                 // Nếu không lưu được, rollback và báo lỗi
                 await dbTransaction.RollbackAsync();
                 return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
-                
+
             }
             catch (Exception)
             {
                 await dbTransaction.RollbackAsync();
                 return (false, "Đã xảy ra lỗi hệ thống trong quá trình xử lý.");
             }
+        }
+        
+        /// <summary>
+        /// Tạo một giao dịch HOÀN TIỀN (cộng tiền vào ví).
+        /// Hàm này KHÔNG gọi _uow.Complete() để đảm bảo tính toàn vẹn 
+        /// khi được gọi từ một transaction lớn hơn (như ReceiptService).
+        /// </summary>
+        public async Task<(bool Success, string Message)> CreateRefundTransactionAsync(string userId, decimal amount, string description, int receiptId)
+        {
+            // 1. Tìm ví của người dùng
+            var wallet = await _uow.Wallets.GetWalletByUserIdAsync(userId);
+            if (wallet == null)
+            {
+                // Không thể hoàn tiền nếu không có ví
+                return (false, "Không tìm thấy ví của người dùng.");
+            }
+
+            // 2. Ghi lại số dư trước
+            var balanceBefore = wallet.Balance;
+
+            // 3. Cộng tiền hoàn vào ví
+            wallet.Balance += amount;
+
+            // 4. Tạo đối tượng giao dịch mới
+            var transaction = new WalletTransaction
+            {
+                WalletId = wallet.Id,
+                TransactionType = Helpers.Enums.TransactionType.Refund, // <-- Cần thêm giá trị "Refund" vào Enum TransactionType
+                Amount = amount, // Số tiền được cộng
+                BalanceBefore = balanceBefore,
+                BalanceAfter = wallet.Balance, // Số dư mới
+                Description = description,
+                ReferenceId = receiptId, // ID của Receipt được hoàn tiền
+                Status = Helpers.Enums.TransactionStatus.Success, // Giao dịch nội bộ, thành công ngay
+                PaymentMethod = "Refund",
+                CreatedAt = DateTime.UtcNow.AddHours(7)
+            };
+
+            // 5. Thêm giao dịch vào UoW (chưa lưu)
+            await _uow.WalletTransactions.AddTransactionAsync(transaction);
+
+            // 6. Thông báo thành công (chưa commit)
+            // Service gọi hàm này (ReceiptService) sẽ chịu trách nhiệm
+            // gọi _uow.Complete() và Commit/Rollback transaction.
+            return (true, "Giao dịch hoàn tiền đã được tạo.");
         }
     }
 }

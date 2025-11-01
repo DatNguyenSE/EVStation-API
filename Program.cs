@@ -14,6 +14,7 @@ using API.Entities.Email;
 using API.Helpers;
 using API.Hubs;
 using API.SignalR;
+using API.Interfaces.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,6 +147,7 @@ builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

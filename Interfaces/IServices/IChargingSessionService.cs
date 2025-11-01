@@ -14,7 +14,7 @@ namespace API.Interfaces
         Task<ChargingSessionDto> CreateSessionAsync(CreateChargingSessionDto dto);
         Task StopChargingAsync(int sessionId, StopReason stopReason = StopReason.ManualStop);
         Task HandleSessionFullAsync(int sessionId);
-        Task<ReceiptDto> CompleteSessionAsync(int sessionId);
+        Task<ReceiptDto> CompleteSessionAsync(int sessionId, bool endReservation);
         Task<ChargingSession> UpdatePlateAsync(int sessionId, string plate);
     }
 }
