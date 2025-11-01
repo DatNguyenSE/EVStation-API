@@ -96,7 +96,10 @@ namespace API.Services
                     foreach (var res in upcomingReservations)
                     {
                         res.Status = ReservationStatus.Cancelled;
-                        notifiedUserIds.Add(res.Vehicle.OwnerId);
+                        if(res.Vehicle.OwnerId != null)
+                        {
+                            notifiedUserIds.Add(res.Vehicle.OwnerId);
+                        }   
                     }
 
                     // 4. Lấy thông tin user của phiên sạc đang chạy (nếu có)
@@ -105,7 +108,10 @@ namespace API.Services
                         // activeSession.StopReason = "Trụ sạc bảo trì khẩn cấp.";
                         if (activeSession.VehicleId != null && activeSession.Vehicle != null)
                         {
-                            notifiedUserIds.Add(activeSession.Vehicle.OwnerId); // Thêm user này vào danh sách thông báo
+                            if(activeSession.Vehicle.OwnerId != null)
+                            {
+                                notifiedUserIds.Add(activeSession.Vehicle.OwnerId); // Thêm user này vào danh sách thông báo
+                            }
                         }
                     }
 
@@ -412,7 +418,10 @@ namespace API.Services
                 // 2. Lấy OwnerId (nếu có session đang chạy)
                 if (activeSession != null && activeSession.Vehicle != null)
                 {
-                    notifiedUserIds.Add(activeSession.Vehicle.OwnerId);
+                    if(activeSession.Vehicle.OwnerId != null)
+                    {
+                        notifiedUserIds.Add(activeSession.Vehicle.OwnerId);
+                    }
                 }
 
                 // 3. Lưu thay đổi trạng thái trụ

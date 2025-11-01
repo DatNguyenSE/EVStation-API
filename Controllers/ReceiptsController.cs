@@ -64,7 +64,7 @@ namespace API.Controllers
         {
             var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(staffId))
-            { 
+            {
                 return Unauthorized("Không thể xác định nhân viên.");
             }
 
@@ -91,7 +91,7 @@ namespace API.Controllers
         {
             var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(adminId))
-            { 
+            {
                 return Unauthorized("Không thể xác định quản trị viên.");
             }
 
@@ -108,7 +108,7 @@ namespace API.Controllers
 
             return Ok("Hoàn tiền thành công.");
         }
-        
+
         // === USER ENDPOINTS ===
 
         /// <summary>
@@ -117,6 +117,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserReceipts([FromQuery] PagingParams pagingParams)
         {
+            Console.WriteLine($"🔹 Received PageNumber={pagingParams.PageNumber}, PageSize={pagingParams.PageSize}");
             var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(appUserId))
             {
@@ -124,9 +125,19 @@ namespace API.Controllers
             }
 
             var result = await _receiptService.GetUserReceiptsAsync(appUserId, pagingParams);
-            
+            var paged = result.Data;
+
             // Hàm này luôn trả về Success (có thể là danh sách rỗng)
-            return Ok(result.Data);
+            return Ok(
+                new
+                {
+                    items = paged.ToList(),
+                    pageNumber = paged.PageNumber,
+                    pageSize = paged.PageSize,
+                    totalItemCount = paged.TotalItemCount,
+                    pageCount = paged.PageCount
+                }
+            );
         }
 
         /// <summary>
@@ -152,7 +163,7 @@ namespace API.Controllers
 
             return Ok(result.Data);
         }
-        
+
         // === ADMIN/STAFF ENDPOINTS ===
 
         /// <summary>
@@ -161,7 +172,7 @@ namespace API.Controllers
         [HttpGet("admin")]
         [Authorize(Roles = $"{AppConstant.Roles.Operator},{AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetAllReceiptsForAdmin(
-            [FromQuery] ReceiptFilterParams filterParams, 
+            [FromQuery] ReceiptFilterParams filterParams,
             [FromQuery] PagingParams pagingParams)
         {
             var result = await _receiptService.GetAllReceiptsForAdminAsync(filterParams, pagingParams);
