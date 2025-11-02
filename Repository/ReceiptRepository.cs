@@ -29,6 +29,16 @@ namespace API.Repository
             return await _context.Receipts.Include(r => r.ChargingSessions).ThenInclude(cs => cs.ChargingPost).FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<IEnumerable<Receipt>> GetPendingReceiptForOperator()
+        {
+            return await _context.Receipts
+            .AsNoTracking()
+            .Where(r => r.Status == ReceiptStatus.Pending)
+            .OrderByDescending(r => r.CreateAt)
+            .ToListAsync();
+
+        }
+
         public IQueryable<Receipt> GetReceiptsQuery()
         {
             // AsNoTracking() tốt cho các truy vấn chỉ đọc

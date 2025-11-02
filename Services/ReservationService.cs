@@ -70,6 +70,10 @@ namespace API.Services
                 // Commit transaction nếu mọi thứ thành công
                 await transaction.CommitAsync();
 
+                var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+                await _hubContext.Clients.Group(driverId)
+                    .SendAsync("UpdateUpcomingReservations", upcomingReservations);
+
                 return reservation.ToReservationResponseDto();
                 
             } catch (Exception)

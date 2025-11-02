@@ -238,12 +238,18 @@ namespace API.Services
                 await transaction.CommitAsync();
                 return new ServiceResult(true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 // TODO: Log ex
                 return new ServiceResult(false, "Đã xảy ra lỗi hệ thống khi hoàn tiền.");
             }
+        }
+
+        public async Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator()
+        {
+            var receipts = await _uow.Receipts.GetPendingReceiptForOperator();
+            return receipts.Select(r => r.ToReceiptSummaryDto());
         }
     }
 }

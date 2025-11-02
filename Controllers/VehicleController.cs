@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Vehicle;
 using API.Entities;
+using API.Entities.Cloudinary;
 using API.Extensions;
 using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {
@@ -34,7 +38,7 @@ namespace API.Controllers
 
         [HttpPost("add")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<IActionResult> AddVehicle([FromForm] AddVehicleRequestDto dto)
+        public async Task<IActionResult> AddVehicle([FromForm] AddVehicleRequestDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
         {
             if (!ModelState.IsValid)
             {
@@ -54,37 +58,29 @@ namespace API.Controllers
                 return BadRequest("Biển số xe đã tồn tại.");
             }
 
-            // ----- 5. LOGIC LƯU FILE ẢNH -----
+            // ----- Upload ảnh lên Cloudinary -----
             string imageUrl = string.Empty;
             try
             {
-                // Tạo thư mục nếu chưa có
-                // Đường dẫn sẽ là: {thư mục gốc}/wwwroot/uploads/vehicles
-                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "vehicles");
-                if (!Directory.Exists(uploadDir))
+                var settings = cloudinaryConfig.Value;
+                var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                var cloudinary = new Cloudinary(account);
+
+                using var stream = dto.RegistrationImage.OpenReadStream();
+                var uploadParams = new ImageUploadParams()
                 {
-                    Directory.CreateDirectory(uploadDir);
-                }
+                    File = new FileDescription(dto.RegistrationImage.FileName, stream),
+                    Folder = "evms/vehicles" // thư mục lưu trong Cloudinary
+                };
 
-                // Tạo tên file duy nhất để tránh trùng lặp
-                string uniqueFileName = $"{Guid.NewGuid()}_{dto.RegistrationImage.FileName}";
-                string filePath = Path.Combine(uploadDir, uniqueFileName);
+                var uploadResult = await cloudinary.UploadAsync(uploadParams);
+                imageUrl = uploadResult.SecureUrl.ToString();
 
-                // Lưu file vào server
-                await using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await dto.RegistrationImage.CopyToAsync(fileStream);
-                }
-
-                // 6. Tạo đường dẫn URL tương đối để lưu vào DB
-                // (Phải bật Static Files trong Program.cs: app.UseStaticFiles();)
-                imageUrl = $"/uploads/vehicles/{uniqueFileName}";
             }
             catch (Exception ex)
             {
-                // Ghi log lỗi (ex)
                 Console.WriteLine(ex.ToString());
-                return StatusCode(500, "Lỗi xảy ra khi đang tải ảnh lên.");
+                return StatusCode(500, "Lỗi xảy ra khi tải ảnh lên Cloudinary.");
             }
 
             var vehicle = new Vehicle
@@ -260,8 +256,8 @@ namespace API.Controllers
                 Model = v.Model,
                 Plate = v.Plate,
                 VehicleType = v.Type.ToString(),
-                OwnerName = v.Owner.UserName!,
-                OwnerEmail = v.Owner.Email!,
+                OwnerName = v.Owner?.UserName ?? "N/A",
+                OwnerEmail = v.Owner?.Email ?? "N/A",
                 // Tạo URL tuyệt đối để Admin có thể xem ảnh
                 RegistrationImageUrl = string.IsNullOrEmpty(v.VehicleRegistrationImageUrl)
                                         ? null
@@ -321,7 +317,7 @@ namespace API.Controllers
 
             // Cập nhật trạng thái
             vehicle.RegistrationStatus = VehicleRegistrationStatus.Rejected;
-            
+
             if (await _uow.Complete())
             {
                 // (Nâng cao): Gửi thông báo SignalR cho chủ xe (vehicle.OwnerId)

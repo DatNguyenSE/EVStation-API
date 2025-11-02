@@ -16,6 +16,7 @@ using API.Hubs;
 using API.SignalR;
 using API.Interfaces.IRepositories;
 using API.Interfaces.IServices;
+using API.Entities.Cloudinary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -167,7 +168,7 @@ builder.Services.AddHostedService<ReservationMonitorService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 

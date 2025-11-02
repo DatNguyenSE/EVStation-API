@@ -30,5 +30,7 @@ namespace API.Interfaces
         /// Đã bao gồm các Include() cơ bản cần thiết cho SummaryDto (ví dụ: AppUser).
         /// </summary>
         IQueryable<Receipt> GetReceiptsQuery();
+
+        Task<IEnumerable<Receipt>> GetPendingReceiptForOperator();
     }
 }
