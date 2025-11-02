@@ -37,5 +37,8 @@ namespace API.DTOs.Receipt
         public string? VehiclePlate { get; set; }
         public string? StationName { get; set; }
         public string? PostCode { get; set; }
+
+        // để đề nghị đăng kí tài khoản
+        public bool ShouldSuggestRegistration { get; set; }
     }
 }
