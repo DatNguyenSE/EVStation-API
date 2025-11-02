@@ -263,13 +263,48 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
                 PhoneNumber = "0933333333",
                 PhoneNumberConfirmed = true
+            },
+            new AppUser
+            {
+                Id = "5",
+                UserName = "d1",
+                NormalizedUserName = "D1",
+                Email = "d1@evsystem.com",
+                NormalizedEmail = "D1@EVSYSTEM.COM",
+                EmailConfirmed = true,
+                FullName = "Tài xế 1",
+                DateOfBirth = new DateTime(1994, 8, 8),
+                PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
+                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
+                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                PhoneNumber = "0933334333",
+                PhoneNumberConfirmed = true
+            },
+
+            new AppUser
+            {
+                Id = "6",
+                UserName = "d2",
+                NormalizedUserName = "D2",
+                Email = "d2@evsystem.com",
+                NormalizedEmail = "D2@EVSYSTEM.COM",
+                EmailConfirmed = true,
+                FullName = "Tài xế 2",
+                DateOfBirth = new DateTime(1994, 8, 8),
+                PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
+                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
+                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                PhoneNumber = "0933333343",
+                PhoneNumberConfirmed = true 
             }
         );
         builder.Entity<IdentityUserRole<string>>().HasData(
             new IdentityUserRole<string> { RoleId = "1", UserId = "1" }, // Admin
             new IdentityUserRole<string> { RoleId = "4", UserId = "2" }, // Staff (Operator)
             new IdentityUserRole<string> { RoleId = "3", UserId = "3" }, // Manager
-            new IdentityUserRole<string> { RoleId = "5", UserId = "4" }  // Technician
+            new IdentityUserRole<string> { RoleId = "5", UserId = "4" },
+            new IdentityUserRole<string> { RoleId = "2", UserId = "5" },
+            new IdentityUserRole<string> { RoleId = "2", UserId = "6" }  // Technician
         );
 
         builder.Entity<Station>().HasData(
@@ -320,34 +355,59 @@ public class AppDbContext : IdentityDbContext<AppUser>
 
         builder.Entity<ChargingPost>().HasData(
             // ==== Trạm 1 ====
-    new ChargingPost { Id = 1, StationId = 1, Code = $"{station1Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 2, StationId = 1, Code = $"{station1Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 3, StationId = 1, Code = $"{station1Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 4, StationId = 1, Code = $"{station1Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 5, StationId = 1, Code = $"{station1Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 6, StationId = 1, Code = $"{station1Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 7, StationId = 1, Code = $"{station1Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 8, StationId = 1, Code = $"{station1Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 1, StationId = 1, Code = $"{station1Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 2, StationId = 1, Code = $"{station1Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 3, StationId = 1, Code = $"{station1Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 4, StationId = 1, Code = $"{station1Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 5, StationId = 1, Code = $"{station1Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 6, StationId = 1, Code = $"{station1Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 7, StationId = 1, Code = $"{station1Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 8, StationId = 1, Code = $"{station1Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-    // ==== Trạm 2 ====
-    new ChargingPost { Id = 9, StationId = 2, Code = $"{station2Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 10, StationId = 2, Code = $"{station2Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 11, StationId = 2, Code = $"{station2Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 12, StationId = 2, Code = $"{station2Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 13, StationId = 2, Code = $"{station2Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 14, StationId = 2, Code = $"{station2Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 15, StationId = 2, Code = $"{station2Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 16, StationId = 2, Code = $"{station2Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+            // ==== Trạm 2 ====
+            new ChargingPost { Id = 9, StationId = 2, Code = $"{station2Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 10, StationId = 2, Code = $"{station2Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 11, StationId = 2, Code = $"{station2Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 12, StationId = 2, Code = $"{station2Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 13, StationId = 2, Code = $"{station2Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 14, StationId = 2, Code = $"{station2Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 15, StationId = 2, Code = $"{station2Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 16, StationId = 2, Code = $"{station2Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-    // ==== Trạm 3 ====
-    new ChargingPost { Id = 17, StationId = 3, Code = $"{station3Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 18, StationId = 3, Code = $"{station3Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 19, StationId = 3, Code = $"{station3Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 20, StationId = 3, Code = $"{station3Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 21, StationId = 3, Code = $"{station3Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 22, StationId = 3, Code = $"{station3Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-    new ChargingPost { Id = 23, StationId = 3, Code = $"{station3Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-    new ChargingPost { Id = 24, StationId = 3, Code = $"{station3Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
+            // ==== Trạm 3 ====
+            new ChargingPost { Id = 17, StationId = 3, Code = $"{station3Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 18, StationId = 3, Code = $"{station3Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 19, StationId = 3, Code = $"{station3Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 20, StationId = 3, Code = $"{station3Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 21, StationId = 3, Code = $"{station3Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 22, StationId = 3, Code = $"{station3Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+            new ChargingPost { Id = 23, StationId = 3, Code = $"{station3Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+            new ChargingPost { Id = 24, StationId = 3, Code = $"{station3Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
+        );
+
+        builder.Entity<ChargingPackage>().HasData(
+            new ChargingPackage
+            {
+                Id = 1,
+                Name = "Gói Xe Máy 30 Ngày Không Giới Hạn",
+                Description = "Sử dụng trạm sạc không giới hạn trong 30 ngày cho xe máy điện.",
+                VehicleType = VehicleType.Motorbike,
+                Price = 99000,
+                DurationDays = 30,
+                IsActive = true,
+                CreatedAt = effectiveDate
+            },
+            new ChargingPackage
+            {
+                Id = 2,
+                Name = "Gói Ô Tô 30 Ngày Không Giới Hạn",
+                Description = "Sử dụng trạm sạc không giới hạn trong 30 ngày cho ô tô điện.",
+                VehicleType = VehicleType.Car,
+                Price = 499000,
+                DurationDays = 30,
+                IsActive = true,
+                CreatedAt = effectiveDate
+            }
         );
     }
 }

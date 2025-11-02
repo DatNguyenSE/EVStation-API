@@ -36,6 +36,7 @@ namespace API.Repository
             .Where(r => r.Status == ReceiptStatus.Pending)
             .OrderByDescending(r => r.CreateAt)
             .ToListAsync();
+        }
 
         public async Task<List<Receipt>> GetReceiptsByPlateAsync(string plate)
         {
