@@ -23,7 +23,6 @@ namespace API.Interfaces
         /// (Admin) Lấy danh sách tất cả report, hỗ trợ lọc và phân trang.
         /// </summary>
         Task<IPagedList<ReportSummaryDto>> GetAllReportsAsync(ReportFilterParams filterParams);
-        
         /// <summary>
         /// Lấy lịch sử bảo trì/sự cố của một trụ sạc cụ thể.
         /// </summary>
