@@ -99,5 +99,22 @@ namespace API.Repository
 
             return mySessions;
         }
+
+        public async Task<List<ChargingSessionHistoryDto>> GetSessionByStationAsync(int stationId)
+        {   
+            var result = await _context.ChargingSessions
+                                        .AsNoTracking()
+                                        .Where(cs => cs.ChargingPost.StationId == stationId)
+                                        .Include(cs => cs.ChargingPost)
+                                        .ToListAsync();
+
+            List<ChargingSessionHistoryDto> sessions = new();
+            foreach (var session in result)
+            {
+                sessions.Add(session.MapToHistoryDto());
+            }
+
+            return sessions;
+        }
     }
 }

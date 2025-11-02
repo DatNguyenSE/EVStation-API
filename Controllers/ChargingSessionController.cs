@@ -26,8 +26,8 @@ namespace API.Controllers
             _service = service;
         }
 
-        // API tạo session: POST api/chargingsessions
         [HttpPost("start")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -39,6 +39,7 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/stop")]
+        [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> Stop(int sessionId)
         {
             try
@@ -50,6 +51,7 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/complete")]
+        [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> Complete(int sessionId)
         {
             try
@@ -61,6 +63,7 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/update-plate")]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<IActionResult> UpdatePlate(int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
@@ -72,6 +75,7 @@ namespace API.Controllers
         }
 
         [HttpGet("history")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetHistorySession()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -81,7 +85,8 @@ namespace API.Controllers
             return Ok(historySessions);
         }
 
-        [HttpGet("detail")]
+        [HttpGet("{sessionId}/detail")]
+        [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetDetailHistorySession(int sessionId)
         {
             var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
@@ -91,6 +96,68 @@ namespace API.Controllers
             }
 
             return Ok(session.MapToDetailDto());
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> GetAllSession()
+        {
+            var sessions = await _uow.ChargingSessions.GetAllAsync();
+            if (sessions == null)
+            {
+                return NotFound("Không tìm thấy phiên sạc này");
+            }
+
+            List<ChargingSessionDto> listSession = new();
+            foreach (var session in sessions)
+            {
+                listSession.Add(session.MapToDto());
+            }
+
+            return Ok(listSession);
+        }
+
+        [HttpGet("by-station/{stationId}")]
+        [Authorize(Roles = $"{AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
+        public async Task<IActionResult> GetSessionsByStation(int stationId)
+        {
+            var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(staffId)) return Unauthorized();
+
+            bool isAdmin = User.IsInRole(AppConstant.Roles.Admin);
+
+            int assignedStationId = 0;
+
+            if (!isAdmin)
+            {
+                var assignment = await _uow.Assignments.GetCurrentAssignmentAsync(staffId);
+
+                if (assignment == null)
+                {
+                    return NotFound("Bạn không có phân công đang hoạt động.");
+                }
+
+                assignedStationId = assignment.StationId;
+
+                if (assignedStationId != stationId)
+                {
+                    return StatusCode(403, new
+                    {
+                        error = "Forbidden",
+                        message = $"Bạn chỉ được phép xem dữ liệu của trạm ID: {assignedStationId}.",
+                        requiredStationId = assignedStationId
+                    });
+                }
+            }
+
+            var sessions = await _uow.ChargingSessions.GetSessionByStationAsync(stationId);
+
+            if (sessions == null || sessions.Count == 0)
+            {
+                return Ok(new List<ChargingSessionHistoryDto>());
+            }
+
+            return Ok(sessions);
         }
     }
 }
