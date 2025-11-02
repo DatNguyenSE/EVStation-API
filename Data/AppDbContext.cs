@@ -28,6 +28,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Pricing> Pricings { get; set; }
     public DbSet<Receipt> Receipts { get; set; }
     public DbSet<Report> Reports { get; set; }
+    public DbSet<Assignment> Assignments { get; set; }
 
     private static readonly DateTime effectiveDate = new DateTime(2025, 1, 1);
     private static readonly DateTime expiryDate = new DateTime(2099, 12, 31);
@@ -78,6 +79,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(u => u.Receipts)
             .HasForeignKey(r => r.AppUserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Assignment>().ToTable("Assignments");
 
         builder.Entity<Pricing>().HasData(
             new Pricing

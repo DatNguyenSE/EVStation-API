@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API.Interfaces
@@ -22,6 +23,7 @@ namespace API.Interfaces
         IPricingRepository Pricings { get; }
         IReceiptRepository Receipts { get; }
         IReportRepository Reports { get; }
+        IAssignmentRepository Assignments { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level);
 

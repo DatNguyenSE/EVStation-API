@@ -14,6 +14,8 @@ using API.Entities.Email;
 using API.Helpers;
 using API.Hubs;
 using API.SignalR;
+using API.Interfaces.IRepositories;
+using API.Interfaces.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,6 +134,7 @@ builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository
 builder.Services.AddScoped<IPricingRepository, PricingRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -146,6 +149,7 @@ builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
