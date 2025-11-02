@@ -52,7 +52,7 @@ namespace API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
+
             // Tìm user theo username
             var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.Username);
 
@@ -94,7 +94,7 @@ namespace API.Controllers
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
-                }   
+                }
 
                 // Kiểm tra username đã tồn tại chưa
                 var existingUserByUsername = await _userManager.FindByNameAsync(registerDto.Username);
@@ -133,7 +133,7 @@ namespace API.Controllers
                     Email = registerDto.Email,
                     FullName = registerDto.FullName,
                     DateOfBirth = registerDto.DateOfBirth
-                }; 
+                };
 
                 // Tạo user trong Identity
                 var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
@@ -161,19 +161,19 @@ namespace API.Controllers
 
                 // Tạo link xác nhận email
                 var confirmationLink = $"{frontendUrl}/api/account/confirm-email?userId={appUser.Id}&token={encodedToken}";
-              
+
 
                 // Gửi email xác nhận
                 try
                 {
-                    await _emailService.SendEmailConfirmationAsync(appUser.Email, appUser.Id , encodedToken);
-                    
+                    await _emailService.SendEmailConfirmationAsync(appUser.Email, appUser.Id, encodedToken);
+
                     _logger.LogInformation($"Email confirmation sent to {appUser.Email}");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Failed to send confirmation email to {appUser.Email}");
-                    
+
                     // Xóa user nếu không gửi được email 
                     await _userManager.DeleteAsync(appUser);
                     return StatusCode(500, new { message = "Không gửi được email xác nhận. Vui lòng thử lại." });
@@ -223,7 +223,7 @@ namespace API.Controllers
             if (result.Succeeded)
             {
                 _logger.LogInformation($"Email confirmed for user {user.Email}");
-                
+
                 return Ok(new
                 {
                     message = "Email đã được xác nhận. Bạn có thể đăng nhập ngay.",
@@ -322,9 +322,9 @@ namespace API.Controllers
 
             return Ok(driverDtos);
         }
-        
+
         [HttpGet("staffs")]
-        [Authorize(Roles = AppConstant.Roles.Admin)] 
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetStaffsAsync()
         {
             var staffRolesOrder = new List<string>
@@ -340,10 +340,10 @@ namespace API.Controllers
             foreach (var roleName in staffRolesOrder)
             {
                 var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
-                
+
                 foreach (var user in usersInRole)
                 {
-                    if (processedUserIds.Add(user.Id.ToString())) 
+                    if (processedUserIds.Add(user.Id.ToString()))
                     {
                         var userDto = new UserDto
                         {
@@ -351,7 +351,7 @@ namespace API.Controllers
                             FullName = user.FullName,
                             Email = user.Email ?? string.Empty,
                             DateOfBirth = user.DateOfBirth,
-                            Roles = roleName 
+                            Roles = roleName
                         };
                         staffDtos.Add(userDto);
                     }
@@ -359,6 +359,42 @@ namespace API.Controllers
             }
 
             return Ok(staffDtos);
+        }
+
+        [HttpPost("BanUser/{userId}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)] 
+        public async Task<IActionResult> BanUser(string userId, [FromQuery] int days)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Không tìm thấy người dùng với ID: {userId}");
+            }
+
+            DateTimeOffset banUntil;
+
+            if (days <= 0)
+            {
+                return BadRequest("Số ngày ban phải lớn hơn 0.");
+            }
+
+            banUntil = DateTimeOffset.UtcNow.AddDays(days);
+
+            // Việc ResetAccessFailedCount đảm bảo rằng Lockout được áp dụng ngay lập tức
+            await _userManager.ResetAccessFailedCountAsync(user);
+
+            var result = await _userManager.SetLockoutEndDateAsync(user, banUntil);
+
+            if (result.Succeeded)
+            {
+                return Ok(new
+                {
+                    Message = $"Tài khoản {user.UserName} đã bị khóa thành công.",
+                    LockoutEnd = banUntil
+                });
+            }
+
+            return BadRequest(new { Errors = result.Errors });
         }
     }
 }
