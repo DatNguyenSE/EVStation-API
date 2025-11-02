@@ -19,4 +19,4 @@ namespace API.DTOs.ChargingPost
         public PostStatus Status { get; set; } = PostStatus.Available;
         public bool IsWalkIn { get; set; } = false;
     }
-}
+}   

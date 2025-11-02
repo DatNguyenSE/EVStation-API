@@ -27,13 +27,13 @@ namespace API.Services
 
 
         // sau khi quét qr trên trụ sẽ gọi API để kiểm tra để có thể bắt đầu sạc
-        public async Task<(bool CanStart, string Message)> ValidateScanAsync(int postId, string driverId)
+        public async Task<(bool CanStart, string Message, int? ReservationId, int? VehicleId)> ValidateScanAsync(int postId, string? driverId)
         {
             // tìm trụ sạc trong db
             var post = await _uow.ChargingPosts.GetByIdAsync(postId);
             if (post == null)
             {
-                return (false, " Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.");
+                return (false, " Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.", null, null);
             }
 
             // Phân luồng logic dựa vào thuộc tính IsWalkIn
@@ -41,11 +41,11 @@ namespace API.Services
             {
                 if (post.Status == Helpers.Enums.PostStatus.Available)
                 {
-                    return (true, "Trụ vãng lai sẵn sàng. Bạn có thể bắt đầu sạc.");
+                    return (true, "Trụ vãng lai sẵn sàng. Bạn có thể bắt đầu sạc.", null, null);
                 }
                 else
                 {
-                    return (false, $"Trụ đang ở trạng thái {post.Status}. Vui lòng thử lại sau.");
+                    return (false, $"Trụ đang ở trạng thái {post.Status}. Vui lòng thử lại sau.", null, null);
                 }
             }
 
@@ -59,7 +59,7 @@ namespace API.Services
             // Nếu không có đơn hợp lệ
             if (reservation == null)
             {
-                return (false, " Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
+                return (false, " Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.", null, null);
             }
 
             // Kiểm tra khung giờ (cho phép check-in sớm 15 phút)
@@ -83,17 +83,17 @@ namespace API.Services
             {
                 case PostStatus.Available:
                     return (true,
-                        $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+                        $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
 
                 case PostStatus.Occupied:
-                    return (false, " Lịch đặt hợp lệ, nhưng trụ đang được sử dụng. Vui lòng đợi.");
+                    return (false, " Lịch đặt hợp lệ, nhưng trụ đang được sử dụng. Vui lòng đợi.", reservation.Id, reservation.VehicleId);
 
                 case PostStatus.Maintenance:
                 case PostStatus.Offline:
-                    return (false, " Trụ đang bảo trì hoặc offline. Vui lòng liên hệ hỗ trợ.");
+                    return (false, " Trụ đang bảo trì hoặc offline. Vui lòng liên hệ hỗ trợ.", null, null);
 
                 default:
-                    return (false, $" Trụ đang ở trạng thái không xác định ({post.Status}).");
+                    return (false, $" Trụ đang ở trạng thái không xác định ({post.Status}).", null, null);
             }
         }
 

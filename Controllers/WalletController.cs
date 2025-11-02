@@ -32,7 +32,7 @@ namespace API.Controllers
         }
 
         // Lấy ví của user
-        [HttpGet("my")]
+        [HttpGet("me")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetMyWallet()
         {

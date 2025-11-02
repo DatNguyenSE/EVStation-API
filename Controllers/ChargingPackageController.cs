@@ -175,7 +175,7 @@ namespace API.Controllers
             return Ok(new { message = Message });
         }
 
-        [HttpGet("available")]  
+        [HttpGet("available")]
         [Authorize]
         public async Task<IActionResult> GetAvailable()
         {
