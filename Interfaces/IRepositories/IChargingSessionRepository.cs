@@ -13,7 +13,7 @@ namespace API.Interfaces
         Task<ChargingSession> CreateAsync(ChargingSession session);
         Task<List<ChargingSession>> GetAllAsync();
         Task<List<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId);
-        Task<List<ChargingSessionHistoryDto>> GetSessionByStationAsync(int stationId);
+        Task<List<ChargingSessionHistoryDto>> GetSessionsByStationAsync(int stationId);
 
         // Task<List<ChargingSessionDetailDto>> GetDetailSessionByIdAsync(int sessionId);
         Task<ChargingSession?> GetByIdAsync(int id);

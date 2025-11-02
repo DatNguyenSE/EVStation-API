@@ -9,6 +9,7 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Interfaces.IServices;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
@@ -27,17 +28,19 @@ namespace API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService,
+        public AccountController(UserManager<AppUser> userManager, IAuthService authService, ITokenService tokenService,
                                 SignInManager<AppUser> signInManager, IEmailService emailService,
                                 IConfiguration configuration, ILogger<AccountController> logger)
         {
             _userManager = userManager;
+            _authService = authService;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _emailService = emailService;
@@ -190,6 +193,70 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("register-and-sync-guest")]
+        public async Task<IActionResult> RegisterAndSyncGuestHistory([FromBody] RegisterAndSyncGuestDto registerDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var existingUserByUsername = await _userManager.FindByNameAsync(registerDto.Username);
+                var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
+
+                if (existingUserByUsername != null && existingUserByUsername.EmailConfirmed)
+                {
+                    return BadRequest("Tên đăng nhập đã được sử dụng");
+                }
+                if (existingUserByEmail != null && existingUserByEmail.EmailConfirmed)
+                {
+                    return BadRequest("Email đã được sử dụng");
+                }
+
+                // Nếu tồn tại user chưa xác thực, xóa đi để đăng ký lại
+                if (existingUserByUsername != null && !existingUserByUsername.EmailConfirmed)
+                    await _userManager.DeleteAsync(existingUserByUsername);
+                if (existingUserByEmail != null && !existingUserByEmail.EmailConfirmed)
+                    await _userManager.DeleteAsync(existingUserByEmail);
+
+
+                // Gọi Service xử lý nghiệp vụ chính: Đăng ký, Tạo User, Gán Role & Đồng bộ lịch sử sạc
+                var newUserDto = await _authService.RegisterAndSyncGuestHistoryAsync(registerDto);
+
+                // Xử lý xác nhận Email (Giống logic register cũ)
+                var appUser = await _userManager.FindByIdAsync(newUserDto.Id);
+
+                var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
+
+                try
+                {
+                    await _emailService.SendEmailConfirmationAsync(appUser.Email, appUser.Id, encodedToken);
+                    _logger.LogInformation($"Email confirmation sent to {appUser.Email} for guest sync.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to send confirmation email to {appUser.Email} (guest sync).");
+                    // Xóa user nếu không gửi được email (Tùy thuộc vào quyết định nghiệp vụ: giữ lại hoặc xóa)
+                    await _userManager.DeleteAsync(appUser);
+                    return StatusCode(500, new { message = "Không gửi được email xác nhận. Vui lòng thử lại." });
+                }
+
+                return Ok(newUserDto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during guest registration and sync.");
                 return StatusCode(500, ex.Message);
             }
         }
@@ -362,7 +429,7 @@ namespace API.Controllers
         }
 
         [HttpPost("BanUser/{userId}")]
-        [Authorize(Roles = AppConstant.Roles.Admin)] 
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> BanUser(string userId, [FromQuery] int days)
         {
             var user = await _userManager.FindByIdAsync(userId);

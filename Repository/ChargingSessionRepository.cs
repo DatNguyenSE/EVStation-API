@@ -101,8 +101,8 @@ namespace API.Repository
             return mySessions;
         }
 
-        public async Task<List<ChargingSessionHistoryDto>> GetSessionByStationAsync(int stationId)
-        {   
+        public async Task<List<ChargingSessionHistoryDto>> GetSessionsByStationAsync(int stationId)
+        {
             var result = await _context.ChargingSessions
                                         .AsNoTracking()
                                         .Where(cs => cs.ChargingPost.StationId == stationId)

@@ -29,6 +29,17 @@ namespace API.Repository
             return await _context.Receipts.Include(r => r.ChargingSessions).ThenInclude(cs => cs.ChargingPost).FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<List<Receipt>> GetReceiptsByPlateAsync(string plate)
+        {
+            var normalizedPlate = plate.Trim().ToUpper();
+
+            return await _context.Receipts.Where(r => r.ChargingSessions.Any(cs =>
+                                                                            cs.Vehicle!.Plate.ToUpper() == normalizedPlate))
+                                                                        .Include(r => r.ChargingSessions)
+                                                                        .ThenInclude(cs => cs.Vehicle)
+                                                                        .ToListAsync();
+        }
+
         public IQueryable<Receipt> GetReceiptsQuery()
         {
             // AsNoTracking() tốt cho các truy vấn chỉ đọc
@@ -51,7 +62,7 @@ namespace API.Repository
                 .Include(r => r.AppUser) // Chi tiết người dùng
                 .Include(r => r.ConfirmedByStaff) // Chi tiết nhân viên
                 .Include(r => r.Package) // Chi tiết gói cước
-                    .ThenInclude(dp => dp.Package) 
+                    .ThenInclude(dp => dp.Package)
                 .Include(r => r.ChargingSessions) // Chi tiết phiên sạc
                     .ThenInclude(cs => cs.ChargingPost) // Chi tiết trụ sạc
                 .Include(r => r.WalletTransactions) // Chi tiết giao dịch ví
