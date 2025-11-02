@@ -294,7 +294,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "Q1-Type2-A",
+                            Code = "HCM01-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -306,7 +306,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 2,
-                            Code = "Q1-Type2-B",
+                            Code = "HCM01-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -318,7 +318,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 3,
-                            Code = "Q1-CCS2-A",
+                            Code = "HCM01-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -330,7 +330,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 4,
-                            Code = "Q1-CCS2-B",
+                            Code = "HCM01-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -342,7 +342,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 5,
-                            Code = "Q1-ULTRA-A",
+                            Code = "HCM01-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -354,7 +354,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 6,
-                            Code = "Q1-ULTRA-B",
+                            Code = "HCM01-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -366,7 +366,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 7,
-                            Code = "Q1-SC-A",
+                            Code = "HCM01-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -378,7 +378,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 8,
-                            Code = "Q1-SC-B",
+                            Code = "HCM01-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -390,7 +390,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 9,
-                            Code = "TD-Type2-A",
+                            Code = "HCM02-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -402,7 +402,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 10,
-                            Code = "TD-Type2-B",
+                            Code = "HCM02-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -414,7 +414,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 11,
-                            Code = "TD-CCS2-A",
+                            Code = "HCM02-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -426,7 +426,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 12,
-                            Code = "TD-CCS2-B",
+                            Code = "HCM02-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -438,7 +438,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 13,
-                            Code = "TD-ULTRA-A",
+                            Code = "HCM02-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -450,7 +450,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 14,
-                            Code = "TD-ULTRA-B",
+                            Code = "HCM02-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -462,7 +462,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 15,
-                            Code = "TD-SC-A",
+                            Code = "HCM02-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -474,7 +474,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 16,
-                            Code = "TD-SC-B",
+                            Code = "HCM02-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -486,7 +486,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 17,
-                            Code = "BD-Type2-A",
+                            Code = "BD03-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -498,7 +498,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 18,
-                            Code = "BD-Type2-B",
+                            Code = "BD03-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -510,7 +510,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 19,
-                            Code = "BD-CCS2-A",
+                            Code = "BD03-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -522,7 +522,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 20,
-                            Code = "BD-CCS2-B",
+                            Code = "BD03-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -534,7 +534,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 21,
-                            Code = "BD-ULTRA-A",
+                            Code = "BD03-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -546,7 +546,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 22,
-                            Code = "BD-ULTRA-B",
+                            Code = "BD03-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -558,7 +558,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 23,
-                            Code = "BD-SC-A",
+                            Code = "BD03-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -570,7 +570,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 24,
-                            Code = "BD-SC-B",
+                            Code = "BD03-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -1006,7 +1006,7 @@ namespace API.Migrations
                             Id = 1,
                             Address = "12 Lê Lợi, Quận 1, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "Q1HCM",
+                            Code = "HCM01",
                             Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC",
                             Latitude = 10.776899999999999,
                             Longitude = 106.7009,
@@ -1019,7 +1019,7 @@ namespace API.Migrations
                             Id = 2,
                             Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "TDHCM",
+                            Code = "HCM02",
                             Description = "Trạm sạc khu vực Thủ Đức, gần Vincom",
                             Latitude = 10.849500000000001,
                             Longitude = 106.7689,
@@ -1032,7 +1032,7 @@ namespace API.Migrations
                             Id = 3,
                             Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "BDBD",
+                            Code = "BD03",
                             Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa",
                             Latitude = 10.949999999999999,
                             Longitude = 106.75,
