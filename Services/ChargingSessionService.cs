@@ -452,7 +452,17 @@ namespace API.Services
             await _hubContext.Clients.Group($"session-{sessionId}")
                 .SendAsync("ReceiveSessionCompleted", sessionId, receipt.MapToDto());
 
-            return receipt.MapToDto();
+            var receiptDto = receipt.MapToDto();
+            if (session.Vehicle!.OwnerId != null)
+            {
+                receiptDto.ShouldSuggestRegistration = false;
+            }
+            else
+            {
+                receiptDto.ShouldSuggestRegistration = true;
+            }
+
+            return receiptDto;
         }
 
         // Keep UpdatePlate logic (from your original code) — unchanged except ensure StopReason/IsWalkIn interactions later
