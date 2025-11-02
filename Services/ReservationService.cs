@@ -108,7 +108,12 @@ namespace API.Services
             // Kiểm tra trụ sạc có tồn tại không
             var post = await _uow.ChargingPosts.GetByIdAsync(dto.ChargingPostId);
             if (post == null)
-                throw new Exception("Trụ sạc không tồn tại.");
+                throw new Exception("Trụ sạc không tồn tại.");      
+
+            if(post.IsWalkIn)
+            {
+                throw new Exception("Không thể đặt trụ vãng lai");
+            }
 
             // Kiểm tra trạng thái trụ
             if (post.Status == PostStatus.Maintenance || post.Status == PostStatus.Offline)
