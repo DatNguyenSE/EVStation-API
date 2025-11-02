@@ -27,7 +27,6 @@ namespace API.Controllers
         }
 
         [HttpPost("start")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<ActionResult<ChargingSessionDto>> CreateSession(CreateChargingSessionDto dto)
         {
             try
@@ -39,7 +38,6 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/stop")]
-        [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> Stop(int sessionId)
         {
             try
@@ -51,7 +49,6 @@ namespace API.Controllers
         }
 
         [HttpPost("{sessionId}/complete")]
-        [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> Complete(int sessionId)
         {
             try
@@ -150,7 +147,7 @@ namespace API.Controllers
                 }
             }
 
-            var sessions = await _uow.ChargingSessions.GetSessionByStationAsync(stationId);
+            var sessions = await _uow.ChargingSessions.GetSessionsByStationAsync(stationId);
 
             if (sessions == null || sessions.Count == 0)
             {
