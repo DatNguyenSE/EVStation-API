@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Station;
@@ -145,7 +146,6 @@ namespace API.Controllers
 
         // trả về danh sách các trụ sạc tương thích với xe trong trạm
         [HttpGet("{stationId:int}/compatible-posts/{vehicleId:int}")]
-        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetCompatiblePosts(int stationId, int vehicleId)
         {
             var station = await _uow.Stations.GetByIdAsync(stationId);

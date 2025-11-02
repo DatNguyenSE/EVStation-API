@@ -180,14 +180,14 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ShiftDate")
+                    b.Property<DateTime>("EffectiveFrom")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("ShiftEnd")
-                        .HasColumnType("time");
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("ShiftStart")
-                        .HasColumnType("time");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("StaffId")
                         .IsRequired()
@@ -202,7 +202,7 @@ namespace API.Migrations
 
                     b.HasIndex("StationId");
 
-                    b.ToTable("Assignment");
+                    b.ToTable("Assignments", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPackage", b =>
@@ -272,6 +272,10 @@ namespace API.Migrations
                     b.Property<int>("StationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("StationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
@@ -290,264 +294,288 @@ namespace API.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "Q1-Type2-A",
+                            Code = "HCM01-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 2,
-                            Code = "Q1-Type2-B",
+                            Code = "HCM01-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 3,
-                            Code = "Q1-CCS2-A",
+                            Code = "HCM01-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 4,
-                            Code = "Q1-CCS2-B",
+                            Code = "HCM01-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 5,
-                            Code = "Q1-ULTRA-A",
+                            Code = "HCM01-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 6,
-                            Code = "Q1-ULTRA-B",
+                            Code = "HCM01-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 7,
-                            Code = "Q1-SC-A",
+                            Code = "HCM01-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
                         new
                         {
                             Id = 8,
-                            Code = "Q1-SC-B",
+                            Code = "HCM01-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 1,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
                         new
                         {
                             Id = 9,
-                            Code = "TD-Type2-A",
+                            Code = "HCM02-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 10,
-                            Code = "TD-Type2-B",
+                            Code = "HCM02-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 11,
-                            Code = "TD-CCS2-A",
+                            Code = "HCM02-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 12,
-                            Code = "TD-CCS2-B",
+                            Code = "HCM02-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 13,
-                            Code = "TD-ULTRA-A",
+                            Code = "HCM02-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 14,
-                            Code = "TD-ULTRA-B",
+                            Code = "HCM02-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 15,
-                            Code = "TD-SC-A",
+                            Code = "HCM02-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
                         new
                         {
                             Id = 16,
-                            Code = "TD-SC-B",
+                            Code = "HCM02-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 2,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
                         new
                         {
                             Id = 17,
-                            Code = "BD-Type2-A",
+                            Code = "BD03-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 18,
-                            Code = "BD-Type2-B",
+                            Code = "BD03-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Normal"
                         },
                         new
                         {
                             Id = 19,
-                            Code = "BD-CCS2-A",
+                            Code = "BD03-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 20,
-                            Code = "BD-CCS2-B",
+                            Code = "BD03-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 21,
-                            Code = "BD-ULTRA-A",
+                            Code = "BD03-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 22,
-                            Code = "BD-ULTRA-B",
+                            Code = "BD03-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Fast"
                         },
                         new
                         {
                             Id = 23,
-                            Code = "BD-SC-A",
+                            Code = "BD03-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         },
                         new
                         {
                             Id = 24,
-                            Code = "BD-SC-B",
+                            Code = "BD03-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
                             StationId = 3,
+                            StationName = "",
                             Status = "Available",
                             Type = "Scooter"
                         });
@@ -564,11 +592,14 @@ namespace API.Migrations
                     b.Property<int>("ChargingPostId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("CompletedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<float?>("EndBatteryPercentage")
-                        .HasColumnType("real");
+                    b.Property<decimal?>("EndBatteryPercentage")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
@@ -576,11 +607,32 @@ namespace API.Migrations
                     b.Property<double>("EnergyConsumed")
                         .HasColumnType("float");
 
+                    b.Property<int>("IdleFee")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("IdleFeeStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsOverstay")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsWalkInSession")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OverstayFee")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReceiptId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
 
-                    b.Property<float>("StartBatteryPercentage")
-                        .HasColumnType("real");
+                    b.Property<decimal>("StartBatteryPercentage")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -588,6 +640,9 @@ namespace API.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<int?>("StopReason")
+                        .HasColumnType("int");
 
                     b.Property<int?>("VehicleId")
                         .HasColumnType("int");
@@ -599,6 +654,8 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChargingPostId");
+
+                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("ReservationId");
 
@@ -743,8 +800,11 @@ namespace API.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("ChargingSessionId")
-                        .HasColumnType("int");
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ConfirmedByStaffId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
@@ -752,12 +812,8 @@ namespace API.Migrations
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("DriverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("EnergyConsumed")
-                        .HasColumnType("float");
+                    b.Property<decimal>("EnergyConsumed")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("EnergyCost")
                         .HasColumnType("decimal(18, 2)");
@@ -771,8 +827,15 @@ namespace API.Migrations
                     b.Property<DateTime?>("IdleStartTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("OverstayFee")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("PackageId")
                         .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("PricePerKwhSnapshot")
                         .HasColumnType("decimal(18, 2)");
@@ -782,13 +845,9 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("SessionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18, 2)");
@@ -797,11 +856,11 @@ namespace API.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.HasIndex("ChargingSessionId");
+                    b.HasIndex("ConfirmedByStaffId");
 
                     b.HasIndex("PackageId");
 
-                    b.ToTable("Receipt");
+                    b.ToTable("Receipts");
                 });
 
             modelBuilder.Entity("API.Entities.Report", b =>
@@ -947,7 +1006,7 @@ namespace API.Migrations
                             Id = 1,
                             Address = "12 Lê Lợi, Quận 1, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "Q1HCM",
+                            Code = "HCM01",
                             Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC",
                             Latitude = 10.776899999999999,
                             Longitude = 106.7009,
@@ -960,7 +1019,7 @@ namespace API.Migrations
                             Id = 2,
                             Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "TDHCM",
+                            Code = "HCM02",
                             Description = "Trạm sạc khu vực Thủ Đức, gần Vincom",
                             Latitude = 10.849500000000001,
                             Longitude = 106.7689,
@@ -973,7 +1032,7 @@ namespace API.Migrations
                             Id = 3,
                             Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "BDBD",
+                            Code = "BD03",
                             Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa",
                             Latitude = 10.949999999999999,
                             Longitude = 106.75,
@@ -1009,7 +1068,6 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Plate")
@@ -1584,6 +1642,11 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("API.Entities.Receipt", "Receipt")
+                        .WithMany("ChargingSessions")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("API.Entities.Reservation", "Reservation")
                         .WithMany()
                         .HasForeignKey("ReservationId");
@@ -1593,6 +1656,8 @@ namespace API.Migrations
                         .HasForeignKey("VehicleId");
 
                     b.Navigation("ChargingPost");
+
+                    b.Navigation("Receipt");
 
                     b.Navigation("Reservation");
 
@@ -1622,13 +1687,12 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Entities.AppUser", "AppUser")
                         .WithMany("Receipts")
-                        .HasForeignKey("AppUserId");
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("API.Entities.ChargingSession", "ChargingSession")
+                    b.HasOne("API.Entities.AppUser", "ConfirmedByStaff")
                         .WithMany()
-                        .HasForeignKey("ChargingSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ConfirmedByStaffId");
 
                     b.HasOne("API.Entities.DriverPackage", "Package")
                         .WithMany()
@@ -1636,7 +1700,7 @@ namespace API.Migrations
 
                     b.Navigation("AppUser");
 
-                    b.Navigation("ChargingSession");
+                    b.Navigation("ConfirmedByStaff");
 
                     b.Navigation("Package");
                 });
@@ -1690,8 +1754,7 @@ namespace API.Migrations
                     b.HasOne("API.Entities.AppUser", "Owner")
                         .WithMany("Vehicles")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
                 });
@@ -1790,6 +1853,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Receipt", b =>
                 {
+                    b.Navigation("ChargingSessions");
+
                     b.Navigation("WalletTransactions");
                 });
 

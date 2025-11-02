@@ -34,6 +34,12 @@ namespace API.Repository
                 .ToListAsync();
         }
 
+        public IQueryable<WalletTransaction> GetTransactionsQueryableByWalletId(int walletId)
+        {
+            return _context.WalletTransactions
+                .Where(t => t.WalletId == walletId);
+        }
+
         public async Task UpdateTransactionAsync(WalletTransaction transaction)
         {
             _context.WalletTransactions.Update(transaction);

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using API.Entities.Wallet;
 using API.Helpers.Enums;
 using System.Collections.Generic;
+using API.Helpers;
 
 public class AppDbContext : IdentityDbContext<AppUser>
 {
@@ -26,7 +27,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ChargingSession> ChargingSessions { get; set; }
     public DbSet<VehicleModel> VehicleModels { get; set; }
     public DbSet<Pricing> Pricings { get; set; }
+    public DbSet<Receipt> Receipts { get; set; }
     public DbSet<Report> Reports { get; set; }
+    public DbSet<Assignment> Assignments { get; set; }
 
     private static readonly DateTime effectiveDate = new DateTime(2025, 1, 1);
     private static readonly DateTime expiryDate = new DateTime(2099, 12, 31);
@@ -50,9 +53,29 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .WithOne()
                 .HasForeignKey<Wallet>(w => w.UserId);
 
+        builder.Entity<Station>()
+                .Property(s => s.Status)
+                .HasConversion<string>()        // ✅ Enum → string
+                .HasColumnType("nvarchar(20)");
+
         builder.Entity<ChargingPost>()
             .Property(p => p.PowerKW)
             .HasPrecision(5, 2);
+
+        builder.Entity<ChargingPost>()
+            .Property(p => p.Type)
+            .HasConversion<string>()        // ✅ Enum → string
+            .HasColumnType("nvarchar(20)");
+
+        builder.Entity<ChargingPost>()
+            .Property(p => p.ConnectorType)
+            .HasConversion<string>()        // ✅ Enum → string
+            .HasColumnType("nvarchar(20)");
+
+        builder.Entity<ChargingPost>()
+            .Property(p => p.Status)
+            .HasConversion<string>()        // ✅ Enum → string
+            .HasColumnType("nvarchar(20)");
 
         builder.Entity<ChargingPackage>()
             .Property(p => p.Price)
@@ -61,6 +84,24 @@ public class AppDbContext : IdentityDbContext<AppUser>
         builder.Entity<Pricing>()
         .Property(p => p.PriceType)
         .HasConversion<string>(); // <-- Lưu enum dưới dạng chuỗi
+
+        builder.Entity<Receipt>()
+            .HasMany(r => r.ChargingSessions)
+            .WithOne(s => s.Receipt)
+            .HasForeignKey(s => s.ReceiptId)
+            // Nếu Receipt bị xóa thì:
+            // .OnDelete(DeleteBehavior.SetNull); // giữ session, but set ReceiptId = null
+            // hoặc .OnDelete(DeleteBehavior.Restrict); // không cho xóa Receipt khi có session
+            // hoặc .OnDelete(DeleteBehavior.Cascade); // xóa luôn session theo Receipt (cẩn thận!)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Receipt>()
+            .HasOne(r => r.AppUser)
+            .WithMany(u => u.Receipts)
+            .HasForeignKey(r => r.AppUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Assignment>().ToTable("Assignments");
 
         builder.Entity<Pricing>().HasData(
             new Pricing
@@ -232,41 +273,81 @@ public class AppDbContext : IdentityDbContext<AppUser>
         );
 
         builder.Entity<Station>().HasData(
-            new Station { Id = 1, Name = "Trạm sạc VinFast Quận 1", Code = "Q1HCM", Address = "12 Lê Lợi, Quận 1, TP.HCM", Latitude = 10.7769, Longitude = 106.7009, Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC", OpenTime = new TimeSpan(6, 0, 0), CloseTime = new TimeSpan(22, 0, 0), Status = StationStatus.Active },
-            new Station { Id = 2, Name = "Trạm sạc VinFast Thủ Đức", Code = "TDHCM", Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", Latitude = 10.8495, Longitude = 106.7689, Description = "Trạm sạc khu vực Thủ Đức, gần Vincom", OpenTime = new TimeSpan(6, 0, 0), CloseTime = new TimeSpan(22, 0, 0), Status = StationStatus.Active },
-            new Station { Id = 3, Name = "Trạm sạc VinFast Bình Dương", Code = "BDBD", Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương", Latitude = 10.9500, Longitude = 106.7500, Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa", OpenTime = new TimeSpan(6, 0, 0), CloseTime = new TimeSpan(22, 0, 0), Status = StationStatus.Active }
+            new Station
+            {
+                Id = 1,
+                Name = "Trạm sạc VinFast Quận 1",
+                Code = StationCodeHelper.GenerateStationCode("12 Lê Lợi, Quận 1, TP.HCM", 1),
+                Address = "12 Lê Lợi, Quận 1, TP.HCM",
+                Latitude = 10.7769,
+                Longitude = 106.7009,
+                Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC",
+                OpenTime = new TimeSpan(6, 0, 0),
+                CloseTime = new TimeSpan(22, 0, 0),
+                Status = StationStatus.Active
+            },
+            new Station
+            {
+                Id = 2,
+                Name = "Trạm sạc VinFast Thủ Đức",
+                Code = StationCodeHelper.GenerateStationCode("35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", 2),
+                Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM",
+                Latitude = 10.8495,
+                Longitude = 106.7689,
+                Description = "Trạm sạc khu vực Thủ Đức, gần Vincom",
+                OpenTime = new TimeSpan(6, 0, 0),
+                CloseTime = new TimeSpan(22, 0, 0),
+                Status = StationStatus.Active
+            },
+            new Station
+            {
+                Id = 3,
+                Name = "Trạm sạc VinFast Bình Dương",
+                Code = StationCodeHelper.GenerateStationCode("88 Đại Lộ Bình Dương, Thuận An, Bình Dương", 3),
+                Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương",
+                Latitude = 10.9500,
+                Longitude = 106.7500,
+                Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa",
+                OpenTime = new TimeSpan(6, 0, 0),
+                CloseTime = new TimeSpan(22, 0, 0),
+                Status = StationStatus.Active
+            }
         );
 
+        var station1Code = StationCodeHelper.GenerateStationCode("12 Lê Lợi, Quận 1, TP.HCM", 1);
+        var station2Code = StationCodeHelper.GenerateStationCode("35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", 2);
+        var station3Code = StationCodeHelper.GenerateStationCode("88 Đại Lộ Bình Dương, Thuận An, Bình Dương", 3);
+
         builder.Entity<ChargingPost>().HasData(
-            // ==== Trạm 1: Quận 1 ====
-            new ChargingPost { Id = 1, StationId = 1, Code = "Q1-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 2, StationId = 1, Code = "Q1-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 3, StationId = 1, Code = "Q1-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 4, StationId = 1, Code = "Q1-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 5, StationId = 1, Code = "Q1-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 6, StationId = 1, Code = "Q1-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 7, StationId = 1, Code = "Q1-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 8, StationId = 1, Code = "Q1-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+            // ==== Trạm 1 ====
+    new ChargingPost { Id = 1, StationId = 1, Code = $"{station1Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 2, StationId = 1, Code = $"{station1Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 3, StationId = 1, Code = $"{station1Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 4, StationId = 1, Code = $"{station1Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 5, StationId = 1, Code = $"{station1Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 6, StationId = 1, Code = $"{station1Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 7, StationId = 1, Code = $"{station1Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 8, StationId = 1, Code = $"{station1Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-            // ==== Trạm 2: Thủ Đức ====
-            new ChargingPost { Id = 9, StationId = 2, Code = "TD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 10, StationId = 2, Code = "TD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 11, StationId = 2, Code = "TD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 12, StationId = 2, Code = "TD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 13, StationId = 2, Code = "TD-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 14, StationId = 2, Code = "TD-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 15, StationId = 2, Code = "TD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 16, StationId = 2, Code = "TD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+    // ==== Trạm 2 ====
+    new ChargingPost { Id = 9, StationId = 2, Code = $"{station2Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 10, StationId = 2, Code = $"{station2Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 11, StationId = 2, Code = $"{station2Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 12, StationId = 2, Code = $"{station2Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 13, StationId = 2, Code = $"{station2Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 14, StationId = 2, Code = $"{station2Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 15, StationId = 2, Code = $"{station2Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 16, StationId = 2, Code = $"{station2Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-            // ==== Trạm 3: Bình Dương ====
-            new ChargingPost { Id = 17, StationId = 3, Code = "BD-Type2-A", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 18, StationId = 3, Code = "BD-Type2-B", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 19, StationId = 3, Code = "BD-CCS2-A", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 20, StationId = 3, Code = "BD-CCS2-B", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 21, StationId = 3, Code = "BD-ULTRA-A", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 22, StationId = 3, Code = "BD-ULTRA-B", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 23, StationId = 3, Code = "BD-SC-A", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 24, StationId = 3, Code = "BD-SC-B", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
+    // ==== Trạm 3 ====
+    new ChargingPost { Id = 17, StationId = 3, Code = $"{station3Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 18, StationId = 3, Code = $"{station3Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 19, StationId = 3, Code = $"{station3Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 20, StationId = 3, Code = $"{station3Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 21, StationId = 3, Code = $"{station3Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 22, StationId = 3, Code = $"{station3Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+    new ChargingPost { Id = 23, StationId = 3, Code = $"{station3Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+    new ChargingPost { Id = 24, StationId = 3, Code = $"{station3Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
         );
     }
 }

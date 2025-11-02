@@ -66,17 +66,17 @@ namespace API.Services
             bool isEarly = now < reservation.TimeSlotStart.AddMinutes(-15);
             bool isLate = now > reservation.TimeSlotEnd;
 
-            if (isEarly)
-            {
-                return (false,
-                    $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
-            }
+            // if (isEarly)
+            // {
+            //     return (false,
+            //         $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            // }
 
-            if (isLate)
-            {
-                return (false,
-                    $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
-            }
+            // if (isLate)
+            // {
+            //     return (false,
+            //         $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            // }
 
             // Người dùng có đặt chỗ hợp lệ, kiểm tra trạng thái trụ
             switch (post.Status)
