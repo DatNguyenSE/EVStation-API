@@ -19,5 +19,18 @@ namespace API.Mappers
                 Email = appUser.Email ?? string.Empty
             };
         }
+
+        public static UserDto ToUserDto(this AppUser appUser, string? roleName)
+        {
+            return new UserDto
+            {
+                Id = appUser.Id,
+                FullName = appUser.FullName,
+                Email = appUser.Email ?? string.Empty,
+                DateOfBirth = appUser.DateOfBirth,
+                EmailConfirmed = appUser.EmailConfirmed,
+                Roles = roleName
+            };
+        }
     }
 }

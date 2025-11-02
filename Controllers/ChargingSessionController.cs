@@ -147,7 +147,7 @@ namespace API.Controllers
                 }
             }
 
-            var sessions = await _uow.ChargingSessions.GetSessionByStationAsync(stationId);
+            var sessions = await _uow.ChargingSessions.GetSessionsByStationAsync(stationId);
 
             if (sessions == null || sessions.Count == 0)
             {
