@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030185518_updateReceipt")]
+    partial class updateReceipt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,14 +183,14 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EffectiveFrom")
+                    b.Property<DateTime>("ShiftDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("EffectiveTo")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("ShiftEnd")
+                        .HasColumnType("time");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<TimeSpan>("ShiftStart")
+                        .HasColumnType("time");
 
                     b.Property<string>("StaffId")
                         .IsRequired()
@@ -202,7 +205,7 @@ namespace API.Migrations
 
                     b.HasIndex("StationId");
 
-                    b.ToTable("Assignments", (string)null);
+                    b.ToTable("Assignment");
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPackage", b =>

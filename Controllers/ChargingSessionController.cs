@@ -56,7 +56,7 @@ namespace API.Controllers
         {
             try
             {
-                var receipt = await _service.CompleteSessionAsync(sessionId);
+                var receipt = await _service.CompleteSessionAsync(sessionId, true);
                 return Ok(receipt);
             }
             catch (Exception ex) { return BadRequest(ex.Message); }

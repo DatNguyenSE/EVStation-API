@@ -13,5 +13,6 @@ namespace API.Interfaces
         Task<WalletTransaction?> GetByVnpTxnRefAsync(string vnpTxnRef);
         Task UpdateTransactionAsync(WalletTransaction transaction);
         Task<IEnumerable<WalletTransaction>> GetTransactionsByWalletIdAsync(int walletId);
+        IQueryable<WalletTransaction> GetTransactionsQueryableByWalletId(int id);
     }
 }
