@@ -280,7 +280,7 @@ namespace API.Controllers
                 // Tạo URL tuyệt đối để Admin có thể xem ảnh
                 RegistrationImageUrl = string.IsNullOrEmpty(v.VehicleRegistrationImageUrl)
                                         ? null
-                                        : $"{baseUrl}{v.VehicleRegistrationImageUrl}"
+                                        : $"{v.VehicleRegistrationImageUrl}"
             });
 
             return Ok(dtos);
