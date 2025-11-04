@@ -101,6 +101,12 @@ namespace API.Repository
             return nearestStation;
         }
 
+        public async Task<string?> GetStationNameById(int value)
+        {
+            var station = await _context.Stations.FindAsync(value);
+            return station?.Name;
+        }
+
         public async Task<List<Station>> SearchAsync(string keyword)
         {
             // Nên dùng IsNullOrWhiteSpace để kiểm tra cả trường hợp chuỗi chỉ có khoảng trắng
@@ -143,7 +149,7 @@ namespace API.Repository
                 {
                     stationModel.OpenTime = stationDto.OpenTime.Value;
                 }
-            }   
+            }
             if (stationDto.CloseTime.HasValue)
             {
                 if (stationDto.CloseTime.Value.TotalHours == 24)
@@ -154,7 +160,7 @@ namespace API.Repository
                 {
                     stationModel.CloseTime = stationDto.CloseTime.Value;
                 }
-            }                
+            }
             if (stationDto.Status.HasValue)
                 stationModel.Status = stationDto.Status.Value;
             return stationModel;

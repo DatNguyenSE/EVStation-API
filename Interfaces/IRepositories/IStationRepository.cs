@@ -20,5 +20,6 @@ namespace API.Interfaces
         Task<Station?> UpdateStatusAsync(int id, StationStatus status);
         Task<Station?> GetNearestAsync(double latitude, double longitude);
         Task<List<Station>> SearchAsync(string keyword);
+        Task<string?> GetStationNameById(int value);
     }
 }

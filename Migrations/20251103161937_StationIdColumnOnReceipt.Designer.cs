@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103161937_StationIdColumnOnReceipt")]
+    partial class StationIdColumnOnReceipt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1001,9 +1004,6 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsProcessedByDiscipline")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
@@ -1152,10 +1152,7 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("VehicleRegistrationBackUrl")
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("VehicleRegistrationFrontUrl")
+                    b.Property<string>("VehicleRegistrationImageUrl")
                         .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");

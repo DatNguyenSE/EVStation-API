@@ -24,6 +24,12 @@ namespace API.Repository
 
         }
 
+        public IQueryable<Receipt> GetAllReceiptsQueryable()
+        {
+            return _context.Receipts.Include(r => r.ChargingSessions)
+                                    .Include(r => r.Station);
+        }
+
         public async Task<Receipt?> GetByIdAsync(int id)
         {
             return await _context.Receipts.Include(r => r.ChargingSessions).ThenInclude(cs => cs.ChargingPost).FirstOrDefaultAsync(r => r.Id == id);
