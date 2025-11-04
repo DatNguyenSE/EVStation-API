@@ -384,9 +384,15 @@ namespace API.Controllers
                 DateOfBirth = u.DateOfBirth,
                 EmailConfirmed = u.EmailConfirmed,
                 IsBanned = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow,
-            }).ToList();
+                LockoutEnd = u.LockoutEnd
+            });
 
-            return Ok(driverDtos);
+            var sortedDrivers = driverDtos
+                    .OrderBy(dto => dto.IsBanned)
+                    .ThenBy(dto => dto.Id)
+                    .ToList();
+
+            return Ok(sortedDrivers);
         }
 
         [HttpGet("staffs")]
@@ -435,6 +441,11 @@ namespace API.Controllers
             if (user == null)
             {
                 return NotFound($"Không tìm thấy người dùng với ID: {userId}");
+            }
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return BadRequest("Tài xế này đang còn trong thời gian bị ban.");
             }
 
             DateTimeOffset banUntil;

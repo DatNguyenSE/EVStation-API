@@ -22,6 +22,8 @@ namespace API.Helpers
             public const int CancellationCutoffMinutes = 20;
             public const int NoShowGracePeriodMinutes = 15;
             public const int slotDurationMinutes = 60;
+            public const int ExpiredBanDays = 5;
+            public const int MaxExpiredReservations = 2;
         }
 
         public static class Roles
