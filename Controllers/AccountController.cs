@@ -76,6 +76,16 @@ namespace API.Controllers
 
             if (!result.Succeeded)
             {
+                if (result.IsLockedOut)
+                {
+                    var banUntil = await _userManager.GetLockoutEndDateAsync(user);
+                    var banUntilStr = banUntil.HasValue
+                                        ? banUntil.Value.AddHours(7).ToString("HH:mm dd/MM/yyyy") // Giả định múi giờ hiển thị là +7
+                                        : "chưa xác định";
+
+                    return Unauthorized($"Tài khoản của bạn đã bị khóa. Tài khoản sẽ được mở khóa vào: {banUntilStr}");
+                }
+
                 return Unauthorized("Tên đăng nhập hoặc mật khẩu không chính xác.");
             }
 
@@ -455,6 +465,24 @@ namespace API.Controllers
                 return BadRequest("Số ngày ban phải lớn hơn 0.");
             }
 
+            if (user.LockoutEnabled == false)
+            {
+                user.LockoutEnabled = true;
+
+                // BƯỚC MỚI 2: LƯU THAY ĐỔI LockoutEnabled
+                var updateLockoutResult = await _userManager.UpdateAsync(user);
+
+                if (!updateLockoutResult.Succeeded)
+                {
+                    // Trả về lỗi nếu không thể bật LockoutEnabled
+                    return BadRequest(new
+                    {
+                        Message = "Không thể bật tính năng khóa tài khoản (LockoutEnabled).",
+                        Errors = updateLockoutResult.Errors
+                    });
+                }
+            }
+
             banUntil = DateTimeOffset.UtcNow.AddHours(7).AddDays(days);
 
             // Việc ResetAccessFailedCount đảm bảo rằng Lockout được áp dụng ngay lập tức
@@ -464,6 +492,24 @@ namespace API.Controllers
 
             if (result.Succeeded)
             {
+                // BƯỚC MỚI: GỬI EMAIL THÔNG BÁO BAN THỦ CÔNG
+                try
+                {
+                    // Giả định: Bạn truyền 0 cho maxViolations (vì đây là ban thủ công, không phải ban tự động)
+                    // và truyền 'days' vào vị trí banDays
+                    await _emailService.SendAccountBannedEmailAsync(
+                        toEmail: user.Email,
+                        username: user.UserName,
+                        maxViolations: 0, // Thay bằng 0 hoặc một giá trị đặc biệt để chỉ ra Ban thủ công
+                        banDays: days,
+                        banUntil: banUntil);
+                }
+                catch (Exception ex)
+                {
+                    // Tùy chọn: Log lỗi gửi email nhưng vẫn trả về OK vì Ban đã thành công
+                    Console.WriteLine($"[AdminController] Failed to send ban email to {user.Email}: {ex.Message}");
+                }
+
                 return Ok(new
                 {
                     Message = $"Tài khoản {user.UserName} đã bị khóa thành công.",
