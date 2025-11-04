@@ -21,8 +21,12 @@ namespace API.Entities
 
         public string? AppUserId { get; set; }
         public AppUser? AppUser { get; set; }
+
         public int? PackageId { get; set; }
         public DriverPackage? Package { get; set; }
+
+        public int StationId { get; set; }
+        public Station? Station { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal EnergyConsumed { get; set; }

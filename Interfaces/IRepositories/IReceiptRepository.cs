@@ -10,6 +10,7 @@ namespace API.Interfaces
     public interface IReceiptRepository
     {
         Task AddAsync(Receipt receipt);
+        IQueryable<Receipt> GetAllReceiptsQueryable();
         Task<Receipt?> GetByIdAsync(int id);
         Task UpdateStatusAsync(int id, ReceiptStatus receiptStatus);
         void Update(Receipt receipt);
