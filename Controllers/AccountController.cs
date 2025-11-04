@@ -28,6 +28,7 @@ namespace API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<AppUser> _signInManager;
@@ -35,11 +36,12 @@ namespace API.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<AppUser> userManager, IAuthService authService, ITokenService tokenService,
+        public AccountController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IAuthService authService, ITokenService tokenService,
                                 SignInManager<AppUser> signInManager, IEmailService emailService,
                                 IConfiguration configuration, ILogger<AccountController> logger)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _authService = authService;
             _tokenService = tokenService;
             _signInManager = signInManager;
@@ -367,15 +369,11 @@ namespace API.Controllers
         {
             string targetRole = AppConstant.Roles.Driver;
 
-            var allUsers = await _userManager.Users.ToListAsync();
+            var drivers = await _userManager.GetUsersInRoleAsync(targetRole);
 
-            var drivers = new List<AppUser>();
-            foreach (var user in allUsers)
+            if (drivers == null || !drivers.Any())
             {
-                if (await _userManager.IsInRoleAsync(user, targetRole))
-                {
-                    drivers.Add(user);
-                }
+                return Ok(new List<UserDto>());
             }
 
             var driverDtos = drivers.Select(u => new UserDto
@@ -385,7 +383,8 @@ namespace API.Controllers
                 Email = u.Email ?? string.Empty,
                 DateOfBirth = u.DateOfBirth,
                 EmailConfirmed = u.EmailConfirmed,
-            });
+                IsBanned = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow,
+            }).ToList();
 
             return Ok(driverDtos);
         }
@@ -445,7 +444,7 @@ namespace API.Controllers
                 return BadRequest("Số ngày ban phải lớn hơn 0.");
             }
 
-            banUntil = DateTimeOffset.UtcNow.AddDays(days);
+            banUntil = DateTimeOffset.UtcNow.AddHours(7).AddDays(days);
 
             // Việc ResetAccessFailedCount đảm bảo rằng Lockout được áp dụng ngay lập tức
             await _userManager.ResetAccessFailedCountAsync(user);
