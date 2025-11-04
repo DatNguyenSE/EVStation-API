@@ -330,6 +330,7 @@ namespace API.Services
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? null,
+                    StationId = session.ChargingPost.StationId,
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
@@ -400,6 +401,7 @@ namespace API.Services
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
+                    StationId = session.ChargingPost.StationId,
                     EnergyConsumed = energyConsumed,
                     EnergyCost = energyCost,
                     IdleStartTime = idle > 0 ? session.IdleFeeStartTime : null,
