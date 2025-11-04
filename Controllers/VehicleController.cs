@@ -132,6 +132,25 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("info/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetMyVehicleInfoById(int id)
+        {
+            var username = User.GetUsername();
+            var appUser = await _userManager.FindByNameAsync(username);
+
+            if (appUser == null)
+            {
+                return Unauthorized();
+            }
+
+            var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(id);
+
+           if (vehicle == null)
+            return NotFound(new { message = "Vehicle not found for this user." });
+            return Ok(vehicle.ToVehicleResponseDto());
+        }
+
         [HttpGet("my-approved")]
         [Authorize]
         public async Task<IActionResult> GetMyVehiclesApproved()
@@ -208,7 +227,7 @@ namespace API.Controllers
             });
         }
 
-        [HttpDelete("my/{id}")]
+        [HttpDelete("my/delete/{id}")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> DeactivateVehicle([FromRoute] int id)
         {
