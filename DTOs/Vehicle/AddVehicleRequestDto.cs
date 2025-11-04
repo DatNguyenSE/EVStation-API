@@ -25,7 +25,10 @@ namespace API.DTOs.Vehicle
         public string Plate { get; set; } = string.Empty;
 
         // ----- TRƯỜNG MỚI ĐỂ UPLOAD FILE -----
-        [Required(ErrorMessage = "Vui lòng cung cấp ảnh chụp cà vẹt xe.")]
-        public IFormFile RegistrationImage { get; set; } = null!;
+        [Required(ErrorMessage = "Vui lòng cung cấp ảnh mặt trước cà vẹt xe.")]
+        public IFormFile RegistrationImageFront { get; set; } = null!;
+
+        [Required(ErrorMessage = "Vui lòng cung cấp ảnh mặt sau cà vẹt xe.")]
+        public IFormFile RegistrationImageBack { get; set; } = null!;
     }
 }

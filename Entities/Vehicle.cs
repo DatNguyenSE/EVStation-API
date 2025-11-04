@@ -33,8 +33,10 @@ namespace API.Entities
         public bool IsActive { get; set; } = true;
         // Lưu đường dẫn URL tới ảnh cà vẹt
         [Column(TypeName = "nvarchar(500)")] // Dành không gian cho URL dài
-        public string? VehicleRegistrationImageUrl { get; set; }
-        
+        public string? VehicleRegistrationFrontUrl { get; set; }
+        [Column(TypeName = "nvarchar(500)")] // Dành không gian cho URL dài
+        public string? VehicleRegistrationBackUrl { get; set; }
+
         [Column(TypeName = "nvarchar(20)")] // Lưu tên của Enum (Pending, Approved, ...)
         public VehicleRegistrationStatus RegistrationStatus { get; set; }
     }

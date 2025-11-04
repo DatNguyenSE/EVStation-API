@@ -318,7 +318,7 @@ namespace API.Services
                 PricingDto? pricing = null;
                 try
                 {
-                    using var pricingScope = _scopeFactory.CreateScope();   
+                    using var pricingScope = _scopeFactory.CreateScope();
                     var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
                     pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
                 }
@@ -350,6 +350,8 @@ namespace API.Services
                 }
 
                 await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
             }
             else // reservation session
             {
@@ -361,7 +363,7 @@ namespace API.Services
                 var discountAmount = 0;
 
                 var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
-                if(driverPackage != null)
+                if (driverPackage != null)
                 {
                     discountAmount = total;
                     total = 0;
@@ -424,30 +426,28 @@ namespace API.Services
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
                 }
 
-                if(endReservation == true)
+                if (endReservation == true)
                 {
-                    if(session.Reservation != null)
+                    if (session.Reservation != null)
                     {
                         var reservation = session.Reservation.Status = ReservationStatus.Completed;
                     }
                 }
-            }
-            await _uow.Receipts.AddAsync(receipt);
-            await _uow.Complete();
 
-            // Wallet charge for reservation members
-            if (session.Vehicle?.OwnerId != null && total > 0)
-            {
-                var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
-            }
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
 
-            // send email if available
-            if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
-            {
-                var dto = receipt.MapToDto();
-                await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
-            }
+                if (session.Vehicle?.OwnerId != null && total > 0)
+                {
+                    var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
+                }
 
+                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
+                {
+                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, receipt);
+                }
+            }
+            
             // signal
             await _hubContext.Clients.Group($"session-{sessionId}")
                 .SendAsync("ReceiveSessionCompleted", sessionId, receipt.MapToDto());
@@ -494,7 +494,7 @@ namespace API.Services
             }
             else
             {
-                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal) powerKW);
+                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal)powerKW);
                 if (compatibleModels?.Any() != true) throw new Exception("Không tìm thấy mẫu xe tương thích");
 
                 var random = new Random();

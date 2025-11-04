@@ -230,7 +230,7 @@ namespace API.Controllers
                 var newUserDto = await _authService.RegisterAndSyncGuestHistoryAsync(registerDto);
 
                 // Xử lý xác nhận Email (Giống logic register cũ)
-                var appUser = await _userManager.FindByIdAsync(newUserDto.Id);
+                var appUser = await _userManager.FindByIdAsync(newUserDto.Id);  
 
                 var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                 var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
