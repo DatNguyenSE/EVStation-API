@@ -35,5 +35,8 @@ namespace API.Interfaces
 
         Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId);
         Task<List<Reservation>> GetConflictingReservationsAsync(int postId, DateTime maintenanceStart, DateTime maintenanceEnd);
+        Task<IEnumerable<Reservation>> FindAllAsync(
+            Expression<Func<Reservation, bool>> predicate, 
+            bool asNoTracking = false);
     }
 }

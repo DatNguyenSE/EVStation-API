@@ -196,5 +196,17 @@ namespace API.Repository
                             r.TimeSlotEnd > maintenanceStart)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Reservation>> FindAllAsync(Expression<Func<Reservation, bool>> predicate, bool asNoTracking = false)
+        {
+            IQueryable<Reservation> query = _context.Reservations.Where(predicate);
+
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

@@ -76,6 +76,16 @@ namespace API.Controllers
 
             if (!result.Succeeded)
             {
+                if (result.IsLockedOut)
+                {
+                    var banUntil = await _userManager.GetLockoutEndDateAsync(user);
+                    var banUntilStr = banUntil.HasValue
+                                        ? banUntil.Value.AddHours(7).ToString("HH:mm dd/MM/yyyy") // Giả định múi giờ hiển thị là +7
+                                        : "chưa xác định";
+
+                    return Unauthorized($"Tài khoản của bạn đã bị khóa. Tài khoản sẽ được mở khóa vào: {banUntilStr}");
+                }
+
                 return Unauthorized("Tên đăng nhập hoặc mật khẩu không chính xác.");
             }
 
@@ -384,9 +394,15 @@ namespace API.Controllers
                 DateOfBirth = u.DateOfBirth,
                 EmailConfirmed = u.EmailConfirmed,
                 IsBanned = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow,
-            }).ToList();
+                LockoutEnd = u.LockoutEnd
+            });
 
-            return Ok(driverDtos);
+            var sortedDrivers = driverDtos
+                    .OrderBy(dto => dto.IsBanned)
+                    .ThenBy(dto => dto.Id)
+                    .ToList();
+
+            return Ok(sortedDrivers);
         }
 
         [HttpGet("staffs")]
@@ -437,11 +453,34 @@ namespace API.Controllers
                 return NotFound($"Không tìm thấy người dùng với ID: {userId}");
             }
 
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return BadRequest("Tài xế này đang còn trong thời gian bị ban.");
+            }
+
             DateTimeOffset banUntil;
 
             if (days <= 0)
             {
                 return BadRequest("Số ngày ban phải lớn hơn 0.");
+            }
+
+            if (user.LockoutEnabled == false)
+            {
+                user.LockoutEnabled = true;
+
+                // BƯỚC MỚI 2: LƯU THAY ĐỔI LockoutEnabled
+                var updateLockoutResult = await _userManager.UpdateAsync(user);
+
+                if (!updateLockoutResult.Succeeded)
+                {
+                    // Trả về lỗi nếu không thể bật LockoutEnabled
+                    return BadRequest(new
+                    {
+                        Message = "Không thể bật tính năng khóa tài khoản (LockoutEnabled).",
+                        Errors = updateLockoutResult.Errors
+                    });
+                }
             }
 
             banUntil = DateTimeOffset.UtcNow.AddHours(7).AddDays(days);
@@ -453,6 +492,24 @@ namespace API.Controllers
 
             if (result.Succeeded)
             {
+                // BƯỚC MỚI: GỬI EMAIL THÔNG BÁO BAN THỦ CÔNG
+                try
+                {
+                    // Giả định: Bạn truyền 0 cho maxViolations (vì đây là ban thủ công, không phải ban tự động)
+                    // và truyền 'days' vào vị trí banDays
+                    await _emailService.SendAccountBannedEmailAsync(
+                        toEmail: user.Email,
+                        username: user.UserName,
+                        maxViolations: 0, // Thay bằng 0 hoặc một giá trị đặc biệt để chỉ ra Ban thủ công
+                        banDays: days,
+                        banUntil: banUntil);
+                }
+                catch (Exception ex)
+                {
+                    // Tùy chọn: Log lỗi gửi email nhưng vẫn trả về OK vì Ban đã thành công
+                    Console.WriteLine($"[AdminController] Failed to send ban email to {user.Email}: {ex.Message}");
+                }
+
                 return Ok(new
                 {
                     Message = $"Tài khoản {user.UserName} đã bị khóa thành công.",
