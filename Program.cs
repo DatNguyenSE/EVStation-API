@@ -153,6 +153,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -190,7 +191,6 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
 // Bật tính năng này để có thể truy cập ảnh từ URL
-app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();

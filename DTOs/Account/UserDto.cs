@@ -12,6 +12,7 @@ namespace API.DTOs.Account
         public string Email { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }
         public bool? EmailConfirmed { get; set; }
+        public bool? IsBanned { get; set; }
         public string? Roles { get; set; }
     }
 }
