@@ -200,5 +200,62 @@ namespace API.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
+        public async Task SendAccountBannedEmailAsync(string toEmail, string username, int maxViolations, int banDays, DateTimeOffset banUntil)
+        {
+            var subject = "THÔNG BÁO: Tạm khóa tài khoản EVolt";
+            var banUntilStr = banUntil.ToString("HH:mm dd/MM/yyyy");
+
+            // Thay đổi logic để hiển thị chi tiết vi phạm khác nhau cho Ban thủ công và Ban tự động
+            string violationDetailsHtml;
+            if (maxViolations > 0)
+            {
+                subject += " do vi phạm quy tắc đặt chỗ";
+                violationDetailsHtml = $@"
+            <p style='color: #900; margin-top: 0;'><strong>Chi tiết vi phạm:</strong></p>
+            <ul style='color: #333; padding-left: 20px;'>
+                <li><strong>Lý do:</strong> Vi phạm quy tắc không đến (No-Show) hoặc hủy đặt chỗ không đúng hạn.</li>
+                <li><strong>Số lần vi phạm:</strong> Đạt/vượt ngưỡng {maxViolations} lần.</li>
+                <li><strong>Thời hạn cấm:</strong> Tài khoản sẽ bị khóa trong <strong>{banDays} ngày</strong>.</li>
+                <li><strong>Mở khóa vào:</strong> <strong>{banUntilStr}</strong></li>
+            </ul>";
+            }
+            else
+            {
+                subject += " do quyết định từ Ban Quản lý";
+                violationDetailsHtml = $@"
+            <p style='color: #900; margin-top: 0;'><strong>Chi tiết:</strong></p>
+            <ul style='color: #333; padding-left: 20px;'>
+                <li><strong>Lý do:</strong> Tài khoản bị tạm khóa theo quyết định của Ban Quản lý.</li>
+                <li><strong>Thời hạn cấm:</strong> Tài khoản sẽ bị khóa trong <strong>{banDays} ngày</strong>.</li>
+                <li><strong>Mở khóa vào:</strong> <strong>{banUntilStr}</strong></li>
+            </ul>";
+            }
+
+            var body = $@"
+            <html>
+            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;'>
+                <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 30px; border-left: 5px solid #d32f2f;'>
+                    <h2 style='color: #d32f2f; text-align: center; margin-bottom: 20px;'>⚠️ Thông báo Tạm khóa Tài khoản ⚠️</h2>
+                    <p style='color: #333; font-size: 16px;'>Chào <strong>{username}</strong>,</p>
+                    
+                    <p style='color: #555;'>Chúng tôi thông báo tài khoản của bạn đã bị tạm khóa.</p>
+                    
+                    <div style='background-color: #fef0f0; border: 1px solid #f0a0a0; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        {violationDetailsHtml}
+                    </div>
+
+                    <p style='color: #555;'>Trong thời gian tài khoản bị khóa, bạn sẽ không thể thực hiện các chức năng liên quan đến việc đặt chỗ và sử dụng dịch vụ sạc điện.</p>
+                    
+                    <p style='color: #555; margin-top: 20px;'>Vui lòng tuân thủ nghiêm ngặt các quy định của hệ thống.</p>
+                    
+                    <hr style='margin: 30px 0; border: 0; border-top: 1px solid #eee;'>
+                    <p style='text-align: center; color: #777; font-size: 12px;'>Mọi thắc mắc, vui lòng liên hệ Bộ phận Hỗ trợ: <a href='mailto:evoltstation@gmail.com'>evoltstation@gmail.com</a></p>
+                    <p style='text-align: center; color: #aaa; font-size: 10px;'>© 2025 EVolt System.</p>
+                </div>
+            </body>
+            </html>";
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
     }
 }
