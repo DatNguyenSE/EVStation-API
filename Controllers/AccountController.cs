@@ -483,7 +483,7 @@ namespace API.Controllers
                 }
             }
 
-            banUntil = DateTimeOffset.UtcNow.AddHours(7).AddDays(days);
+            banUntil = DateTimeOffset.UtcNow.AddDays(days);
 
             // Việc ResetAccessFailedCount đảm bảo rằng Lockout được áp dụng ngay lập tức
             await _userManager.ResetAccessFailedCountAsync(user);
@@ -492,6 +492,7 @@ namespace API.Controllers
 
             if (result.Succeeded)
             {
+                var banUntilLocal = banUntil.AddHours(7);
                 // BƯỚC MỚI: GỬI EMAIL THÔNG BÁO BAN THỦ CÔNG
                 try
                 {
@@ -502,7 +503,7 @@ namespace API.Controllers
                         username: user.UserName,
                         maxViolations: 0, // Thay bằng 0 hoặc một giá trị đặc biệt để chỉ ra Ban thủ công
                         banDays: days,
-                        banUntil: banUntil);
+                        banUntil: banUntilLocal);
                 }
                 catch (Exception ex)
                 {
@@ -513,7 +514,7 @@ namespace API.Controllers
                 return Ok(new
                 {
                     Message = $"Tài khoản {user.UserName} đã bị khóa thành công.",
-                    LockoutEnd = banUntil
+                    LockoutEnd = banUntilLocal.ToString("yyyy-MM-ddTHH:mm:ss.ffffff+07:00")
                 });
             }
 
@@ -546,8 +547,6 @@ namespace API.Controllers
             {
                 await _userManager.ResetAccessFailedCountAsync(user);
 
-                var unbanTimeLocal = unbanTimeUtc.AddHours(7);
-
                 try
                 {
                     await _emailService.SendAccountUnbannedEmailAsync(
@@ -563,7 +562,6 @@ namespace API.Controllers
                 return Ok(new
                 {
                     Message = $"Tài khoản {user.UserName} đã được mở khóa thành công.",
-                    LockoutEnd = unbanTimeLocal
                 });
             }
 
