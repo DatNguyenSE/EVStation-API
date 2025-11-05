@@ -536,13 +536,17 @@ namespace API.Controllers
                 return BadRequest("Tài khoản này hiện không bị ban.");
             }
 
+            var unbanTimeUtc = DateTimeOffset.UtcNow;
+
             // 2. Thiết lập thời gian khóa tài khoản về quá khứ (ví dụ: ngay bây giờ)
             // Việc này sẽ ngay lập tức mở khóa tài khoản
-            var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddHours(7));
+            var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
 
             if (result.Succeeded)
             {
                 await _userManager.ResetAccessFailedCountAsync(user);
+
+                var unbanTimeLocal = unbanTimeUtc.AddHours(7);
 
                 try
                 {
@@ -559,7 +563,7 @@ namespace API.Controllers
                 return Ok(new
                 {
                     Message = $"Tài khoản {user.UserName} đã được mở khóa thành công.",
-                    LockoutEnd = user.LockoutEnd
+                    LockoutEnd = unbanTimeLocal
                 });
             }
 
