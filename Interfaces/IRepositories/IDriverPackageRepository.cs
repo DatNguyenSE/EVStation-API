@@ -17,5 +17,6 @@ namespace API.Interfaces
         Task<DriverPackage?> DeactiveAsync(int id);
 
         Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType);
+        Task<List<DriverPackage>> GetPackagesSoldAsync(DateTime startDate, DateTime endDate);
     }
 }

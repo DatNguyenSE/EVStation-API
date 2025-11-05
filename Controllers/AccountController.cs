@@ -519,5 +519,55 @@ namespace API.Controllers
 
             return BadRequest(new { Errors = result.Errors });
         }
+
+        [HttpPost("UnbanUser/{userId}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> UnbanUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Không tìm thấy người dùng với ID: {userId}");
+            }
+
+            // 1. Kiểm tra xem tài khoản có đang bị khóa không
+            if (!await _userManager.IsLockedOutAsync(user))
+            {
+                return BadRequest("Tài khoản này hiện không bị ban.");
+            }
+
+            var unbanTimeUtc = DateTimeOffset.UtcNow;
+
+            // 2. Thiết lập thời gian khóa tài khoản về quá khứ (ví dụ: ngay bây giờ)
+            // Việc này sẽ ngay lập tức mở khóa tài khoản
+            var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+
+            if (result.Succeeded)
+            {
+                await _userManager.ResetAccessFailedCountAsync(user);
+
+                var unbanTimeLocal = unbanTimeUtc.AddHours(7);
+
+                try
+                {
+                    await _emailService.SendAccountUnbannedEmailAsync(
+                        toEmail: user.Email,
+                        username: user.UserName);
+                }
+                catch (Exception ex)
+                {
+                    // Log lỗi gửi email nhưng vẫn trả về OK vì Unban đã thành công
+                    Console.WriteLine($"[AdminController] Failed to send unban email to {user.Email}: {ex.Message}");
+                }
+
+                return Ok(new
+                {
+                    Message = $"Tài khoản {user.UserName} đã được mở khóa thành công.",
+                    LockoutEnd = unbanTimeLocal
+                });
+            }
+
+            return BadRequest(new { Errors = result.Errors });
+        }
     }
 }
