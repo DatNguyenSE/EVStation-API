@@ -82,6 +82,7 @@ namespace API.Services
             switch (post.Status)
             {
                 case PostStatus.Available:
+                    reservation.Status = Entities.ReservationStatus.InProgress;
                     return (true,
                         $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
 

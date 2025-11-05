@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using API.DTOs.Receipt;
+using API.Entities;
 using API.Entities.Email;
 using API.Interfaces;
 using MailKit.Net.Smtp;
@@ -89,69 +90,112 @@ namespace API.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
-        public async Task SendChargingReceiptAsync(string toEmail, ReceiptDto dto)
+        public async Task SendChargingReceiptAsync(string toEmail, Receipt receipt)
         {
-            var subject = $"Hóa đơn phiên sạc #{string.Join(", ", dto.SessionIds ?? new List<int>())} - EVolt Charging Receipt";
+            var sessionList = receipt.ChargingSessions?.ToList() ?? new List<ChargingSession>();
+            var sessionIds = sessionList.Select(s => s.Id).ToList();
+
+            var subject = $"Biên lai thanh toán phiên sạc #{string.Join(", ", sessionIds)} - EVolt Charging Receipt";
+
+            string sessionRows = "";
+            foreach (var s in sessionList)
+            {
+                sessionRows += $@"
+                    <tr>
+                        <td style='padding:10px; border-bottom:1px solid #eee;'>{s.VehiclePlate}</td>
+                        <td style='padding:10px; border-bottom:1px solid #eee;'>{s.ChargingPost.Code}</td>
+                        <td style='padding:10px; border-bottom:1px solid #eee;'>{s.StartTime:HH:mm dd/MM/yyyy}</td>
+                        <td style='padding:10px; border-bottom:1px solid #eee;'>{(s.EndTime.HasValue ? s.EndTime.Value.ToString("HH:mm dd/MM/yyyy") : "Đang sạc")}</td>
+                        <td style='padding:10px; border-bottom:1px solid #eee; text-align:right;'>{s.EnergyConsumed:F2} kWh</td>
+                        <td style='padding:10px; border-bottom:1px solid #eee; text-align:right;'>{s.TotalCost:N0} VNĐ</td>
+                    </tr>";
+            }
 
             var body = $@"
-            <html>
-            <body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 0; margin: 0;'>
-                <div style='max-width: 650px; margin: 20px auto; background: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); padding: 25px;'>
-                    <h2 style='color: #333; text-align: center;'>Biên lai thanh toán phiên sạc</h2>
-                    <p style='text-align: center; color: #555;'>Cảm ơn bạn <strong>{dto.DriverName ?? "Khách hàng"}</strong> đã sử dụng dịch vụ tại <strong>{dto.StationName ?? "EVolt Station"}</strong>.</p>
+                <html>
+                <body style='font-family: system-ui, -apple-system, Roboto, sans-serif; background-color: #f8fafc; margin:0; padding:0;'>
+                    <div style='max-width:720px; margin:30px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08);'>
 
-                    <hr style='margin: 20px 0;'>
+                        <!-- HEADER -->
+                        <div style='background:linear-gradient(90deg, #1565c0, #0d47a1); color:#fff; padding:30px; text-align:center;'>
+                            <h2 style='margin:0; font-size:22px; letter-spacing:0.3px;'>Biên lai thanh toán phiên sạc</h2>
+                            <p style='margin:6px 0 0; font-size:14px; opacity:0.9;'>Mã hóa đơn: #{receipt.Id}</p>
+                        </div>
 
-                    <h3 style='color: #444;'>Thông tin phiên sạc</h3>
-                    <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
-                        <tr><td style='padding: 6px;'>🚗 <strong>Biển số xe:</strong></td><td style='text-align:right;'>{dto.VehiclePlate ?? "N/A"}</td></tr>
-                        <tr><td style='padding: 6px;'>📍 <strong>Trụ sạc:</strong></td><td style='text-align:right;'>{dto.PostCode ?? "N/A"}</td></tr>
-                        <tr><td style='padding: 6px;'>⚡ <strong>Gói cước:</strong></td><td style='text-align:right;'>{dto.PackageName ?? dto.PricingName}</td></tr>
-                        <tr><td style='padding: 6px;'>🔋 <strong>Điện năng tiêu thụ:</strong></td><td style='text-align:right;'>{dto.EnergyConsumed:F2} kWh</td></tr>
-                        <tr><td style='padding: 6px;'>💰 <strong>Đơn giá (VNĐ/kWh):</strong></td><td style='text-align:right;'>{dto.PricePerKwhSnapshot:N0}</td></tr>
-                        <tr><td style='padding: 6px;'>🕒 <strong>Thời gian tạo hóa đơn:</strong></td><td style='text-align:right;'>{dto.CreateAt:HH:mm dd/MM/yyyy}</td></tr>
-                        <tr><td style='padding: 6px;'>📅 <strong>Trạng thái:</strong></td><td style='text-align:right;'>{dto.Status}</td></tr>
-                    </table>
+                        <!-- BODY -->
+                        <div style='padding:30px;'>
+                            <p style='font-size:15px; color:#333;'>Xin chào <strong>{receipt.AppUser?.FullName ?? "Quý khách"}</strong>,</p>
+                            <p style='font-size:15px; color:#555; line-height:1.6;'>
+                                Cảm ơn bạn đã sử dụng dịch vụ tại 
+                                <strong>{sessionList.FirstOrDefault()?.ChargingPost?.StationName ?? "EVolt Station"}</strong>.
+                                Dưới đây là chi tiết hóa đơn thanh toán của bạn:
+                            </p>
 
-                    <h3 style='color: #444;'>Chi tiết thanh toán</h3>
-                    <table style='width: 100%; border-collapse: collapse;'>
-                        <tr>
-                            <th style='text-align:left; border-bottom:1px solid #ddd; padding: 8px;'>Khoản mục</th>
-                            <th style='text-align:right; border-bottom:1px solid #ddd; padding: 8px;'>Số tiền (VNĐ)</th>
-                        </tr>
-                        <tr>
-                            <td style='padding: 8px;'>Phí năng lượng</td>
-                            <td style='text-align:right; padding: 8px;'>{dto.EnergyCost:N0}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 8px;'>Phí chờ</td>
-                            <td style='text-align:right; padding: 8px;'>{dto.IdleFee:N0}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 8px;'>Phí quá giờ</td>
-                            <td style='text-align:right; padding: 8px;'>{dto.OverstayFee:N0}</td>
-                        </tr>
-                        <tr>
-                            <td style='padding: 8px;'>Giảm giá</td>
-                            <td style='text-align:right; padding: 8px; color: #2e7d32;'>-{dto.DiscountAmount:N0}</td>
-                        </tr>
-                        <tr>
-                            <td style='border-top:1px solid #ddd; padding: 8px;'><strong>Tổng cộng</strong></td>
-                            <td style='border-top:1px solid #ddd; text-align:right; padding: 8px; font-weight:bold; color:#d32f2f;'>{dto.TotalCost:N0}</td>
-                        </tr>
-                    </table>
+                            <h3 style='color:#0d47a1; margin-top:30px; font-size:17px;'>Thông tin hóa đơn</h3>
+                            <table style='width:100%; border-collapse:collapse; font-size:14px; color:#444; margin-top:10px;'>
+                                <tr><td style='padding:6px;'>Mã hóa đơn</td><td style='text-align:right;'>{receipt.Id}</td></tr>
+                                <tr><td style='padding:6px;'>Ngày tạo</td><td style='text-align:right;'>{receipt.CreateAt:HH:mm dd/MM/yyyy}</td></tr>
+                                <tr><td style='padding:6px;'>Gói cước</td><td style='text-align:right;'>{receipt.Package?.Package.Name ?? receipt.PricingName}</td></tr>
+                                <tr><td style='padding:6px;'>Đơn giá</td><td style='text-align:right;'>{receipt.PricePerKwhSnapshot:N0} VNĐ/kWh</td></tr>
+                                <tr><td style='padding:6px;'>Phương thức thanh toán</td><td style='text-align:right;'>{receipt.PaymentMethod ?? "Không xác định"}</td></tr>
+                                <tr><td style='padding:6px;'>Trạng thái</td><td style='text-align:right;'>{receipt.Status}</td></tr>
+                            </table>
 
-                    {(dto.IdleStartTime.HasValue && dto.IdleEndTime.HasValue ? $@"
-                        <p style='margin-top: 20px; color: #555;'>
-                            ⏸ Thời gian chờ: {dto.IdleStartTime:HH:mm} - {dto.IdleEndTime:HH:mm} ({(dto.IdleEndTime - dto.IdleStartTime)?.TotalMinutes:F0} phút)
-                        </p>" : "")}
+                            {(receipt.ConfirmedByStaff != null ? $@"
+                                <p style='margin-top:10px; color:#555; font-size:14px;'>
+                                    Xác nhận bởi nhân viên: <strong>{receipt.ConfirmedByStaff.FullName}</strong> lúc {receipt.ConfirmedAt:HH:mm dd/MM/yyyy}
+                                </p>" : "")}
 
-                    <hr style='margin: 30px 0;'>
-                    <p style='text-align: center; color: #555;'>Nếu bạn có thắc mắc, vui lòng liên hệ đội ngũ hỗ trợ của chúng tôi qua email <a href='mailto:evoltstation@gmail.com'>evoltstation@gmail.com</a>.</p>
-                    <p style='text-align: center; color: #aaa; font-size: 12px;'>© 2025 EVolt System. All rights reserved.</p>
-                </div>
-            </body>
-            </html>";
+                            <h3 style='color:#0d47a1; margin-top:35px; font-size:17px;'>Danh sách phiên sạc</h3>
+                            <table style='width:100%; border-collapse:collapse; font-size:14px; margin-top:10px;'>
+                                <thead style='background:#f1f3f6;'>
+                                    <tr>
+                                        <th style='padding:10px; text-align:left;'>Xe</th>
+                                        <th style='padding:10px; text-align:left;'>Trụ sạc</th>
+                                        <th style='padding:10px;'>Bắt đầu</th>
+                                        <th style='padding:10px;'>Kết thúc</th>
+                                        <th style='padding:10px;'>Điện năng</th>
+                                        <th style='padding:10px; text-align:right;'>Tổng (VNĐ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>{sessionRows}</tbody>
+                            </table>
+
+                            {(receipt.IdleStartTime.HasValue && receipt.IdleEndTime.HasValue ? $@"
+                                <p style='margin-top:20px; color:#555; font-size:14px;'>
+                                    Thời gian chờ: {receipt.IdleStartTime:HH:mm} - {receipt.IdleEndTime:HH:mm}
+                                    ({(receipt.IdleEndTime - receipt.IdleStartTime)?.TotalMinutes:F0} phút)
+                                </p>" : "")}
+
+                            <h3 style='color:#0d47a1; margin-top:35px; font-size:17px;'>Chi tiết thanh toán</h3>
+                            <table style='width:100%; border-collapse:collapse; font-size:14px; color:#444; margin-top:10px;'>
+                                <tr><td style='padding:8px;'>Phí năng lượng</td><td style='text-align:right;'>{receipt.EnergyCost:N0}</td></tr>
+                                <tr><td style='padding:8px;'>Phí chờ</td><td style='text-align:right;'>{receipt.IdleFee:N0}</td></tr>
+                                <tr><td style='padding:8px;'>Phí quá giờ</td><td style='text-align:right;'>{receipt.OverstayFee:N0}</td></tr>
+                                <tr><td style='padding:8px;'>Giảm giá</td><td style='text-align:right; color:#2e7d32;'>-{receipt.DiscountAmount:N0}</td></tr>
+                                <tr style='border-top:2px solid #ddd;'>
+                                    <td style='padding:12px 8px; font-weight:600;'>Tổng cộng</td>
+                                    <td style='text-align:right; padding:12px 8px; color:#d32f2f; font-weight:600;'>{receipt.TotalCost:N0}</td>
+                                </tr>
+                            </table>
+
+                            <div style='margin-top:40px; text-align:center;'>
+                                <p style='font-size:14px; color:#555;'>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của <strong>EVolt</strong>.</p>
+                                <p style='font-size:13px; color:#777;'>
+                                    Nếu bạn có thắc mắc, vui lòng liên hệ: 
+                                    <a href='mailto:support@evolt.vn' style='color:#1565c0; text-decoration:none;'>support@evolt.vn</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div style='background:#f5f5f5; text-align:center; padding:20px; font-size:12px; color:#999;'>
+                            © 2025 EVolt System. All rights reserved.<br>
+                            <a href='https://evolt.vn' style='color:#999; text-decoration:none;'>www.evolt.vn</a>
+                        </div>
+                    </div>
+                </body>
+                </html>";
 
             await SendEmailAsync(toEmail, subject, body);
         }

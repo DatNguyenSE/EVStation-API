@@ -59,23 +59,30 @@ namespace API.Controllers
             }
 
             // ----- Upload ảnh lên Cloudinary -----
-            string imageUrl = string.Empty;
+            string frontUrl = "", backUrl = "";
             try
             {
                 var settings = cloudinaryConfig.Value;
                 var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
                 var cloudinary = new Cloudinary(account);
 
-                using var stream = dto.RegistrationImage.OpenReadStream();
-                var uploadParams = new ImageUploadParams()
+                // --- Upload mặt trước ---
+                using var streamFront = dto.RegistrationImageFront.OpenReadStream();
+                var uploadFront = await cloudinary.UploadAsync(new ImageUploadParams
                 {
-                    File = new FileDescription(dto.RegistrationImage.FileName, stream),
-                    Folder = "evms/vehicles" // thư mục lưu trong Cloudinary
-                };
+                    File = new FileDescription(dto.RegistrationImageFront.FileName, streamFront),
+                    Folder = "evms/vehicles"
+                });
+                frontUrl = uploadFront.SecureUrl.ToString();
 
-                var uploadResult = await cloudinary.UploadAsync(uploadParams);
-                imageUrl = uploadResult.SecureUrl.ToString();
-
+                // --- Upload mặt sau ---
+                using var streamBack = dto.RegistrationImageBack.OpenReadStream();
+                var uploadBack = await cloudinary.UploadAsync(new ImageUploadParams
+                {
+                    File = new FileDescription(dto.RegistrationImageBack.FileName, streamBack),
+                    Folder = "evms/vehicles"
+                });
+                backUrl = uploadBack.SecureUrl.ToString();
             }
             catch (Exception ex)
             {
@@ -92,7 +99,8 @@ namespace API.Controllers
                 ConnectorType = dto.ConnectorType,
                 Plate = dto.Plate,
                 OwnerId = appUser.Id,
-                VehicleRegistrationImageUrl = imageUrl,
+                VehicleRegistrationFrontUrl = frontUrl,
+                VehicleRegistrationBackUrl = backUrl,
                 RegistrationStatus = VehicleRegistrationStatus.Pending
             };
 
@@ -101,11 +109,7 @@ namespace API.Controllers
             var result = await _uow.Complete();
             if (!result) return BadRequest("Thêm xe thất bại");
 
-            return Ok(new
-            {
-                message = "Đã thêm xe thành công",
-                vehicle = created
-            });
+            return Ok(new { message = "Đăng ký xe thành công, vui lòng chờ duyệt.", vehicle });
         }
 
         // lấy thông tin xe của User
@@ -278,9 +282,12 @@ namespace API.Controllers
                 OwnerName = v.Owner?.UserName ?? "N/A",
                 OwnerEmail = v.Owner?.Email ?? "N/A",
                 // Tạo URL tuyệt đối để Admin có thể xem ảnh
-                RegistrationImageUrl = string.IsNullOrEmpty(v.VehicleRegistrationImageUrl)
+                RegistrationImageFrontUrl = string.IsNullOrEmpty(v.VehicleRegistrationFrontUrl)
                                         ? null
-                                        : $"{v.VehicleRegistrationImageUrl}"
+                                        : $"{v.VehicleRegistrationFrontUrl}",
+                RegistrationImageBackUrl = string.IsNullOrEmpty(v.VehicleRegistrationBackUrl)
+                                        ? null
+                                        : $"{v.VehicleRegistrationBackUrl}",
             });
 
             return Ok(dtos);

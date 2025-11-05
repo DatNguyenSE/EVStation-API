@@ -35,11 +35,6 @@ namespace API.Controllers
                 return Unauthorized("Không thể xác định nhân viên.");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.PaymentMethod))
-            {
-                return BadRequest("Phương thức thanh toán không được để trống.");
-            }
-
             var result = await _receiptService.ConfirmWalkInPaymentAsync(id, staffId, dto.PaymentMethod);
 
             if (!result.IsSuccess)

@@ -19,10 +19,12 @@ namespace API.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IWalletService _walletService;
-        public ReceiptService(IUnitOfWork uow, IWalletService walletService)
+        private readonly IEmailService _emailService;
+        public ReceiptService(IUnitOfWork uow, IWalletService walletService, IEmailService emailService)
         {
             _uow = uow;
             _walletService = walletService;
+            _emailService = emailService;
         }
 
         public async Task<ServiceResult> CancelReceiptAsync(int receiptId, string reason, string managerId)
@@ -50,7 +52,7 @@ namespace API.Services
             return new ServiceResult(false, "Lỗi khi lưu vào cơ sở dữ liệu.");
         }
 
-        public async Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, string paymentMethod)
+        public async Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, PaymentMethod paymentMethod)
         {
             // 1. Lấy dữ liệu từ repository
             var receipt = await _uow.Receipts.GetReceiptWithChargingSessionsAsync(receiptId);
@@ -58,12 +60,6 @@ namespace API.Services
             if (receipt == null)
             {
                 return new ServiceResult(false, "Không tìm thấy hóa đơn.");
-            }
-
-            // 2. Xử lý logic nghiệp vụ
-            if (!string.IsNullOrWhiteSpace(receipt.AppUserId))
-            {
-                return new ServiceResult(false, "Đây không phải là hóa đơn của khách vãng lai.");
             }
 
             if (receipt.Status != ReceiptStatus.Pending)
@@ -75,7 +71,7 @@ namespace API.Services
             receipt.Status = ReceiptStatus.Paid;
             receipt.ConfirmedByStaffId = staffId;
             receipt.ConfirmedAt = DateTime.UtcNow.AddHours(7);
-            receipt.PaymentMethod = paymentMethod;
+            receipt.PaymentMethod = paymentMethod.ToString();
             _uow.Receipts.Update(receipt);
 
             await _uow.ChargingSessions.UpdatePayingStatusAsync(receipt.ChargingSessions.Select(cs => cs.Id).ToList());
@@ -86,6 +82,11 @@ namespace API.Services
             if (!success)
             {
                 return new ServiceResult(false, "Lỗi khi lưu vào cơ sở dữ liệu.");
+            }
+
+            if(!string.IsNullOrEmpty(receipt.AppUserId) && receipt.AppUser != null)
+            {
+                await _emailService.SendChargingReceiptAsync(receipt.AppUser.Email!, receipt);
             }
 
             return new ServiceResult(true);

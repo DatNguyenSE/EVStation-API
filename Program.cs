@@ -190,8 +190,9 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
-// Bật tính năng này để có thể truy cập ảnh từ URL
-app.UseRouting();
+// // Bật tính năng này để có thể truy cập ảnh từ URL
+// app.UseStaticFiles();
+// app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
