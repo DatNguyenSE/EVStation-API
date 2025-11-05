@@ -147,7 +147,7 @@ namespace API.Services
                         </p>" : "")}
 
                     <hr style='margin: 30px 0;'>
-                    <p style='text-align: center; color: #555;'>Nếu bạn có thắc mắc, vui lòng liên hệ đội ngũ hỗ trợ của chúng tôi qua email <a href='mailto:support@evolt.vn'>support@evolt.vn</a>.</p>
+                    <p style='text-align: center; color: #555;'>Nếu bạn có thắc mắc, vui lòng liên hệ đội ngũ hỗ trợ của chúng tôi qua email <a href='mailto:evoltstation@gmail.com'>evoltstation@gmail.com</a>.</p>
                     <p style='text-align: center; color: #aaa; font-size: 12px;'>© 2025 EVolt System. All rights reserved.</p>
                 </div>
             </body>
@@ -210,6 +210,40 @@ namespace API.Services
                 </div>
             </body>
             </html>";
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
+
+        public async Task SendAccountUnbannedEmailAsync(string toEmail, string username)
+        {
+            var subject = "THÔNG BÁO: Tài khoản EVolt của bạn đã được mở khóa";
+
+            var body = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;'>
+                    <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 30px; border-left: 5px solid #4CAF50;'>
+                        <h2 style='color: #4CAF50; text-align: center; margin-bottom: 20px;'>✅ Tài khoản đã được mở khóa ✅</h2>
+                        <p style='color: #333; font-size: 16px;'>Chào <strong>{username}</strong>,</p>
+                        
+                        <p style='color: #555;'>Chúng tôi thông báo rằng tài khoản EVolt của bạn <strong>đã được gỡ bỏ lệnh cấm (unban)</strong> và có thể sử dụng bình thường trở lại.</p>
+                        
+                        <div style='background-color: #e8f5e9; border: 1px solid #c8e6c9; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                            <p style='color: #2e7d32; margin-top: 0;'><strong>Chi tiết:</strong></p>
+                            <ul style='color: #333; padding-left: 20px;'>
+                                <li><strong>Trạng thái:</strong> Đã mở khóa.</li>
+                                <li><strong>Hành động:</strong> Được thực hiện bởi Ban Quản lý.</li>
+                                <li><strong>Lưu ý:</strong> Bạn có thể đăng nhập và sử dụng tất cả các dịch vụ ngay lập tức.</li>
+                            </ul>
+                        </div>
+
+                        <p style='color: #555; margin-top: 20px;'>Hãy đảm bảo tuân thủ các quy tắc của hệ thống để tránh bị cấm tài khoản trong tương lai.</p>
+                        
+                        <hr style='margin: 30px 0; border: 0; border-top: 1px solid #eee;'>
+                        <p style='text-align: center; color: #777; font-size: 12px;'>Mọi thắc mắc, vui lòng liên hệ Bộ phận Hỗ trợ: <a href='mailto:evoltstation@gmail.com'>evoltstation@gmail.com</a></p>
+                        <p style='text-align: center; color: #aaa; font-size: 10px;'>© 2025 EVolt System.</p>
+                    </div>
+                </body>
+                </html>";
 
             await SendEmailAsync(toEmail, subject, body);
         }
