@@ -20,6 +20,21 @@ namespace API.Services
             _uow = uow;
         }
 
+        public async Task<decimal> GetPackageRevenueAsync(DateTime startDate, DateTime endDate)
+        {
+            endDate = endDate.Date.AddDays(1);
+            var soldPackages = await _uow.DriverPackages.GetPackagesSoldAsync(startDate, endDate);
+
+            if (!soldPackages.Any())
+            {
+                return 0;
+            }
+
+            var totalRevenue = soldPackages.Sum(dp => dp.Package.Price);
+
+            return totalRevenue;
+        }
+
         public async Task<IEnumerable<RevenueReportDto>> GetRevenueReportAsync(
     int? stationId,
     DateTime startDate,

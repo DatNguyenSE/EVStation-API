@@ -13,5 +13,6 @@ namespace API.Interfaces
         Task SendEmailConfirmationAsync(string toEmail, string userId, string token);
         Task SendChargingReceiptAsync(string toEmail, Receipt receipt);
         Task SendAccountBannedEmailAsync(string toEmail, string username, int maxViolations, int banDays, DateTimeOffset banUntil);
+        Task SendAccountUnbannedEmailAsync(string toEmail, string username);
     }
 }

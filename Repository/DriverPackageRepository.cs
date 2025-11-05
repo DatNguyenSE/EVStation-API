@@ -82,5 +82,13 @@ namespace API.Repository
                 d.IsActive &&
                 d.EndDate > DateTime.UtcNow);
         }
+
+        public Task<List<DriverPackage>> GetPackagesSoldAsync(DateTime startDate, DateTime endDate)
+        {
+            return _context.DriverPackages
+                .Include(dp => dp.Package) 
+                .Where(dp => dp.StartDate >= startDate && dp.StartDate <= endDate)
+                .ToListAsync();
+        }
     }
 }
