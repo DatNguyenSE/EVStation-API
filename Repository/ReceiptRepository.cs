@@ -70,6 +70,8 @@ namespace API.Repository
                 .Include(r => r.ChargingSessions)
                 .Include(r => r.AppUser)
                 .Include(r => r.ConfirmedByStaff) 
+                .Include(r => r.Package).ThenInclude(dp => dp.Package)
+                .Include(r => r.Station)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
