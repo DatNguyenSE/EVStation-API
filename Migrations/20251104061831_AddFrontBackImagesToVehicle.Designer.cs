@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104061831_AddFrontBackImagesToVehicle")]
+    partial class AddFrontBackImagesToVehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -907,9 +910,6 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("StationId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .HasMaxLength(15)
                         .HasColumnType("int");
@@ -924,8 +924,6 @@ namespace API.Migrations
                     b.HasIndex("ConfirmedByStaffId");
 
                     b.HasIndex("PackageId");
-
-                    b.HasIndex("StationId");
 
                     b.ToTable("Receipts");
                 });
@@ -1000,9 +998,6 @@ namespace API.Migrations
                     b.Property<string>("DriverId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsProcessedByDiscipline")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1781,19 +1776,11 @@ namespace API.Migrations
                         .WithMany()
                         .HasForeignKey("PackageId");
 
-                    b.HasOne("API.Entities.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("AppUser");
 
                     b.Navigation("ConfirmedByStaff");
 
                     b.Navigation("Package");
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("API.Entities.Report", b =>

@@ -68,6 +68,8 @@ namespace API.Repository
         {
             return await _context.Receipts
                 .Include(r => r.ChargingSessions)
+                .Include(r => r.AppUser)
+                .Include(r => r.ConfirmedByStaff) 
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 

@@ -21,7 +21,7 @@ namespace API.Interfaces.IServices
 
     public interface IReceiptService
     {
-        Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, string paymentMethod);
+        Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, PaymentMethod paymentMethod);
         // === User Queries ===
         Task<ServiceResult<ReceiptDetailsDto>> GetReceiptDetailsAsync(int receiptId, string appUserId);
         Task<ServiceResult<IPagedList<ReceiptSummaryDto>>> GetUserReceiptsAsync(string appUserId, PagingParams pagingParams);

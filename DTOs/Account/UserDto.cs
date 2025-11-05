@@ -13,6 +13,7 @@ namespace API.DTOs.Account
         public DateTime DateOfBirth { get; set; }
         public bool? EmailConfirmed { get; set; }
         public bool? IsBanned { get; set; }
+        public DateTimeOffset? LockoutEnd { get; set; }
         public string? Roles { get; set; }
     }
 }
