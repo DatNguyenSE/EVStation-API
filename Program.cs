@@ -202,8 +202,8 @@ app.MapControllers();
 app.MapHub<ChargingHub>("/hubs/charging");
 
 
-//DatNguyen-SignalR
-app.MapHub<PresenceHub>("hubs/presence");
+//DatNguyen-SignalR-End_Point
+app.MapHub<ConnectCharging>("/hubs/connect-charging");
 app.MapHub<ReservationHub>("hubs/reservation");
 
 app.Run();
