@@ -204,7 +204,9 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Operator)]
         public async Task<IActionResult> GetPendingReceiptsForOperator()
         {
-            var receipts = await _receiptService.GetPendingReceiptForOperator();
+            var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(staffId)) Unauthorized();
+            var receipts = await _receiptService.GetPendingReceiptForOperator(staffId); 
             return Ok(receipts);
         }
     }

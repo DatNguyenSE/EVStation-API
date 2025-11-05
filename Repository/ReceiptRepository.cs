@@ -35,11 +35,11 @@ namespace API.Repository
             return await _context.Receipts.Include(r => r.ChargingSessions).ThenInclude(cs => cs.ChargingPost).FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<IEnumerable<Receipt>> GetPendingReceiptForOperator()
+        public async Task<IEnumerable<Receipt>> GetPendingReceiptForOperator(int stationId)
         {
             return await _context.Receipts
             .AsNoTracking()
-            .Where(r => r.Status == ReceiptStatus.Pending)
+            .Where(r => r.Status == ReceiptStatus.Pending && r.StationId == stationId)
             .OrderByDescending(r => r.CreateAt)
             .ToListAsync();
         }
@@ -68,9 +68,11 @@ namespace API.Repository
         {
             return await _context.Receipts
                 .Include(r => r.ChargingSessions)
+                    .ThenInclude(s => s.ChargingPost)
                 .Include(r => r.AppUser)
                 .Include(r => r.ConfirmedByStaff) 
-                .Include(r => r.Package).ThenInclude(dp => dp.Package)
+                .Include(r => r.Package)
+                    .ThenInclude(dp => dp.Package)
                 .Include(r => r.Station)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }

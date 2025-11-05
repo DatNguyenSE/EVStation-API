@@ -20,7 +20,7 @@ namespace API.Interfaces
 
         IQueryable<Receipt> GetReceiptsQuery();
 
-        Task<IEnumerable<Receipt>> GetPendingReceiptForOperator();
+        Task<IEnumerable<Receipt>> GetPendingReceiptForOperator(int stationId);
         Task<List<Receipt>> GetReceiptsByPlateAsync(string plate);
     }
 }

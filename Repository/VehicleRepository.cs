@@ -70,7 +70,7 @@ namespace API.Repository
         public async Task<bool> PlateExistsAsync(string plate, int? excludeVehicleId = null)
         {
             return await _context.Vehicles
-                .AnyAsync(v => v.Plate == plate && (excludeVehicleId == null || v.Id != excludeVehicleId));
+                .AnyAsync(v => v.Plate == plate && (excludeVehicleId == null || v.Id != excludeVehicleId) && v.RegistrationStatus == VehicleRegistrationStatus.Approved);
         }
 
         public async Task UpdateVehicleAsync(Vehicle vehicle)
