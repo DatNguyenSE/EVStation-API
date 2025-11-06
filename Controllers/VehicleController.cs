@@ -52,64 +52,115 @@ namespace API.Controllers
                 return Unauthorized();
             }
 
-            // Kiểm tra trùng biển số
-            if (await _uow.Vehicles.PlateExistsAsync(dto.Plate))
-            {
-                return BadRequest("Biển số xe đã tồn tại.");
-            }
+            var existingVehicle = await _uow.Vehicles.GetByPlateAsync(dto.Plate);
 
-            // ----- Upload ảnh lên Cloudinary -----
-            string frontUrl = "", backUrl = "";
-            try
+            if (existingVehicle != null)
             {
-                var settings = cloudinaryConfig.Value;
-                var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
-                var cloudinary = new Cloudinary(account);
-
-                // --- Upload mặt trước ---
-                using var streamFront = dto.RegistrationImageFront.OpenReadStream();
-                var uploadFront = await cloudinary.UploadAsync(new ImageUploadParams
+                if (existingVehicle.RegistrationStatus == VehicleRegistrationStatus.Approved)
                 {
-                    File = new FileDescription(dto.RegistrationImageFront.FileName, streamFront),
-                    Folder = "evms/vehicles"
-                });
-                frontUrl = uploadFront.SecureUrl.ToString();
+                    return BadRequest("Xe đã tồn tại và đã được đăng ký sở hữu.");
+                }
 
-                // --- Upload mặt sau ---
-                using var streamBack = dto.RegistrationImageBack.OpenReadStream();
-                var uploadBack = await cloudinary.UploadAsync(new ImageUploadParams
+                string frontUrl = existingVehicle.VehicleRegistrationFrontUrl ?? "";
+                string backUrl = existingVehicle.VehicleRegistrationBackUrl ?? "";
+
+                if (string.IsNullOrEmpty(frontUrl) || string.IsNullOrEmpty(backUrl))
                 {
-                    File = new FileDescription(dto.RegistrationImageBack.FileName, streamBack),
-                    Folder = "evms/vehicles"
-                });
-                backUrl = uploadBack.SecureUrl.ToString();
+                    try
+                    {
+                        var settings = cloudinaryConfig.Value;
+                        var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                        var cloudinary = new Cloudinary(account);
+
+                        // --- Upload mặt trước ---
+                        using var streamFront = dto.RegistrationImageFront.OpenReadStream();
+                        var uploadFront = await cloudinary.UploadAsync(new ImageUploadParams
+                        {
+                            File = new FileDescription(dto.RegistrationImageFront.FileName, streamFront),
+                            Folder = "evms/vehicles"
+                        });
+                        frontUrl = uploadFront.SecureUrl.ToString();
+
+                        // --- Upload mặt sau ---
+                        using var streamBack = dto.RegistrationImageBack.OpenReadStream();
+                        var uploadBack = await cloudinary.UploadAsync(new ImageUploadParams
+                        {
+                            File = new FileDescription(dto.RegistrationImageBack.FileName, streamBack),
+                            Folder = "evms/vehicles"
+                        });
+                        backUrl = uploadBack.SecureUrl.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        return StatusCode(500, "Lỗi xảy ra khi tải ảnh lên Cloudinary.");
+                    }
+                }
+
+                existingVehicle.OwnerId = appUser.Id;
+                existingVehicle.VehicleRegistrationFrontUrl = frontUrl; // Cập nhật (hoặc giữ nguyên nếu đã có)
+                existingVehicle.VehicleRegistrationBackUrl = backUrl;   // Cập nhật (hoặc giữ nguyên nếu đã có)
+                existingVehicle.RegistrationStatus = VehicleRegistrationStatus.Pending; // Đưa về trạng thái chờ duyệt
+
+                var res = await _uow.Complete();
+                if (!res) return BadRequest("Cập nhật thông tin xe thất bại");
+
+                return Ok(new { message = "Đăng ký sở hữu xe thành công, vui lòng chờ duyệt.", vehicle = existingVehicle });
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex.ToString());
-                return StatusCode(500, "Lỗi xảy ra khi tải ảnh lên Cloudinary.");
+                string frontUrl = "", backUrl = "";
+                try
+                {
+                    var settings = cloudinaryConfig.Value;
+                    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                    var cloudinary = new Cloudinary(account);
+
+                    // --- Upload mặt trước ---
+                    using var streamFront = dto.RegistrationImageFront.OpenReadStream();
+                    var uploadFront = await cloudinary.UploadAsync(new ImageUploadParams
+                    {
+                        File = new FileDescription(dto.RegistrationImageFront.FileName, streamFront),
+                        Folder = "evms/vehicles"
+                    });
+                    frontUrl = uploadFront.SecureUrl.ToString();
+
+                    // --- Upload mặt sau ---
+                    using var streamBack = dto.RegistrationImageBack.OpenReadStream();
+                    var uploadBack = await cloudinary.UploadAsync(new ImageUploadParams
+                    {
+                        File = new FileDescription(dto.RegistrationImageBack.FileName, streamBack),
+                        Folder = "evms/vehicles"
+                    });
+                    backUrl = uploadBack.SecureUrl.ToString();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return StatusCode(500, "Lỗi xảy ra khi tải ảnh lên Cloudinary.");
+                }
+
+                var vehicle = new Vehicle
+                {
+                    Model = dto.Model,
+                    Type = dto.Type,
+                    BatteryCapacityKWh = dto.BatteryCapacityKWh,
+                    MaxChargingPowerKW = dto.MaxChargingPowerKW,
+                    ConnectorType = dto.ConnectorType,
+                    Plate = dto.Plate,
+                    OwnerId = appUser.Id,
+                    VehicleRegistrationFrontUrl = frontUrl,
+                    VehicleRegistrationBackUrl = backUrl,
+                    RegistrationStatus = VehicleRegistrationStatus.Pending
+                };
+
+                var created = await _uow.Vehicles.AddVehicleAsync(vehicle);
+
+                var result = await _uow.Complete();
+                if (!result) return BadRequest("Thêm xe thất bại");
+
+                return Ok(new { message = "Đăng ký xe thành công, vui lòng chờ duyệt.", vehicle });
             }
-
-            var vehicle = new Vehicle
-            {
-                Model = dto.Model,
-                Type = dto.Type,
-                BatteryCapacityKWh = dto.BatteryCapacityKWh,
-                MaxChargingPowerKW = dto.MaxChargingPowerKW,
-                ConnectorType = dto.ConnectorType,
-                Plate = dto.Plate,
-                OwnerId = appUser.Id,
-                VehicleRegistrationFrontUrl = frontUrl,
-                VehicleRegistrationBackUrl = backUrl,
-                RegistrationStatus = VehicleRegistrationStatus.Pending
-            };
-
-            var created = await _uow.Vehicles.AddVehicleAsync(vehicle);
-
-            var result = await _uow.Complete();
-            if (!result) return BadRequest("Thêm xe thất bại");
-
-            return Ok(new { message = "Đăng ký xe thành công, vui lòng chờ duyệt.", vehicle });
         }
 
         // lấy thông tin xe của User
@@ -150,8 +201,8 @@ namespace API.Controllers
 
             var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(id);
 
-           if (vehicle == null)
-            return NotFound(new { message = "Vehicle not found for this user." });
+            if (vehicle == null)
+                return NotFound(new { message = "Vehicle not found for this user." });
             return Ok(vehicle.ToVehicleResponseDto());
         }
 
@@ -313,6 +364,16 @@ namespace API.Controllers
 
             // Cập nhật trạng thái
             vehicle.RegistrationStatus = VehicleRegistrationStatus.Approved;
+
+            var receipts = await _uow.Receipts.GetReceiptsByPlateAsync(vehicle.Plate);
+            if (receipts.Any())
+            {
+                foreach (var receipt in receipts)
+                {
+                    receipt.AppUserId = vehicle.OwnerId;
+                    _uow.Receipts.Update(receipt);
+                }
+            }
 
             if (await _uow.Complete())
             {
