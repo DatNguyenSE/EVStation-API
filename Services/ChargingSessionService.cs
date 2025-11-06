@@ -366,8 +366,8 @@ namespace API.Services
                 var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
                 if (driverPackage != null)
                 {
-                    discountAmount = total;
-                    total = 0;
+                    discountAmount = energyCost;
+                    total -= discountAmount;
                 }
 
                 session.Status = SessionStatus.Completed;
@@ -415,7 +415,7 @@ namespace API.Services
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
-                    PackageId = driverPackage != null ? driverPackage.Package.Id : null,
+                    PackageId = driverPackage != null ? driverPackage.Id : null,
                     DiscountAmount = discountAmount,
                     PaymentMethod = "Ví tiền"
                 };

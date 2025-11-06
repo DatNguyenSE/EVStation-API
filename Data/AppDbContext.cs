@@ -158,6 +158,17 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 EffectiveFrom = effectiveDate,
                 EffectiveTo = expiryDate,
                 IsActive = true
+            },
+            new Pricing
+            {
+                Id = 6,
+                Name = "Phí phạt quá giờ đặt chỗ",
+                PriceType = PriceType.OverstayFee,
+                PricePerKwh = 0m, // Không tính giá mỗi kWh
+                PricePerMinute = 2000m, // Giá mỗi phút (Mức giá phạt cao hơn)
+                EffectiveFrom = effectiveDate,
+                EffectiveTo = expiryDate,
+                IsActive = true
             }
         );
 
@@ -295,7 +306,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
                 ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
                 PhoneNumber = "0933333343",
-                PhoneNumberConfirmed = true 
+                PhoneNumberConfirmed = true
             }
         );
         builder.Entity<IdentityUserRole<string>>().HasData(
