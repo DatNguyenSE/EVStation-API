@@ -8,6 +8,7 @@ using API.Entities;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository
@@ -69,7 +70,7 @@ namespace API.Repository
 
         public async Task<List<ChargingSession>> GetAllAsync()
         {
-            return await _context.ChargingSessions.ToListAsync();
+            return await _context.ChargingSessions.Include(cs => cs.Reservation).ToListAsync();
         }
 
         public async Task UpdatePayingStatusAsync(List<int> sessionIds)

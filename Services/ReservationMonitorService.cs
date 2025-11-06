@@ -30,7 +30,7 @@ namespace API.Services
                 var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                 var sessionService = scope.ServiceProvider.GetRequiredService<IChargingSessionService>();
 
-                var now = DateTime.UtcNow;
+                var now = DateTime.UtcNow.AddHours(7);
 
                 var allReservations = await uow.Reservations.GetAllAsync();
                 var expiredReservations = allReservations.Where(r =>
@@ -50,7 +50,7 @@ namespace API.Services
 
                     foreach (var s in sessions)
                     {
-                        // If charging: stop simulation -> StopChargingAsync will set Idle and EndTime
+                        // Trường hợp 3
                         if (s.Status == SessionStatus.Charging)
                         {
                             // call StopChargingAsync with ReservationCompleted reason
@@ -60,21 +60,10 @@ namespace API.Services
                             }
                             catch
                             {
-                                // swallow per-session errors but continue
+                                // ignore
                             }
                         }
-                        else
-                        {
-                            // already Idle -> set EndTime if missing and immediate IdleFee start
-                            if (!s.EndTime.HasValue)
-                                s.EndTime = DateTime.UtcNow;
-                            s.StopReason = StopReason.ReservationCompleted;
-                            s.IdleFeeStartTime = s.EndTime;
-                            uow.ChargingSessions.Update(s);
-
-                            await _hubContext.Clients.Group($"session-{s.Id}")
-                                .SendAsync("ReceiveSessionStopped", s.Id, s.Status);
-                        }
+                        // Trường hợp 4 & Trường hợp 1: Đã Idle
                     }
                 }
 
