@@ -242,7 +242,7 @@ namespace API.Controllers
                 var newUserDto = await _authService.RegisterAndSyncGuestHistoryAsync(registerDto);
 
                 // Xử lý xác nhận Email (Giống logic register cũ)
-                var appUser = await _userManager.FindByIdAsync(newUserDto.Id);  
+                var appUser = await _userManager.FindByIdAsync(newUserDto.Id);
 
                 var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                 var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
@@ -441,6 +441,65 @@ namespace API.Controllers
             }
 
             return Ok(staffDtos);
+        }
+
+        [HttpPost("register-staff")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
+        public async Task<IActionResult> RegisterStaffByAdmin([FromBody] RegisterStaffDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // 1. Kiểm tra tồn tại Username
+            var existingUser = await _userManager.FindByNameAsync(dto.Username);
+            if (existingUser != null)
+            {
+                return BadRequest("Tên đăng nhập đã được sử dụng.");
+            }
+
+            // 2. Kiểm tra Role hợp lệ
+            if (!await _roleManager.RoleExistsAsync(dto.Role) || dto.Role == AppConstant.Roles.Driver)
+            {
+                return BadRequest("Role không hợp lệ hoặc là role Driver.");
+            }
+
+            // 3. Tạo AppUser
+            var appUser = new AppUser
+            {
+                UserName = dto.Username,
+                Email = dto.Email ?? $"{dto.Username}@evsystem.com",
+                FullName = dto.FullName,
+                DateOfBirth = dto.DateOfBirth ?? new DateTime(1900, 1, 1),
+                EmailConfirmed = true
+            };
+
+            var createdUser = await _userManager.CreateAsync(appUser, dto.Password);
+
+            if (!createdUser.Succeeded)
+            {
+                return BadRequest(createdUser.Errors);
+            }
+
+            // 4. Gán Role
+            var roleResult = await _userManager.AddToRoleAsync(appUser, dto.Role);
+
+            if (!roleResult.Succeeded)
+            {
+                // Xóa User nếu không gán Role được
+                await _userManager.DeleteAsync(appUser);
+                return BadRequest(roleResult.Errors);
+            }
+
+            // 5. Trả về kết quả
+            return Ok(new
+            {
+                message = $"Tạo tài khoản Staff ({dto.Role}) thành công.",
+                userId = appUser.Id,
+                username = appUser.UserName,
+                role = dto.Role
+            });
         }
 
         [HttpPost("BanUser/{userId}")]
