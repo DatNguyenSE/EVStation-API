@@ -16,7 +16,6 @@ namespace API.DTOs.Receipt
     {
         Cash,
         CreditCard,
-        EWallet,
         BankTransfer
     }
 

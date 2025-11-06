@@ -40,9 +40,9 @@ namespace API.Repository
             return userPackageModel;
         }
 
-        public async Task<DriverPackage?> DeactiveAsync(int id)
+        public async Task<DriverPackage?> DeactiveAsync(string userId, int id)
         {
-            var userPackageModel = await _context.DriverPackages.FindAsync(id);
+            var userPackageModel = await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.Id == id && dp.AppUserId == userId); 
             if (userPackageModel == null)
             {
                 return null;
@@ -71,7 +71,7 @@ namespace API.Repository
 
         public Task<List<DriverPackage>> GetByUserAsync(string userId)
         {
-            return _context.DriverPackages.Where(p => p.AppUserId == userId).Include(p => p.Package).ToListAsync();
+            return _context.DriverPackages.Where(p => p.AppUserId == userId && p.IsActive == true).Include(p => p.Package).ToListAsync();
         }
 
         public async Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType)
