@@ -224,9 +224,9 @@ namespace API.Services
             return details;
         }
 
-        public async Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId)
+        public async Task<List<ReservationResponseDto>> GetAllHistoryReservationsByDriverAsync(string driverId)
         {
-            var historyReservationModels = await _uow.Reservations.GetReservationHistoryByDriverAsync(driverId);
+            var historyReservationModels = await _uow.Reservations.GetAllHistoryReservationsByDriverAsync(driverId);
 
             return historyReservationModels
                 .Select(r => r.ToReservationResponseDto())

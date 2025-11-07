@@ -29,7 +29,7 @@ namespace API.Interfaces
         Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes);
         Task<List<Reservation>> GetUpcomingReservationsByDriverAsync(string driverId);
 
-        Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId);
+        Task<List<Reservation>> GetAllHistoryReservationsByDriverAsync(string driverId);
         Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
         void Update(Reservation reservation);
 

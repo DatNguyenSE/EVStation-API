@@ -91,7 +91,7 @@ namespace API.Repository
             var result = await _context.ChargingSessions
                                         .AsNoTracking()
                                         .Include(cs => cs.ChargingPost)
-                                        .Where(cs => cs.Vehicle != null && cs.Vehicle.OwnerId == ownerId).ToListAsync();
+                                        .Where(cs => cs.Vehicle != null && cs.Vehicle.OwnerId == ownerId).OrderByDescending(cs => cs.StartTime).ToListAsync();
 
             List<ChargingSessionHistoryDto> mySessions = new();
             foreach (var session in result)

@@ -106,13 +106,11 @@ namespace API.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId)
+        public async Task<List<Reservation>> GetAllHistoryReservationsByDriverAsync(string driverId)
         {
-            DateTime now = DateTime.UtcNow;
             return await _context.Reservations
-                .Where(r => r.DriverId == driverId &&
-                            r.Status != ReservationStatus.Confirmed) // Lọc trạng thái không phải là Confirmed 
-                .OrderByDescending(r => r.TimeSlotEnd) // Sắp xếp theo thời gian kết thúc mới nhất
+                .Where(r => r.DriverId == driverId) // Lọc trạng thái không phải là Confirmed 
+                .OrderByDescending(r => r.TimeSlotStart) // Sắp xếp theo thời gian kết thúc mới nhất
                 .ToListAsync();
         }
 
@@ -147,6 +145,7 @@ namespace API.Repository
 
                     // Post
                     PostId = x.post.Id,
+                    PostCode = x.post.Code,
                     ConnectorType = x.post.ConnectorType.ToString(),
                     PowerKW = x.post.PowerKW,
 
