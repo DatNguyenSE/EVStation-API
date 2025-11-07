@@ -17,6 +17,7 @@ namespace API.DTOs.Reservation
 
         // Thông tin Trụ Sạc (Post)
         public int PostId { get; set; }
+        public string PostCode { get; set; } = string.Empty;
         public string ConnectorType { get; set; } = string.Empty;
         public decimal PowerKW { get; set; }
         

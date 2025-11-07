@@ -117,7 +117,7 @@ namespace API.Controllers
 
             try
             {
-                var reservations = await _reservationService.GetReservationHistoryByDriverAsync(driverId);
+                var reservations = await _reservationService.GetAllHistoryReservationsByDriverAsync(driverId);
                 return Ok(reservations);
             }
             catch (Exception e)

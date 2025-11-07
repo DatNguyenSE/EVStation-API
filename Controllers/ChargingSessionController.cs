@@ -73,7 +73,7 @@ namespace API.Controllers
 
         [HttpGet("history")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<IActionResult> GetHistorySession()
+        public async Task<IActionResult> GetHistorySessions()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
