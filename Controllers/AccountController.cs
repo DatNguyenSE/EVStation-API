@@ -80,7 +80,7 @@ namespace API.Controllers
                 {
                     var banUntil = await _userManager.GetLockoutEndDateAsync(user);
                     var banUntilStr = banUntil.HasValue
-                                        ? banUntil.Value.AddHours(7).ToString("HH:mm dd/MM/yyyy") // Giả định múi giờ hiển thị là +7
+                                        ? banUntil.Value.ToString("HH:mm dd/MM/yyyy") // Giả định múi giờ hiển thị là +7
                                         : "chưa xác định";
 
                     return Unauthorized($"Tài khoản của bạn đã bị khóa. Tài khoản sẽ được mở khóa vào: {banUntilStr}");

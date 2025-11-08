@@ -160,9 +160,22 @@ namespace API.Services
 
                     if (!isFreeCharging)
                     {
-                        if (walletDto == null || walletDto.Balance < 50000)
+                        if (walletDto == null)
                         {
-                            throw new Exception("Số dư ví phải trên 50k để bắt đầu sạc");
+                            throw new Exception("Lỗi hệ thống: Không thể khởi tạo/tìm ví người dùng.");
+                        }
+
+                        // Quy tắc 1: Cấm sạc nếu đang có nợ
+                        if (walletDto.IsDebt) // Lấy thông tin IsDebt từ WalletDto
+                        {
+                            throw new Exception($"Không thể bắt đầu phiên sạc do đang có khoản nợ: {walletDto.Debt:N0} VNĐ. Vui lòng nạp tiền để thanh toán nợ trước.");
+                        }
+                        
+                        // Quy tắc 2: Yêu cầu số dư tối thiểu
+                        const decimal MIN_BALANCE_REQUIRED = 50000;
+                        if (walletDto.Balance < MIN_BALANCE_REQUIRED)
+                        {
+                            throw new Exception($"Số dư ví phải trên {MIN_BALANCE_REQUIRED:N0} VNĐ để bắt đầu sạc. Số dư hiện tại: {walletDto.Balance:N0} VNĐ.");
                         }
                     }
                 }
@@ -366,8 +379,8 @@ namespace API.Services
                 var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
                 if (driverPackage != null)
                 {
-                    discountAmount = total;
-                    total = 0;
+                    discountAmount = energyCost;
+                    total -= discountAmount;
                 }
 
                 session.Status = SessionStatus.Completed;
@@ -415,7 +428,7 @@ namespace API.Services
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
-                    PackageId = driverPackage != null ? driverPackage.Package.Id : null,
+                    PackageId = driverPackage != null ? driverPackage.Id : null,
                     DiscountAmount = discountAmount,
                     PaymentMethod = "Ví tiền"
                 };

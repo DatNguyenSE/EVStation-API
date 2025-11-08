@@ -8,5 +8,7 @@ namespace API.DTOs.Wallet
     public class WalletDto
     {
         public decimal Balance { get; set; }
+        public decimal Debt { get; set; }
+        public bool IsDebt { get; set; }
     }
 }

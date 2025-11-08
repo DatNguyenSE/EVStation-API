@@ -45,7 +45,12 @@ namespace API.Services
 
             if (wallet == null) return null;
 
-            return new WalletDto { Balance = wallet.Balance };
+            return new WalletDto
+            {
+                Balance = wallet.Balance,
+                Debt = wallet.Dept,
+                IsDebt = wallet.IsDept
+            };
         }
 
         public async Task<ServiceResult<IPagedList<TransactionDto>>> GetUserTransactionsAsync(string userId, PagingParams paging)
@@ -130,9 +135,52 @@ namespace API.Services
 
             if (response.Success)
             {
+                decimal amount = txn.Amount;
+                decimal initialDebt = wallet.Dept; // Lưu lại nợ ban đầu
+                bool wasInDebt = wallet.IsDept;    // Lưu lại trạng thái nợ ban đầu
+
+                if (wallet.IsDept && wallet.Dept > 0)
+                {
+                    if (amount >= wallet.Dept) // Nạp đủ hoặc dư để trả nợ
+                    {
+                        decimal remaining = amount - wallet.Dept;
+                        wallet.Dept = 0;
+                        wallet.IsDept = false;
+                        wallet.Balance += remaining;
+                    }
+                    else // Nạp không đủ để trả hết nợ
+                    {
+                        wallet.Dept -= amount;
+                    }
+                }
+                else // Không nợ, cộng thẳng vào số dư
+                {
+                    wallet.Balance += amount;
+                }
+
                 txn.Status = Helpers.Enums.TransactionStatus.Success;
-                wallet.Balance += txn.Amount;
                 txn.BalanceAfter = wallet.Balance;
+
+                if (wasInDebt)
+                {
+                    if (wallet.IsDept)
+                    {
+                        // Vẫn còn nợ sau khi nạp (amount < initialDebt)
+                        txn.Description = $"Nạp tiền ({amount:N0}đ) - Bù nợ một phần. Nợ còn lại: {wallet.Dept:N0}đ.";
+                    }
+                    else
+                    {
+                        // Đã trả hết nợ và có thể còn dư (initialDebt <= amount)
+                        decimal clearedDebt = initialDebt;
+                        decimal remainingBalance = wallet.Balance;
+                        txn.Description = $"Nạp tiền ({amount:N0}đ) - Đã trả hết nợ ({clearedDebt:N0}đ). Số dư mới: {remainingBalance:N0}đ.";
+                    }
+                }
+                else
+                {
+                    // Ban đầu không nợ
+                    txn.Description = $"Nạp tiền thành công ({amount:N0}đ). Số dư: {wallet.Balance:N0}đ.";
+                }
 
                 await _uow.WalletTransactions.UpdateTransactionAsync(txn);
                 await _uow.Wallets.UpdateWalletAsync(wallet);
@@ -165,17 +213,27 @@ namespace API.Services
                     return (false, "Không tìm thấy ví của người dùng.");
                 }
 
-                // Kiểm tra số dư
-                if (userWallet.Balance < total)
-                {
-                    return (false, "Số dư trong ví không đủ để thực hiện giao dịch."); // mốt có nợ thì bỏ vô nợ
-                }
-
                 // XỬ LÝ GIAO DỊCH VÀ CẬP NHẬT DỮ LIỆU
                 var balanceBefore = userWallet.Balance;
 
-                // Trừ tiền trong ví
-                userWallet.Balance -= total;
+                decimal requiredAmount = total;
+
+                if (userWallet.Balance >= requiredAmount)
+                {
+                    // Trừ tiền trong ví
+                    userWallet.Balance -= requiredAmount;
+                }
+                else
+                {
+                    // Số tiền thiếu hụt sẽ chuyển thành nợ
+                    decimal deptAmount = requiredAmount - userWallet.Balance;
+                    userWallet.Balance = 0; // Số dư về 0
+
+                    // Cập nhật nợ
+                    userWallet.Dept += deptAmount;
+                    userWallet.IsDept = true;
+                }
+
                 // Tạo WalletTransaction
                 var transaction = new WalletTransaction
                 {
@@ -184,7 +242,8 @@ namespace API.Services
                     Amount = total,
                     BalanceBefore = balanceBefore,
                     BalanceAfter = userWallet.Balance,
-                    Description = $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))}",
+                    Description = userWallet.IsDept ? $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} (Phát sinh nợ {userWallet.Dept:N0})." 
+                                                    : $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} thành công.",
                     ReferenceId = receiptOfSession.Id,
                     Status = TransactionStatus.Success,
                     PaymentMethod = "Wallet",
@@ -192,7 +251,6 @@ namespace API.Services
                 };
                 await _uow.WalletTransactions.AddTransactionAsync(transaction);
 
-                // Tạo DriverPackage
                 await _uow.Receipts.UpdateStatusAsync(receiptId, ReceiptStatus.Paid);
                 var receipt = await _uow.Receipts.GetByIdAsync(receiptId);
                 if (receipt != null) receipt.WalletTransactions.Add(transaction);
@@ -203,7 +261,7 @@ namespace API.Services
                 {
                     // nếu lưu thành công => commit transaction
                     await dbTransaction.CommitAsync();
-                    return (true, "Thanh toán thành công.");
+                    return (true, userWallet.IsDept ? $"Thanh toán thành công. **Lưu ý: Bạn đang nợ {userWallet.Dept:N0}**." : "Thanh toán thành công.");
                 }
 
                 // Nếu không lưu được, rollback và báo lỗi

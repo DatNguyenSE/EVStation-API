@@ -18,7 +18,7 @@ namespace API.Interfaces
         Task<ReservationResponseDto> CreateReservationAsync(CreateReservationDto dto, string driverId);
         Task<ReservationResponseDto> CancelReservationAsync(int reservationId, string driverId);
         Task<List<ReservationResponseDto>> GetUpcomingReservationsByDriverAsync(string driverId);
-        Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId);
+        Task<List<ReservationResponseDto>> GetAllHistoryReservationsByDriverAsync(string driverId);
         Task<ReservationDetailDto> GetReservationDetailsAsync(int reservationId);
     }
 }
