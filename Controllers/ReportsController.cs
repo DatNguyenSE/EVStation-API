@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using X.PagedList; // <--- Rất quan trọng, chứa IPagedList và PaginationMetaData
 using System.Text.Json; // <--- Dùng để serialize header
-using Microsoft.AspNetCore.Http; // <--- Dùng để truy cập Response.Headers
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using API.Entities.Cloudinary; // <--- Dùng để truy cập Response.Headers
 
 namespace API.Controllers
 {
@@ -55,29 +57,21 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetAllReports(
             [FromQuery] ReportFilterParams filterParams)
         {
-            // 1. Service trả về IPagedList
             var pagedReports = await _reportService.GetAllReportsAsync(filterParams);
-
-            // 2. Dùng hàm helper để thêm metadata vào Header
-            // (Sửa lỗi "obsolete" bằng cách dùng constructor)
             AddPaginationHeader(new PaginationMetaData(pagedReports));
-
-            // 3. Trả về OK(pagedReports).
-            // X.PagedList sẽ tự động chỉ serialize mảng data
             return Ok(pagedReports);
         }
         
         /// <summary>
         /// [Admin, Technician] Lấy lịch sử sự cố/bảo trì của một trụ sạc
         /// </summary>
-        [HttpGet("post/{postId}/history")] // <-- Route: api/reports/post/123/history
-        [Authorize(Roles = $"{AppConstant.Roles.Admin},{AppConstant.Roles.Technician}")]
+        [HttpGet("post/{postId}/history")] 
+        [Authorize(Roles = $"{AppConstant.Roles.Admin}, {AppConstant.Roles.Manager}")]
         [ProducesResponseType(typeof(IEnumerable<ReportSummaryDto>), 200)]
         public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetReportHistoryForPost(int postId)
         {
             var result = await _reportService.GetReportHistoryForPostAsync(postId);
             
-            // Hàm này không phân trang, cứ trả về OK
             return Ok(result);
         }
 
@@ -88,11 +82,11 @@ namespace API.Controllers
         // Angular sẽ gọi API này
         [HttpPost]
         [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}")]
-        public async Task<IActionResult> CreateReport([FromBody] CreateReportDto dto)
+        public async Task<IActionResult> CreateReport([FromForm] CreateReportDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
         {
             var staffId = GetCurrentUserId();
             // Khi hàm service này được gọi...
-            var report = await _reportService.CreateReportAsync(dto, staffId!);
+            var report = await _reportService.CreateReportAsync(dto, staffId!, cloudinaryConfig);
             // ...thì SignalR sẽ được kích hoạt TỪ BÊN TRONG service
             return Ok(report);
         }
@@ -120,10 +114,10 @@ namespace API.Controllers
         // 4. (Technician) Báo cáo đã sửa xong
         [HttpPost("{id}/complete")]
         [Authorize(Roles = AppConstant.Roles.Technician)]
-        public async Task<IActionResult> CompleteFix(int id, [FromBody] CompleteFixDto dto)
+        public async Task<IActionResult> CompleteFix(int id, [FromForm] CompleteFixDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
         {
-            var technicianId = GetCurrentUserId(); // Chỉ KTV đang đăng nhập mới được báo cáo
-            var result = await _reportService.CompleteFixAsync(id, dto, technicianId!);
+            var technicianId = GetCurrentUserId();
+            var result = await _reportService.CompleteFixAsync(id, dto, technicianId!, cloudinaryConfig);
             if (!result) return BadRequest("Không thể hoàn tất. (Bạn không được gán hoặc báo cáo sai trạng thái)");
             return Ok(new { message = "Báo cáo hoàn tất sửa chữa thành công." });
         }
@@ -142,8 +136,7 @@ namespace API.Controllers
 
         // (Lấy chi tiết 1 report)
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}")]
-        // Cả 3 vai trò đều có thể xem
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetReportById(int id)
         {
             var reportDetailDto = await _reportService.GetReportDetailsAsync(id);
@@ -153,7 +146,7 @@ namespace API.Controllers
 
         // (Admin) Lấy danh sách report mới
         [HttpGet("new")]
-        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(Roles = $"{AppConstant.Roles.Manager}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetNewReports()
         {
             var reportsDto = await _reportService.GetNewReportsAsync();
@@ -170,15 +163,13 @@ namespace API.Controllers
         }
 
         [HttpPost("{id}/start-repair")]
-        [Authorize(Roles = AppConstant.Roles.Technician)] // Chỉ KTV
+        [Authorize(Roles = AppConstant.Roles.Technician)] 
         public async Task<IActionResult> StartRepair(int id)
         {
-            var technicianId = GetCurrentUserId(); // Lấy ID KTV đang đăng nhập
+            var technicianId = GetCurrentUserId(); 
             var result = await _reportService.StartRepairAsync(id, technicianId!);
             if (!result)
             {
-                // Service sẽ throw Exception nếu có lỗi nghiêm trọng
-                // Trường hợp trả về false có thể xử lý riêng nếu cần
                 return BadRequest("Không thể bắt đầu sửa chữa.");
             }
             return Ok(new { message = $"Đã bắt đầu sửa chữa báo cáo {id}, trụ sạc đã chuyển sang bảo trì." });

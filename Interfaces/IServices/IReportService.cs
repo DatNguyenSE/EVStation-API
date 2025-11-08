@@ -4,16 +4,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Report;
 using API.Entities;
+using API.Entities.Cloudinary;
+using Microsoft.Extensions.Options;
 using X.PagedList;
 
 namespace API.Interfaces
 {
     public interface IReportService
     {
-        Task<Report> CreateReportAsync(CreateReportDto dto, string staffId);
+        Task<Report> CreateReportAsync(CreateReportDto dto, string staffId, IOptions<CloudinarySettings> cloudinaryConfig);
         Task<bool> EvaluateReportAsync(int reportId, EvaluateReportDto dto);
         Task<bool> AssignTechnicianAsync(int reportId, AssignTechnicianDto dto);
-        Task<bool> CompleteFixAsync(int reportId, CompleteFixDto dto, string technicianId);
+        Task<bool> CompleteFixAsync(int reportId, CompleteFixDto dto, string technicianId, IOptions<CloudinarySettings> cloudinaryConfig);
         Task<bool> CloseReportAsync(int reportId);
         Task<ReportDetailDto?> GetReportDetailsAsync(int id);
         Task<IEnumerable<ReportSummaryDto>> GetNewReportsAsync();
