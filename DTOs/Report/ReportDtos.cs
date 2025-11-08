@@ -15,6 +15,7 @@ namespace API.DTOs.Report
         public int PostId { get; set; }
         [Required]
         public string? Description { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     // DTO để Admin đánh giá báo cáo (nút Critical / No)
@@ -39,6 +40,7 @@ namespace API.DTOs.Report
     {
         [Required]
         public string? FixedNote { get; set; }
+        public IFormFile? CompletedImage { get; set; }
     }
 
     public class ReportSummaryDto
@@ -85,6 +87,8 @@ namespace API.DTOs.Report
         public DateTime? MaintenanceEndTime { get; set; }
         public DateTime? FixedAt { get; set; }
         public string? FixedNote { get; set; }
+        public string? CreateImageUrl { get; set; } 
+        public string? CompletedImageUrl { get; set; }
 
         // Thông tin các bảng liên quan (dưới dạng DTO)
         public required PostSummaryDto Post { get; set; }

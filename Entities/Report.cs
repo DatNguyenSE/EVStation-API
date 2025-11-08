@@ -18,6 +18,8 @@ namespace API.Entities
         public DateTime? FixedAt { get; set; }
         public ReportStatus Status { get; set; }
         public string? FixedNote { get; set; }
+        public string? CreateImageUrl { get; set; } 
+        public string? CompletedImageUrl { get; set; }
 
         // FK trỏ đến AppUser (người tạo)
         public string CreatedById { get; set; } = string.Empty;

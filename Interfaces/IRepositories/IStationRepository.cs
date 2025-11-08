@@ -18,7 +18,7 @@ namespace API.Interfaces
         Task<Station?> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
         Task<Station?> UpdateStatusAsync(int id, StationStatus status);
-        Task<Station?> GetNearestAsync(double latitude, double longitude);
+        Task<List<Station>> GetNearestAsync(double latitude, double longitude, int count);
         Task<List<Station>> SearchAsync(string keyword);
         Task<string?> GetStationNameById(int value);
     }

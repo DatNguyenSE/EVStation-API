@@ -247,10 +247,16 @@ namespace API.Services
             }
         }
 
-        public async Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator()
+        public async Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator(string staffId)
         {
-            var receipts = await _uow.Receipts.GetPendingReceiptForOperator();
-            return receipts.Select(r => r.ToReceiptSummaryDto());
+            var assignment = await _uow.Assignments.GetCurrentAssignmentAsync(staffId);
+            if (assignment != null)
+            {
+                var receipts = await _uow.Receipts.GetPendingReceiptForOperator(assignment.StationId);
+                return receipts.Select(r => r.ToReceiptSummaryDto());
+            }
+
+            return Enumerable.Empty<ReceiptSummaryDto>();
         }
     }
 }

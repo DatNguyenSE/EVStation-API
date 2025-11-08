@@ -33,6 +33,6 @@ namespace API.Interfaces.IServices
         // === Financial Ops ===
         Task<ServiceResult> IssueRefundForReceiptAsync(RefundRequestDto refundRequest, string adminId);
         Task<ServiceResult> CancelReceiptAsync(int receiptId, string reason, string adminId);
-        Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator();
+        Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator(string staffId);
     }
 }

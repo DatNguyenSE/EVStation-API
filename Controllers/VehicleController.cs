@@ -27,13 +27,11 @@ namespace API.Controllers
     {
         private readonly IUnitOfWork _uow;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public VehicleController(IUnitOfWork uow, UserManager<AppUser> userManager, IWebHostEnvironment webHostEnvironment)
+        public VehicleController(IUnitOfWork uow, UserManager<AppUser> userManager)
         {
             _uow = uow;
             _userManager = userManager;
-            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpPost("add")]

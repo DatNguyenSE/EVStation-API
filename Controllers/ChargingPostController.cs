@@ -37,7 +37,7 @@ namespace API.Controllers
 
         // Lấy chi tiết trụ theo id
         [HttpGet("{id:int}")]
-        // [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             if (!ModelState.IsValid)

@@ -5,12 +5,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.Report;
 using API.Entities;
+using API.Entities.Cloudinary;
 using API.Helpers;
 using API.Helpers.Enums;
 using API.Hubs;
 using API.Interfaces;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using X.PagedList;
 
 namespace API.Services
@@ -42,10 +46,37 @@ namespace API.Services
         }
 
         // Luồng 1: Staff tạo Report
-        public async Task<Report> CreateReportAsync(CreateReportDto dto, string staffId)
+        public async Task<Report> CreateReportAsync(CreateReportDto dto, string staffId, IOptions<CloudinarySettings> cloudinaryConfig)
         {
             var post = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
             if (post == null) throw new Exception("Charging post not found");
+
+            string? imageUrl = null;
+            if (dto.ImageFile != null)
+            {
+                try
+                {
+                    var settings = cloudinaryConfig.Value;
+                    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                    var cloudinary = new Cloudinary(account);
+                    cloudinary.Api.Secure = true;
+
+                    using var stream = dto.ImageFile.OpenReadStream();
+                    var uploadResult = await cloudinary.UploadAsync(new ImageUploadParams
+                    {
+                        File = new FileDescription(dto.ImageFile.FileName, stream),
+                        Folder = "reports/create" // folder trên Cloudinary
+                    });
+
+                    imageUrl = uploadResult.SecureUrl?.ToString();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    throw new Exception("Lỗi khi upload ảnh lên Cloudinary");
+                }
+            }
+
 
             var report = new Report
             {
@@ -54,11 +85,12 @@ namespace API.Services
                 CreatedById = staffId,
                 Status = ReportStatus.New,
                 Severity = ReportSeverity.Normal,
-                CreateAt = DateTime.UtcNow.AddHours(7)
+                CreateAt = DateTime.UtcNow.AddHours(7),
+                CreateImageUrl = imageUrl
             };
 
-            _uow.Reports.Add(report); // Dùng repo
-            await _uow.Complete(); // Dùng UoW SaveChanges
+            _uow.Reports.Add(report);
+            await _uow.Complete();
 
             await _notificationHubContext.Clients.Group("Admins").NewReportReceived(
                 $"Có báo cáo sự cố mới tại trụ {post.Code}.");
@@ -96,10 +128,10 @@ namespace API.Services
                     foreach (var res in upcomingReservations)
                     {
                         res.Status = ReservationStatus.Cancelled;
-                        if(res.Vehicle.OwnerId != null)
+                        if (res.Vehicle.OwnerId != null)
                         {
                             notifiedUserIds.Add(res.Vehicle.OwnerId);
-                        }   
+                        }
                     }
 
                     // 4. Lấy thông tin user của phiên sạc đang chạy (nếu có)
@@ -108,7 +140,7 @@ namespace API.Services
                         // activeSession.StopReason = "Trụ sạc bảo trì khẩn cấp.";
                         if (activeSession.VehicleId != null && activeSession.Vehicle != null)
                         {
-                            if(activeSession.Vehicle.OwnerId != null)
+                            if (activeSession.Vehicle.OwnerId != null)
                             {
                                 notifiedUserIds.Add(activeSession.Vehicle.OwnerId); // Thêm user này vào danh sách thông báo
                             }
@@ -251,7 +283,7 @@ namespace API.Services
         }
 
         // Luồng 4: Technician báo cáo đã sửa xong
-        public async Task<bool> CompleteFixAsync(int reportId, CompleteFixDto dto, string technicianId)
+        public async Task<bool> CompleteFixAsync(int reportId, CompleteFixDto dto, string technicianId, IOptions<CloudinarySettings> cloudinaryConfig)
         {
             // === CHANGED ===
             var report = await _uow.Reports.GetByIdAsync(reportId);
@@ -264,6 +296,31 @@ namespace API.Services
             report.Status = ReportStatus.Resolved;
             report.FixedNote = dto.FixedNote;
             report.FixedAt = DateTime.UtcNow.AddHours(7);
+
+            if (dto.CompletedImage != null)
+            {
+                try
+                {
+                    var settings = cloudinaryConfig.Value;
+                    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                    var cloudinary = new Cloudinary(account);
+                    cloudinary.Api.Secure = true;
+
+                    using var stream = dto.CompletedImage.OpenReadStream();
+                    var uploadResult = await cloudinary.UploadAsync(new ImageUploadParams
+                    {
+                        File = new FileDescription(dto.CompletedImage.FileName, stream),
+                        Folder = "reports/completed"
+                    });
+
+                    report.CompletedImageUrl = uploadResult.SecureUrl?.ToString();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    throw new Exception("Lỗi khi upload ảnh hoàn thành lên Cloudinary");
+                }
+            }
 
             // === CHANGED ===
             await _uow.Complete();
@@ -322,6 +379,8 @@ namespace API.Services
                 MaintenanceEndTime = report.MaintenanceEndTime,
                 FixedAt = report.FixedAt,
                 FixedNote = report.FixedNote,
+                CreateImageUrl = report.CreateImageUrl,
+                CompletedImageUrl = report.CompletedImageUrl,
 
                 // Map đối tượng Post
                 Post = new PostSummaryDto
@@ -418,7 +477,7 @@ namespace API.Services
                 // 2. Lấy OwnerId (nếu có session đang chạy)
                 if (activeSession != null && activeSession.Vehicle != null)
                 {
-                    if(activeSession.Vehicle.OwnerId != null)
+                    if (activeSession.Vehicle.OwnerId != null)
                     {
                         notifiedUserIds.Add(activeSession.Vehicle.OwnerId);
                     }

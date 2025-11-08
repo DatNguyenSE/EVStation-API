@@ -82,21 +82,19 @@ namespace API.Repository
             return await _context.Stations.Include(s => s.Posts).FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task<Station?> GetNearestAsync(double latitude, double longitude)
+        public async Task<List<Station>> GetNearestAsync(double latitude, double longitude, int count = 5)
         {
             var stations = await _context.Stations.Include(s => s.Posts).ToListAsync();
 
-            // Xử lý trường hợp không có trạm nào trong cơ sở dữ liệu
             if (!stations.Any())
             {
-                return null;
+                return new List<Station>();
             }
 
-
-            // Sắp xếp các trạm theo khoảng cách tăng dần và chọn cái đầu tiên
             var nearestStation = stations
                 .OrderBy(s => StationCodeHelper.GetDistanceKm(latitude, longitude, s.Latitude, s.Longitude))
-                .FirstOrDefault();
+                .Take(count)
+                .ToList();
 
             return nearestStation;
         }

@@ -35,12 +35,12 @@ namespace API.Controllers
                 return Conflict(new { Message = message });
             }
 
-            return Ok(new 
-            { 
-                Message = message, 
+            return Ok(new
+            {
+                Message = message,
                 PostId = postId,
-                ReservationId = reservationId, 
-                VehicleId = vehicleId
+                ReservationId = reservationId,
+                VehicleId = vehicleId,
             });
         }
     }
