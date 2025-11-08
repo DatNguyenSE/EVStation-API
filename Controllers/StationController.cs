@@ -123,17 +123,17 @@ namespace API.Controllers
 
         // API gợi ý trạm gần nhất
         [HttpGet("nearest")]
-        public async Task<IActionResult> GetNearest([FromQuery] double lat, [FromQuery] double lon)
+        public async Task<IActionResult> GetNearest([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int count = 5)
         {
-            var station = await _uow.Stations.GetNearestAsync(lat, lon);
+            var stations = await _uow.Stations.GetNearestAsync(lat, lon, count);
 
             // Nếu không tìm thấy trạm nào (CSDL rỗng), trả về lỗi 404 Not Found
-            if (station == null)
+            if (stations == null)
             {
                 return NotFound("Không tìm thấy trạm nào.");
             }
-            var stationDto = station.ToStationDto();
-            return Ok(stationDto);
+            var stationDtos = stations.Select(s => s.ToStationDto());
+            return Ok(stationDtos);
         }
 
         // API tìm kiếm trạm
