@@ -245,9 +245,22 @@ namespace API.Services
                             break;
                         }
 
-                        double timeRemainMinutes = state.CurrentPercentage >= 100
-                                ? 0
-                                : Math.Ceiling((100 - state.CurrentPercentage) / percentageStep / 60.0);
+                        TimeSpan timeRemain = TimeSpan.Zero;
+
+                        if (state.CurrentPercentage < 100 && state.BatteryCapacity > 0 && state.ChargerPowerKW > 0)
+                        {
+                            double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                            double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                            // Tính tổng giây (dạng double)
+                            double totalSecondsDouble = hoursRemaining * 3600;
+
+                            // Làm tròn lên đến giây gần nhất (ceiling)
+                            int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                            // Tạo TimeSpan từ giây đã làm tròn
+                            timeRemain = TimeSpan.FromSeconds(totalSeconds);
+                        }
 
                         // realtime update
                         await _hubContext.Clients.Group($"session-{sessionId}")
@@ -257,7 +270,11 @@ namespace API.Services
                                 BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
                                 EnergyConsumed = state.EnergyConsumed,
                                 Cost = state.Cost,
-                                TimeRemain = timeRemainMinutes
+                                // TimeRemainHours = (int)timeRemain.TotalHours,
+                                // TimeRemainMinutes = timeRemain.Minutes,
+                                // TimeRemainSeconds = timeRemain.Seconds,
+                                // Hoặc gửi total seconds nếu FE muốn tự format
+                                TimeRemainTotalSeconds = (int)timeRemain.TotalSeconds
                             });
 
                         Console.WriteLine($"⚡ Session {sessionId}: {state.CurrentPercentage}% - {state.EnergyConsumed}kWh - {state.Cost}đ");

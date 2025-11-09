@@ -72,6 +72,61 @@ namespace API.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        [HttpGet("{sessionId}/reconnect")]
+        public async Task<IActionResult> ReconnectSession(int sessionId)
+        {
+            try
+            {
+                var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+
+                if (session == null)
+                    return NotFound("Không tìm thấy phiên sạc");
+
+                // Chỉ cho phép reconnect nếu session đang Charging hoặc Idle
+                if (session.Status != SessionStatus.Charging && session.Status != SessionStatus.Idle)
+                    return BadRequest("Phiên sạc đã kết thúc");
+
+                var post = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
+                var station = await _uow.Stations.GetByIdAsync(post!.StationId);
+
+                var response = new ReconnectSessionDto
+                {
+                    SessionId = session.Id,
+                    PostId = session.ChargingPostId,
+                    StationId = post.StationId,
+                    StationName = station!.Name,
+                    StationAddress = station.Address,
+                    PostInfo = new PostDto
+                    {
+                        Id = post.Id,
+                        Type = post.Type.ToString(),
+                        PowerKW = post.PowerKW,
+                        ConnectorType = post.ConnectorType.ToString(),
+                        Status = post.Status.ToString()
+                    },
+                    VehicleInfo = session.VehicleId.HasValue ? new VehicleInfoDto
+                    {
+                        Plate = session.VehiclePlate,
+                        Model = session.Vehicle?.Model ?? string.Empty,
+                        BatteryCapacityKWh = session.Vehicle?.BatteryCapacityKWh ?? 0
+                    } : null,
+                    CurrentState = new SessionStateDto
+                    {
+                        BatteryPercent = (double)(session.EndBatteryPercentage ?? session.StartBatteryPercentage),
+                        ChargedKwh = session.EnergyConsumed,
+                        TotalPrice = session.Cost,
+                        Status = session.Status.ToString()
+                    }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("history")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetHistorySessions([FromQuery] PagingParams pagingParams)
