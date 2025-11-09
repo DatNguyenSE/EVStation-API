@@ -237,6 +237,29 @@ namespace API.Services
                                 uow.ChargingSessions.Update(session);
                                 await uow.Complete();
 
+
+                                double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                                double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                                // Tính tổng giây (dạng double)
+                                double totalSecondsDouble = hoursRemaining * 3600;
+
+                                // Làm tròn lên đến giây gần nhất (ceiling)
+                                int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                                // Tạo TimeSpan từ giây đã làm tròn
+                                TimeSpan TimeRemain = TimeSpan.FromSeconds(totalSeconds);
+
+                                await _hubContext.Clients.Group($"session-{sessionId}")
+                                .SendAsync("ReceiveEnergyUpdate", new
+                                {
+                                    SessionId = sessionId,
+                                    BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
+                                    EnergyConsumed = state.EnergyConsumed,
+                                    Cost = state.Cost,
+                                    TimeRemainTotalSeconds = (int)TimeRemain.TotalSeconds
+                                });
+
                                 // SignalR: notify client
                                 await _hubContext.Clients.Group($"session-{sessionId}")
                                     .SendAsync("ReceiveSessionStopped_InsufficientFunds", sessionId, session.Status);
