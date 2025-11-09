@@ -8,11 +8,13 @@ using API.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using API.Mappers;
+using API.Helpers;
 
 namespace API.Controllers
 {
     [Route("api/assignments")]
     [ApiController]
+    [Authorize(Roles = AppConstant.Roles.Admin)]
     public class AssignmentController : ControllerBase
     {
         private readonly IAssignmentService _assignmentService;
@@ -27,6 +29,20 @@ namespace API.Controllers
             try
             {
                 var assignment = await _assignmentService.GetByIdAsync(id);
+                return Ok(assignment);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("staff/{staffId}")]
+        public async Task<IActionResult> GetAssignmentByStaffId([FromRoute] string staffId)
+        {
+            try
+            {
+                var assignment = await _assignmentService.GetAssignmentByStaffIdAsync(staffId);
                 return Ok(assignment);
             }
             catch (KeyNotFoundException ex)

@@ -37,6 +37,7 @@ namespace API.Repository
 
             return await _context.Assignments
                 .Include(a => a.Station)
+                .Include(a => a.Staff)
                 .Where(a => a.StaffId == staffId
                     && a.IsActive == true
                     && a.EffectiveFrom <= today

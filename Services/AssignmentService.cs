@@ -64,6 +64,17 @@ namespace API.Services
             return assignmentModel.ToAssignmentDto();
         }
 
+        public async Task<AssignmentDto?> GetAssignmentByStaffIdAsync(string staffId)
+        {
+            var assignmentModel = await _uow.Assignments.GetCurrentAssignmentAsync(staffId);
+            if (assignmentModel == null)
+            {
+                return null;
+            }
+
+            return assignmentModel.ToAssignmentDto();
+        }
+
         public async Task<AssignmentDto?> GetByIdAsync(int assignmentId)
         {
             var assignmentModel = await _uow.Assignments.GetByIdAsync(assignmentId);
