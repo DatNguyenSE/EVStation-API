@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
 using API.Entities;
+using API.Helpers;
 using API.Helpers.Enums;
+using X.PagedList;
 
 namespace API.Interfaces
 {
@@ -12,7 +14,7 @@ namespace API.Interfaces
     {
         Task<ChargingSession> CreateAsync(ChargingSession session);
         Task<List<ChargingSession>> GetAllAsync();
-        Task<List<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId);
+        Task<IPagedList<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId, PagingParams pagingParams);
         Task<List<ChargingSessionHistoryDto>> GetSessionsByStationAsync(int stationId);
 
         // Task<List<ChargingSessionDetailDto>> GetDetailSessionByIdAsync(int sessionId);

@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.ChargingSession;
 using API.Entities;
+using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList;
+using X.PagedList.EF;
 
 namespace API.Repository
 {
@@ -59,7 +62,7 @@ namespace API.Repository
                     s.ChargingPostId == postId &&
                     s.Status == SessionStatus.Idle);
         }
-        
+
         public async Task<ChargingSession?> FindLatestIdleSessionAtPostAsync(int postId)
         {
             return await _context.ChargingSessions
@@ -83,23 +86,28 @@ namespace API.Repository
                     sessionModel.IsPaid = true;
                 }
             }
-            
+
         }
 
-        public async Task<List<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId)
+        public async Task<IPagedList<ChargingSessionHistoryDto>> GetSessionsByDriverAsync(string ownerId, PagingParams pagingParams)
         {
-            var result = await _context.ChargingSessions
-                                        .AsNoTracking()
-                                        .Include(cs => cs.ChargingPost)
-                                        .Where(cs => cs.Vehicle != null && cs.Vehicle.OwnerId == ownerId).OrderByDescending(cs => cs.StartTime).ToListAsync();
+            var query = _context.ChargingSessions
+                .AsNoTracking()
+                .Where(cs => cs.Vehicle != null && cs.Vehicle.OwnerId == ownerId)
+                .OrderByDescending(cs => cs.StartTime)
+                .Select(cs => new ChargingSessionHistoryDto
+                {
+                    Id = cs.Id,
+                    VehiclePlate = cs.VehiclePlate,
+                    StartTime = cs.StartTime,
+                    StationName = cs.ChargingPost.StationName,
+                    ChargingPostCode = cs.ChargingPost.Code,
+                    Status = cs.Status,
+                    TotalCost = cs.TotalCost,
+                    EnergyConsumed = cs.EnergyConsumed
+                });
 
-            List<ChargingSessionHistoryDto> mySessions = new();
-            foreach (var session in result)
-            {
-                mySessions.Add(session.MapToHistoryDto());
-            }
-
-            return mySessions;
+            return await query.ToPagedListAsync(pagingParams.PageNumber, pagingParams.PageSize);
         }
 
         public async Task<List<ChargingSessionHistoryDto>> GetSessionsByStationAsync(int stationId)

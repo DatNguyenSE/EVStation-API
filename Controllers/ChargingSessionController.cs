@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
 using API.Helpers;
@@ -73,13 +74,20 @@ namespace API.Controllers
 
         [HttpGet("history")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<IActionResult> GetHistorySessions()
+        public async Task<IActionResult> GetHistorySessions([FromQuery] PagingParams pagingParams)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var historySessions = await _uow.ChargingSessions.GetSessionsByDriverAsync(userId);
-            return Ok(historySessions);
+            var pagedSessions = await _uow.ChargingSessions.GetSessionsByDriverAsync(userId, pagingParams);
+            var pagination = new
+            {
+                currentPage = pagingParams.PageNumber,
+                pageSize = pagingParams.PageSize,
+                totalCount = pagedSessions.TotalItemCount,
+                totalPages = pagedSessions.PageCount
+            };
+            return Ok(new { sessions = pagedSessions.ToList(), pagination });
         }
 
         [HttpGet("{sessionId}/detail")]
