@@ -73,8 +73,8 @@ namespace API.Repository
         {
             return await _context.Reports
                 .Where(r => r.PostId == postId)
-                .Include(r => r.ChargingPost) // Include để lấy PostCode
-                .Include(r => r.Technician)   // Include để lấy TechnicianName
+                .Include(r => r.ChargingPost) 
+                .Include(r => r.Technician)  
                                             // Lịch sử là các report đã đóng hoặc đã hủy
                 .Where(r => r.Status == ReportStatus.Closed || r.Status == ReportStatus.Cancelled)
                 .OrderByDescending(r => r.CreateAt)
@@ -91,6 +91,7 @@ namespace API.Repository
             // Lấy các report được gán cho KTV này và đang ở trạng thái InProgress
             return await _context.Reports
                 .Where(r => r.TechnicianId == technicianId && r.Status == Helpers.Enums.ReportStatus.InProgress)
+                .Include(r => r.Technician)
                 .Include(r => r.ChargingPost)
                 .OrderBy(r => r.MaintenanceStartTime) // Ưu tiên task có lịch hẹn sớm hơn
                 .ToListAsync();
@@ -102,6 +103,7 @@ namespace API.Repository
             return await _context.Reports
                 .Where(r => r.Status == Helpers.Enums.ReportStatus.New)
                 .Include(r => r.ChargingPost)
+                .Include(r => r.Technician)
                 .OrderByDescending(r => r.CreateAt) // Mới nhất lên đầu
                 .ToListAsync();
         }
