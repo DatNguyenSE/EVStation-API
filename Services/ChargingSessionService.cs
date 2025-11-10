@@ -356,7 +356,7 @@ namespace API.Services
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = ReceiptStatus.Pending,
                     AppUser = session.Vehicle?.Owner,
-                    PaymentMethod = session.Vehicle?.OwnerId != null ? "Ví tiền" : null
+                    PaymentMethod = "Tiền mặt"
                 };
                 foreach (var s in unpaid)
                 {
@@ -430,7 +430,7 @@ namespace API.Services
                     Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
                     PackageId = driverPackage != null ? driverPackage.Id : null,
                     DiscountAmount = discountAmount,
-                    PaymentMethod = "Ví tiền"
+                    PaymentMethod = driverPackage != null ? "Gói thuê bao" : "Ví tiền"
                 };
                 receipt.ChargingSessions.Add(session);
 
@@ -613,14 +613,21 @@ namespace API.Services
                     walletBalance: 0
                 );
 
-                var update = new EnergyUpdateDto
+                var update = new 
                 {
                     SessionId = sessionId,
                     BatteryPercentage = Math.Round(currentPercentage, 1),
                     EnergyConsumed = energyConsumed,
                     Cost = cost,
                     TimeRemain = currentPercentage >= 100 ? 0 : (int)Math.Ceiling((100 - currentPercentage) / percentageStep / 60.0),
-                    IsTempMode = false
+                    IsTempMode = false,
+                    // ✅ Thêm thông tin xe
+                    VehicleInfo = session.Vehicle != null ? new 
+                    {
+                        Plate = session.Vehicle.Plate,
+                        Model = session.Vehicle.Model,
+                        BatteryCapacityKWh = session.Vehicle.BatteryCapacityKWh
+                    } : null
                 };
 
                 await _hubContext.Clients.Group($"session-{sessionId}")

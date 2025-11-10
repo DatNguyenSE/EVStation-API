@@ -39,5 +39,7 @@ namespace API.DTOs.ChargingSession
         public double ChargedKwh { get; set; }
         public int TotalPrice { get; set; }
         public string Status { get; set; } = string.Empty;
+        public DateTime? IdleFeeStartTime { get; set; }
+        public int? GraceTimeRemainingSeconds { get; set; }
     }
 }
