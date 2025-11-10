@@ -86,8 +86,36 @@ namespace API.Controllers
                 if (session.Status != SessionStatus.Charging && session.Status != SessionStatus.Idle)
                     return BadRequest("Phiên sạc đã kết thúc");
 
+                // Kiểm tra quyền sở hữu
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // Nếu không phải walk-in, check owner
+                if (!session.IsWalkInSession && session.VehicleId.HasValue)
+                {
+                    var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(session.VehicleId.Value);
+                    if (vehicle?.OwnerId != null && vehicle.OwnerId != currentUserId)
+                    {
+                        return StatusCode(403, new { message = "Bạn không có quyền truy cập phiên sạc này." });
+                    }
+                }
+
                 var post = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
                 var station = await _uow.Stations.GetByIdAsync(post!.StationId);
+
+                var now = DateTime.UtcNow.AddHours(7);
+                int? graceRemaining = null;
+
+                // Tính thời gian ân hạn còn lại
+                if (session.Status == SessionStatus.Idle && session.IdleFeeStartTime.HasValue)
+                {
+                    var timeSinceFeeStart = (now - session.IdleFeeStartTime.Value).TotalSeconds;
+                    if (timeSinceFeeStart < 0)
+                    {
+                        // Vẫn còn trong thời gian ân hạn
+                        graceRemaining = (int)Math.Ceiling(-timeSinceFeeStart);
+                    }
+                    // Nếu timeSinceFeeStart >= 0 nghĩa là đã hết ân hạn, để null
+                }
 
                 var response = new ReconnectSessionDto
                 {
@@ -115,7 +143,9 @@ namespace API.Controllers
                         BatteryPercent = (double)(session.EndBatteryPercentage ?? session.StartBatteryPercentage),
                         ChargedKwh = session.EnergyConsumed,
                         TotalPrice = session.Cost,
-                        Status = session.Status.ToString()
+                        Status = session.Status.ToString(),
+                        IdleFeeStartTime = session.IdleFeeStartTime,
+                        GraceTimeRemainingSeconds = graceRemaining
                     }
                 };
 

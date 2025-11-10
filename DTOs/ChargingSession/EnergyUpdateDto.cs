@@ -13,5 +13,6 @@ namespace API.DTOs.ChargingSession
         public float TimeRemain { get; set; }
         public double Cost { get; set; }
         public bool IsTempMode { get; set; }
+        public VehicleInfoDto? VehicleInfo { get; set; }
     }
 }

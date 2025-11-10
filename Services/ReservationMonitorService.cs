@@ -34,7 +34,7 @@ namespace API.Services
 
                 var allReservations = await uow.Reservations.GetAllAsync();
                 var expiredReservations = allReservations.Where(r =>
-                                r.Status == ReservationStatus.Confirmed && r.TimeSlotEnd <= now);
+                                r.Status == ReservationStatus.InProgress && r.TimeSlotEnd <= now);
 
                 foreach (var res in expiredReservations)
                 {
