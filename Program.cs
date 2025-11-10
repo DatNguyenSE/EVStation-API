@@ -206,7 +206,5 @@ app.MapHub<ChargingHub>("/hubs/charging");
 app.MapHub<ConnectCharging>("/hubs/connect-charging");
 app.MapHub<ReservationHub>("hubs/reservation");
 
-app.MapHub<ReportHub>("/hubs/report");
-
 app.Run();
 
