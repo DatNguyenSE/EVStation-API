@@ -14,7 +14,6 @@ namespace API.Controllers
 {
     [Route("api/assignments")]
     [ApiController]
-    [Authorize(Roles = AppConstant.Roles.Admin)]
     public class AssignmentController : ControllerBase
     {
         private readonly IAssignmentService _assignmentService;

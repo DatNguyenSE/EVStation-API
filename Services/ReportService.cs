@@ -425,7 +425,8 @@ namespace API.Services
                 MaintenanceStartTime = report.MaintenanceStartTime,
                 MaintenanceEndTime = report.MaintenanceEndTime,
                 PostId = report.ChargingPost.Id,
-                PostCode = report.ChargingPost.Code
+                PostCode = report.ChargingPost.Code,
+                TechnicianName = report.Technician?.FullName
             });
         }
 
@@ -443,7 +444,8 @@ namespace API.Services
                 MaintenanceStartTime = report.MaintenanceStartTime,
                 MaintenanceEndTime = report.MaintenanceEndTime,
                 PostId = report.ChargingPost.Id,
-                PostCode = report.ChargingPost.Code
+                PostCode = report.ChargingPost.Code,
+                TechnicianName = report.Technician?.FullName
             });
         }
 
@@ -551,8 +553,11 @@ namespace API.Services
                 CreateAt = report.CreateAt,
                 MaintenanceStartTime = report.MaintenanceStartTime,
                 MaintenanceEndTime = report.MaintenanceEndTime,
+                FixedAt = report.FixedAt,
+                FixedNote = report.FixedNote,
                 PostId = report.ChargingPost.Id,
-                PostCode = report.ChargingPost.Code
+                PostCode = report.ChargingPost.Code,
+                TechnicianName = report.Technician?.FullName
             });
 
             // 3. Tạo PagedList<ReportSummaryDto> mới để trả về
@@ -576,6 +581,8 @@ namespace API.Services
                 Status = report.Status.ToString(),
                 Severity = report.Severity.ToString(),
                 CreateAt = report.CreateAt,
+                MaintenanceStartTime = report.MaintenanceStartTime,
+                MaintenanceEndTime = report.MaintenanceEndTime,
                 FixedAt = report.FixedAt,           // Thêm thông tin này cho Lịch sử
                 FixedNote = report.FixedNote,       // Thêm thông tin này
                 PostId = report.PostId,
