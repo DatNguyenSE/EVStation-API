@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using API.DTOs.ChargingSession;
 using Microsoft.AspNetCore.SignalR;
 
 namespace API.SignalR;
@@ -31,17 +32,17 @@ public class ConnectCharging : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    //  Khi trụ sạc bắt đầu hoạt động
-    public async Task NotifyConnect(string postId)
+    //  Khi trụ bắt đầu hoạt động
+    public async Task NotifyConnect(ChargingEventDto data)
     {
-        Console.WriteLine($"[NotifyConnect] Trụ {postId} đã bắt đầu hoạt động.");
-        await Clients.Group("Operator").SendAsync("ConnectCharging", postId);
+        Console.WriteLine($"[NotifyConnect] PostId={data.PostId}, SessionId={data.SessionId}");
+        await Clients.Group("Operator").SendAsync("ConnectCharging", data);
     }
 
-    //  Khi trụ sạc ngắt kết nối
-    public async Task NotifyDisconnect(string postId)
+    //  Khi trụ ngắt kết nối
+    public async Task NotifyDisconnect(ChargingEventDto data)
     {
-        Console.WriteLine($"[NotifyDisconnect] Trụ {postId} đã ngắt kết nối.");
-        await Clients.Group("Operator").SendAsync("DisconnectCharging", postId);
+        Console.WriteLine($"[NotifyDisconnect] PostId={data.PostId}, SessionId={data.SessionId}");
+        await Clients.Group("Operator").SendAsync("DisconnectCharging", data);
     }
 }
