@@ -307,7 +307,7 @@ namespace API.Controllers
             await _uow.Vehicles.DeactivateVehicleAsync(vehicle);
             var result = await _uow.Complete();
             if (!result) return BadRequest("Vô hiệu hóa xe thất bại.");
-            return Ok(new { message = "Xe đã được vô hiệu hóa (inactive)." });
+            return Ok(new { message = "Xe đã được vô hiệu hóa." });
         }
 
         /**
