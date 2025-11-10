@@ -49,12 +49,18 @@ namespace API.Services
                 }
             }
 
+            if (string.IsNullOrEmpty(driverId))
+            {
+                return (false, "Trụ này yêu cầu đặt chỗ trước. Vui lòng đăng nhập để kiểm tra đặt chỗ hợp lệ.", null, null);
+            }
+
             // Nếu là trụ đặt chỗ
             var now = DateTime.UtcNow.AddHours(7);
             var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
                 r.Vehicle.OwnerId == driverId &&
                 r.ChargingPostId == postId &&
-                (r.Status == Entities.ReservationStatus.Confirmed));
+                (r.Status == Entities.ReservationStatus.Confirmed) ||
+                (r.Status == Entities.ReservationStatus.InProgress));
 
             // Nếu không có đơn hợp lệ
             if (reservation == null)
@@ -83,6 +89,8 @@ namespace API.Services
             {
                 case PostStatus.Available:
                     reservation.Status = Entities.ReservationStatus.InProgress;
+                    _uow.Reservations.Update(reservation);
+                    await _uow.Complete();
                     return (true,
                         $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
 

@@ -213,6 +213,9 @@ namespace API.Services
                     return (false, "Không tìm thấy ví của người dùng.");
                 }
 
+                var vehicleType = receiptOfSession.ChargingSessions.FirstOrDefault()!.Vehicle!.Type;
+                var driverHasPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(driverId, vehicleType) != null;
+
                 // XỬ LÝ GIAO DỊCH VÀ CẬP NHẬT DỮ LIỆU
                 var balanceBefore = userWallet.Balance;
 
@@ -246,7 +249,7 @@ namespace API.Services
                                                     : $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} thành công.",
                     ReferenceId = receiptOfSession.Id,
                     Status = TransactionStatus.Success,
-                    PaymentMethod = "Wallet",
+                    PaymentMethod = driverHasPackage ? "Gói thuê bao" : "Ví tiền",
                     CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 await _uow.WalletTransactions.AddTransactionAsync(transaction);
