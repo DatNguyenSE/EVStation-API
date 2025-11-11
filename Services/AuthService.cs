@@ -57,12 +57,12 @@ namespace API.Services
                 guestVehicle.OwnerId = newUser.Id;
                 guestVehicle.Owner = newUser;
 
-                var receipts = await _uow.Receipts.GetReceiptsByPlateAsync(registerDto.GuestVehicleLicensePlate);
-                foreach (var receipt in receipts)
-                {
-                    receipt.AppUserId = newUser.Id;
-                    receipt.AppUser = newUser; 
-                }
+                // var receipts = await _uow.Receipts.GetReceiptsByPlateAsync(registerDto.GuestVehicleLicensePlate);
+                // foreach (var receipt in receipts)
+                // {
+                //     receipt.AppUserId = newUser.Id;
+                //     receipt.AppUser = newUser; 
+                // }
             }
 
             await _uow.Complete();
