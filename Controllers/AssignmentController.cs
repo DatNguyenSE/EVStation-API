@@ -40,7 +40,7 @@ namespace API.Controllers
 
 
         [HttpGet("staff/{staffId}")]
-        [Authorize(Roles = AppConstant.Roles.Operator)] // thêm manager or ,...
+       [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}")] // thêm manager or ,...
 
         public async Task<IActionResult> GetAssignmentByStaffId([FromRoute] string staffId)
         {
