@@ -117,6 +117,18 @@ namespace API.Controllers
                     // Nếu timeSinceFeeStart >= 0 nghĩa là đã hết ân hạn, để null
                 }
 
+                var currentPercentage = session.EndBatteryPercentage ?? session.StartBatteryPercentage;
+                var batteryCapacity = session.Vehicle?.BatteryCapacityKWh ?? 0;
+                var chargerPowerKW = session.ChargingPost.PowerKW;
+
+                int timeRemainSeconds = 0;
+                if (currentPercentage < 100 && batteryCapacity > 0 && chargerPowerKW > 0)
+                {
+                    double energyNeededKWh = (100 - (double)currentPercentage) / 100.0 * batteryCapacity;
+                    double hoursRemaining = energyNeededKWh / (double)chargerPowerKW;
+                    timeRemainSeconds = (int)Math.Ceiling(hoursRemaining * 3600);
+                }
+
                 var response = new ReconnectSessionDto
                 {
                     SessionId = session.Id,
@@ -145,7 +157,8 @@ namespace API.Controllers
                         TotalPrice = session.Cost,
                         Status = session.Status.ToString(),
                         IdleFeeStartTime = session.IdleFeeStartTime,
-                        GraceTimeRemainingSeconds = graceRemaining
+                        GraceTimeRemainingSeconds = graceRemaining,
+                        TimeRemainTotalSeconds = timeRemainSeconds
                     }
                 };
 

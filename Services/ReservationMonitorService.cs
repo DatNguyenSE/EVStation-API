@@ -57,6 +57,12 @@ namespace API.Services
                             try
                             {
                                 await sessionService.StopChargingAsync(s.Id, StopReason.ReservationCompleted);
+                                await _hubContext.Clients.Group($"session-{s.Id}")
+                                            .SendAsync("ReceiveReservationExpired", new
+                                            {
+                                                SessionId = s.Id,
+                                                Message = "Đã hết thời gian đặt chỗ. Vui lòng hoàn tất phiên sạc."
+                                            });
                             }
                             catch
                             {

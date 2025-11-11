@@ -41,5 +41,6 @@ namespace API.DTOs.ChargingSession
         public string Status { get; set; } = string.Empty;
         public DateTime? IdleFeeStartTime { get; set; }
         public int? GraceTimeRemainingSeconds { get; set; }
+        public int TimeRemainTotalSeconds { get; set; }
     }
 }

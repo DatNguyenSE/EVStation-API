@@ -171,7 +171,11 @@ namespace API.Services
 
                         // Gửi thông báo "ReceiveSessionEnded" cho UI sạc (lấy từ EndSessionAsync)
                         await _chargingHubContext.Clients.Group($"session-{activeSession.Id}")
-                            .SendAsync("ReceiveSessionEnded", activeSession.Id, SessionStatus.Completed);
+                            .SendAsync("ReceiveSessionEnded", new
+                                            {
+                                                SessionId = activeSession.Id,
+                                                Message = "Trụ đã bị gặp sự cố. Vui lòng hoàn tất phiên sạc."
+                                            });
                     }
 
                     // 7. GỬI THÔNG BÁO CHUNG & EMAIL
