@@ -9,6 +9,14 @@ namespace API.DTOs.Receipt
     public class ConfirmPaymentRequestDto
     {
         [Required]
-        public string PaymentMethod { get; set; } = null!;// "Cash", "Credit Card",...
+        public PaymentMethod PaymentMethod { get; set; }
     }
+
+    public enum PaymentMethod
+    {
+        Cash,
+        CreditCard,
+        BankTransfer
+    }
+
 }

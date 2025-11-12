@@ -57,11 +57,6 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Create([FromBody] CreateChargingPackageDto packageDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 var packageModel = packageDto.ToPackageFromCreateDto();
@@ -175,7 +170,7 @@ namespace API.Controllers
             return Ok(new { message = Message });
         }
 
-        [HttpGet("available")]  
+        [HttpGet("available")]
         [Authorize]
         public async Task<IActionResult> GetAvailable()
         {

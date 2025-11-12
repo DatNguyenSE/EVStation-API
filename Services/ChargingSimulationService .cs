@@ -51,60 +51,60 @@ namespace API.Services
         public bool IsRunning(int sessionId) => _runningSessions.ContainsKey(sessionId);
 
         public async Task StopSimulationAsync(int sessionId, bool setCompleted)
+{
+    if (_runningSessions.TryGetValue(sessionId, out var cts))
+    {
+        _stopRequested[sessionId] = setCompleted;
+
+        try
         {
-            if (_runningSessions.TryGetValue(sessionId, out var cts))
-            {
-                _stopRequested[sessionId] = setCompleted;
-                try { cts.Cancel(); } catch { /* ignore */ }
-
-                Console.WriteLine(setCompleted
-                    ? $"🟨 Graceful stop requested for session {sessionId}"
-                    : $"🟦 Temporary stop requested for session {sessionId}");
-            }
-
-            // wait for loop to exit
-            var start = DateTime.UtcNow;
-            while (_runningSessions.ContainsKey(sessionId) && (DateTime.UtcNow - start).TotalSeconds < 5)
-                await Task.Delay(100);
-
-            // flush state to DB
-            if (_sessionStates.TryGetValue(sessionId, out var state)) // Giữ TryGetValue, không Remove ngay
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-                // Force flush trước để sync state vào DB
-                await FlushToDatabase(sessionId, state, fullFlush: setCompleted);
-
-                // Reload session sau flush để lấy data mới nhất
-                var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
-                if (session != null)
-                {
-                    Console.WriteLine($"🟨 CurrentPercentage: {state.CurrentPercentage}");
-
-                    if (setCompleted)
-                    {
-                        session.Status = SessionStatus.Idle; // Set Idle nếu graceful stop
-                        session.StopReason = StopReason.ManualStop; // Hoặc tùy theo context
-                    }
-
-                    uow.ChargingSessions.Update(session);
-                    await uow.Complete();
-
-                    // SignalR: inform clients
-                    await _hubContext.Clients.Group($"session-{sessionId}")
-                        .SendAsync("ReceiveSessionStopped", sessionId, session.Status);
-
-                    Console.WriteLine($"💾 Session {sessionId} flushed to DB on stop (setCompleted={setCompleted})");
-                }
-
-                // Remove sau khi done
-                _sessionStates.TryRemove(sessionId, out _);
-            }
-
-            _runningSessions.TryRemove(sessionId, out _);
-            _stopRequested.TryRemove(sessionId, out _);
+            // 🔥 Hủy token ngay để vòng lặp thoát tức thì
+            cts.Cancel();
         }
+        catch { /* ignore */ }
+
+        Console.WriteLine(setCompleted
+            ? $"🟨 Graceful stop requested for session {sessionId}"
+            : $"🟦 Temporary stop requested for session {sessionId}");
+    }
+
+    // 🔥 Loại bỏ session khỏi danh sách đang chạy ngay lập tức
+    _runningSessions.TryRemove(sessionId, out _);
+
+    // Flush state vào DB ngay lập tức
+    if (_sessionStates.TryGetValue(sessionId, out var state))
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        await FlushToDatabase(sessionId, state, fullFlush: setCompleted);
+
+        var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
+        if (session != null)
+        {
+            if (setCompleted)
+            {
+                session.Status = SessionStatus.Idle;
+                session.StopReason = StopReason.ManualStop;
+            }
+
+            uow.ChargingSessions.Update(session);
+            await uow.Complete();
+
+            // 🔔 Thông báo SignalR dừng session
+            await _hubContext.Clients.Group($"session-{sessionId}")
+                .SendAsync("ReceiveSessionStopped", sessionId, session.Status);
+        }
+
+        Console.WriteLine($"💾 Session {sessionId} flushed and stopped (setCompleted={setCompleted})");
+
+        // Sau khi flush xong mới remove state
+        _sessionStates.TryRemove(sessionId, out _);
+    }
+
+    _stopRequested.TryRemove(sessionId, out _);
+}
+
 
         public async Task StartSimulationAsync(
     int sessionId,
@@ -237,6 +237,29 @@ namespace API.Services
                                 uow.ChargingSessions.Update(session);
                                 await uow.Complete();
 
+
+                                double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                                double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                                // Tính tổng giây (dạng double)
+                                double totalSecondsDouble = hoursRemaining * 3600;
+
+                                // Làm tròn lên đến giây gần nhất (ceiling)
+                                int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                                // Tạo TimeSpan từ giây đã làm tròn
+                                TimeSpan TimeRemain = TimeSpan.FromSeconds(totalSeconds);
+
+                                await _hubContext.Clients.Group($"session-{sessionId}")
+                                .SendAsync("ReceiveEnergyUpdate", new
+                                {
+                                    SessionId = sessionId,
+                                    BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
+                                    EnergyConsumed = state.EnergyConsumed,
+                                    Cost = state.Cost,
+                                    TimeRemainTotalSeconds = (int)TimeRemain.TotalSeconds
+                                });
+
                                 // SignalR: notify client
                                 await _hubContext.Clients.Group($"session-{sessionId}")
                                     .SendAsync("ReceiveSessionStopped_InsufficientFunds", sessionId, session.Status);
@@ -245,9 +268,22 @@ namespace API.Services
                             break;
                         }
 
-                        double timeRemainMinutes = state.CurrentPercentage >= 100
-                                ? 0
-                                : Math.Ceiling((100 - state.CurrentPercentage) / percentageStep / 60.0);
+                        TimeSpan timeRemain = TimeSpan.Zero;
+
+                        if (state.CurrentPercentage < 100 && state.BatteryCapacity > 0 && state.ChargerPowerKW > 0)
+                        {
+                            double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                            double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                            // Tính tổng giây (dạng double)
+                            double totalSecondsDouble = hoursRemaining * 3600;
+
+                            // Làm tròn lên đến giây gần nhất (ceiling)
+                            int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                            // Tạo TimeSpan từ giây đã làm tròn
+                            timeRemain = TimeSpan.FromSeconds(totalSeconds);
+                        }
 
                         // realtime update
                         await _hubContext.Clients.Group($"session-{sessionId}")
@@ -257,7 +293,11 @@ namespace API.Services
                                 BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
                                 EnergyConsumed = state.EnergyConsumed,
                                 Cost = state.Cost,
-                                TimeRemain = timeRemainMinutes
+                                // TimeRemainHours = (int)timeRemain.TotalHours,
+                                // TimeRemainMinutes = timeRemain.Minutes,
+                                // TimeRemainSeconds = timeRemain.Seconds,
+                                // Hoặc gửi total seconds nếu FE muốn tự format
+                                TimeRemainTotalSeconds = (int)timeRemain.TotalSeconds
                             });
 
                         Console.WriteLine($"⚡ Session {sessionId}: {state.CurrentPercentage}% - {state.EnergyConsumed}kWh - {state.Cost}đ");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251030185518_updateReceipt")]
-    partial class updateReceipt
+    [Migration("20251104075819_AddIsProcessedByDisciplineColumnIntoReceipt")]
+    partial class AddIsProcessedByDisciplineColumnIntoReceipt
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -172,6 +172,44 @@ namespace API.Migrations
                             SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
                             TwoFactorEnabled = false,
                             UserName = "technician"
+                        },
+                        new
+                        {
+                            Id = "5",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "d1@evsystem.com",
+                            EmailConfirmed = true,
+                            FullName = "Tài xế 1",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "D1@EVSYSTEM.COM",
+                            NormalizedUserName = "D1",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
+                            PhoneNumber = "0933334333",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
+                            TwoFactorEnabled = false,
+                            UserName = "d1"
+                        },
+                        new
+                        {
+                            Id = "6",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "d2@evsystem.com",
+                            EmailConfirmed = true,
+                            FullName = "Tài xế 2",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "D2@EVSYSTEM.COM",
+                            NormalizedUserName = "D2",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
+                            PhoneNumber = "0933333343",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
+                            TwoFactorEnabled = false,
+                            UserName = "d2"
                         });
                 });
 
@@ -183,14 +221,14 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ShiftDate")
+                    b.Property<DateTime>("EffectiveFrom")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("ShiftEnd")
-                        .HasColumnType("time");
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("ShiftStart")
-                        .HasColumnType("time");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("StaffId")
                         .IsRequired()
@@ -205,7 +243,7 @@ namespace API.Migrations
 
                     b.HasIndex("StationId");
 
-                    b.ToTable("Assignment");
+                    b.ToTable("Assignments", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPackage", b =>
@@ -244,6 +282,30 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ChargingPackages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Sử dụng trạm sạc không giới hạn trong 30 ngày cho xe máy điện.",
+                            DurationDays = 30,
+                            IsActive = true,
+                            Name = "Gói Xe Máy 30 Ngày Không Giới Hạn",
+                            Price = 99000m,
+                            VehicleType = "Motorbike"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Sử dụng trạm sạc không giới hạn trong 30 ngày cho ô tô điện.",
+                            DurationDays = 30,
+                            IsActive = true,
+                            Name = "Gói Ô Tô 30 Ngày Không Giới Hạn",
+                            Price = 499000m,
+                            VehicleType = "Car"
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPost", b =>
@@ -297,7 +359,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "Q1-Type2-A",
+                            Code = "HCM01-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -309,7 +371,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 2,
-                            Code = "Q1-Type2-B",
+                            Code = "HCM01-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -321,7 +383,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 3,
-                            Code = "Q1-CCS2-A",
+                            Code = "HCM01-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -333,7 +395,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 4,
-                            Code = "Q1-CCS2-B",
+                            Code = "HCM01-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -345,7 +407,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 5,
-                            Code = "Q1-ULTRA-A",
+                            Code = "HCM01-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -357,7 +419,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 6,
-                            Code = "Q1-ULTRA-B",
+                            Code = "HCM01-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -369,7 +431,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 7,
-                            Code = "Q1-SC-A",
+                            Code = "HCM01-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -381,7 +443,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 8,
-                            Code = "Q1-SC-B",
+                            Code = "HCM01-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -393,7 +455,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 9,
-                            Code = "TD-Type2-A",
+                            Code = "HCM02-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -405,7 +467,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 10,
-                            Code = "TD-Type2-B",
+                            Code = "HCM02-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -417,7 +479,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 11,
-                            Code = "TD-CCS2-A",
+                            Code = "HCM02-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -429,7 +491,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 12,
-                            Code = "TD-CCS2-B",
+                            Code = "HCM02-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -441,7 +503,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 13,
-                            Code = "TD-ULTRA-A",
+                            Code = "HCM02-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -453,7 +515,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 14,
-                            Code = "TD-ULTRA-B",
+                            Code = "HCM02-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -465,7 +527,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 15,
-                            Code = "TD-SC-A",
+                            Code = "HCM02-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -477,7 +539,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 16,
-                            Code = "TD-SC-B",
+                            Code = "HCM02-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -489,7 +551,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 17,
-                            Code = "BD-Type2-A",
+                            Code = "BD03-CHG001",
                             ConnectorType = "Type2",
                             IsWalkIn = false,
                             PowerKW = 11m,
@@ -501,7 +563,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 18,
-                            Code = "BD-Type2-B",
+                            Code = "BD03-CHG002",
                             ConnectorType = "Type2",
                             IsWalkIn = true,
                             PowerKW = 11m,
@@ -513,7 +575,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 19,
-                            Code = "BD-CCS2-A",
+                            Code = "BD03-CHG003",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 60m,
@@ -525,7 +587,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 20,
-                            Code = "BD-CCS2-B",
+                            Code = "BD03-CHG004",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 60m,
@@ -537,7 +599,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 21,
-                            Code = "BD-ULTRA-A",
+                            Code = "BD03-CHG005",
                             ConnectorType = "CCS2",
                             IsWalkIn = false,
                             PowerKW = 150m,
@@ -549,7 +611,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 22,
-                            Code = "BD-ULTRA-B",
+                            Code = "BD03-CHG006",
                             ConnectorType = "CCS2",
                             IsWalkIn = true,
                             PowerKW = 150m,
@@ -561,7 +623,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 23,
-                            Code = "BD-SC-A",
+                            Code = "BD03-CHG007",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = false,
                             PowerKW = 1.2m,
@@ -573,7 +635,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 24,
-                            Code = "BD-SC-B",
+                            Code = "BD03-CHG008",
                             ConnectorType = "VinEScooter",
                             IsWalkIn = true,
                             PowerKW = 1.2m,
@@ -848,6 +910,9 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("StationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasMaxLength(15)
                         .HasColumnType("int");
@@ -862,6 +927,8 @@ namespace API.Migrations
                     b.HasIndex("ConfirmedByStaffId");
 
                     b.HasIndex("PackageId");
+
+                    b.HasIndex("StationId");
 
                     b.ToTable("Receipts");
                 });
@@ -937,6 +1004,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsProcessedByDiscipline")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
@@ -1009,7 +1079,7 @@ namespace API.Migrations
                             Id = 1,
                             Address = "12 Lê Lợi, Quận 1, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "Q1HCM",
+                            Code = "HCM01",
                             Description = "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC",
                             Latitude = 10.776899999999999,
                             Longitude = 106.7009,
@@ -1022,7 +1092,7 @@ namespace API.Migrations
                             Id = 2,
                             Address = "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "TDHCM",
+                            Code = "HCM02",
                             Description = "Trạm sạc khu vực Thủ Đức, gần Vincom",
                             Latitude = 10.849500000000001,
                             Longitude = 106.7689,
@@ -1035,7 +1105,7 @@ namespace API.Migrations
                             Id = 3,
                             Address = "88 Đại Lộ Bình Dương, Thuận An, Bình Dương",
                             CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "BDBD",
+                            Code = "BD03",
                             Description = "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa",
                             Latitude = 10.949999999999999,
                             Longitude = 106.75,
@@ -1587,6 +1657,16 @@ namespace API.Migrations
                         {
                             UserId = "4",
                             RoleId = "5"
+                        },
+                        new
+                        {
+                            UserId = "5",
+                            RoleId = "2"
+                        },
+                        new
+                        {
+                            UserId = "6",
+                            RoleId = "2"
                         });
                 });
 
@@ -1701,11 +1781,19 @@ namespace API.Migrations
                         .WithMany()
                         .HasForeignKey("PackageId");
 
+                    b.HasOne("API.Entities.Station", "Station")
+                        .WithMany()
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("AppUser");
 
                     b.Navigation("ConfirmedByStaff");
 
                     b.Navigation("Package");
+
+                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("API.Entities.Report", b =>

@@ -74,15 +74,14 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> Deactive(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            var userPackageModel = await _uow.DriverPackages.DeactiveAsync(id);
+            var userPackageModel = await _uow.DriverPackages.DeactiveAsync(userId, id);
             if (userPackageModel == null)
             {
                 return NotFound("Không tìm thấy gói.");

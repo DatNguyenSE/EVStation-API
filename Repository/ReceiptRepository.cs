@@ -24,9 +24,35 @@ namespace API.Repository
 
         }
 
+        public IQueryable<Receipt> GetAllReceiptsQueryable()
+        {
+            return _context.Receipts.Include(r => r.ChargingSessions)
+                                    .Include(r => r.Station);
+        }
+
         public async Task<Receipt?> GetByIdAsync(int id)
         {
             return await _context.Receipts.Include(r => r.ChargingSessions).ThenInclude(cs => cs.ChargingPost).FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public async Task<IEnumerable<Receipt>> GetPendingReceiptForOperator(int stationId)
+        {
+            return await _context.Receipts
+            .AsNoTracking()
+            .Where(r => r.Status == ReceiptStatus.Pending && r.StationId == stationId)
+            .OrderByDescending(r => r.CreateAt)
+            .ToListAsync();
+        }
+
+        public async Task<List<Receipt>> GetReceiptsByPlateAsync(string plate)
+        {
+            var normalizedPlate = plate.Trim().ToUpper();
+
+            return await _context.Receipts.Where(r => r.ChargingSessions.Any(cs =>
+                                                                            cs.Vehicle!.Plate.ToUpper() == normalizedPlate))
+                                                                        .Include(r => r.ChargingSessions)
+                                                                        .ThenInclude(cs => cs.Vehicle)
+                                                                        .ToListAsync();
         }
 
         public IQueryable<Receipt> GetReceiptsQuery()
@@ -42,6 +68,12 @@ namespace API.Repository
         {
             return await _context.Receipts
                 .Include(r => r.ChargingSessions)
+                    .ThenInclude(s => s.ChargingPost)
+                .Include(r => r.AppUser)
+                .Include(r => r.ConfirmedByStaff) 
+                .Include(r => r.Package)
+                    .ThenInclude(dp => dp.Package)
+                .Include(r => r.Station)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -51,7 +83,7 @@ namespace API.Repository
                 .Include(r => r.AppUser) // Chi tiết người dùng
                 .Include(r => r.ConfirmedByStaff) // Chi tiết nhân viên
                 .Include(r => r.Package) // Chi tiết gói cước
-                    .ThenInclude(dp => dp.Package) 
+                    .ThenInclude(dp => dp.Package)
                 .Include(r => r.ChargingSessions) // Chi tiết phiên sạc
                     .ThenInclude(cs => cs.ChargingPost) // Chi tiết trụ sạc
                 .Include(r => r.WalletTransactions) // Chi tiết giao dịch ví

@@ -32,7 +32,7 @@ namespace API.Controllers
         }
 
         // Lấy ví của user
-        [HttpGet("my")]
+        [HttpGet("me")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetMyWallet()
         {
@@ -54,16 +54,23 @@ namespace API.Controllers
         // Lấy lịch sử giao dịch
         [HttpGet("transactions")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
-        public async Task<IActionResult> GetTransaction()
+        public async Task<IActionResult> GetTransaction([FromQuery] PagingParams paging)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            // Gọi Service Layer
-            var result = await _walletService.GetUserTransactionsAsync(userId);
+            var result = await _walletService.GetUserTransactionsAsync(userId, paging);
 
-            // Service đã xử lý việc kiểm tra ví, chỉ cần trả về kết quả
-            return Ok(result);
+            if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+
+            // Trả thêm metadata phân trang
+            var meta = result.Data.ToPaginationMeta();
+
+            return Ok(new
+            {
+                items = result.Data,
+                pagination = meta
+            });
         }
 
         [HttpPost("top-up")]
@@ -72,7 +79,7 @@ namespace API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-                
+
             var username = User.GetUsername();
             var paymentUrl = await _walletService.CreatePaymentAsync(model, username, HttpContext);
             return Ok(new { paymentUrl });

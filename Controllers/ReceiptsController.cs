@@ -35,11 +35,6 @@ namespace API.Controllers
                 return Unauthorized("Không thể xác định nhân viên.");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.PaymentMethod))
-            {
-                return BadRequest("Phương thức thanh toán không được để trống.");
-            }
-
             var result = await _receiptService.ConfirmWalkInPaymentAsync(id, staffId, dto.PaymentMethod);
 
             if (!result.IsSuccess)
@@ -59,7 +54,7 @@ namespace API.Controllers
         /// [ADMIN/STAFF] Hủy một hóa đơn đang ở trạng thái Pending.
         /// </summary>
         [HttpPost("{id}/cancel")]
-        [Authorize(Roles = $"{AppConstant.Roles.Operator},{AppConstant.Roles.Admin}")]
+        [Authorize(Roles = $"{AppConstant.Roles.Admin}, {AppConstant.Roles.Manager}")]
         public async Task<IActionResult> CancelReceipt(int id, [FromBody] CancelRequestDto dto)
         {
             var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -86,7 +81,7 @@ namespace API.Controllers
         /// [ADMIN] Thực hiện hoàn tiền cho một hóa đơn đã thanh toán.
         /// </summary>
         [HttpPost("refund")]
-        [Authorize(Roles = AppConstant.Roles.Admin)] // Chỉ Admin mới được hoàn tiền
+        [Authorize(Roles = $"{AppConstant.Roles.Admin}, {AppConstant.Roles.Manager}")] // Chỉ Admin mới được hoàn tiền
         public async Task<IActionResult> IssueRefund([FromBody] RefundRequestDto refundRequest)
         {
             var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -115,9 +110,9 @@ namespace API.Controllers
         /// [USER] Lấy lịch sử hóa đơn (đã phân trang) của người dùng hiện tại.
         /// </summary>
         [HttpGet]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetUserReceipts([FromQuery] PagingParams pagingParams)
         {
-            Console.WriteLine($"🔹 Received PageNumber={pagingParams.PageNumber}, PageSize={pagingParams.PageSize}");
             var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(appUserId))
             {
@@ -144,6 +139,7 @@ namespace API.Controllers
         /// [USER] Lấy chi tiết một hóa đơn CỦA CHÍNH người dùng hiện tại.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
         public async Task<IActionResult> GetReceiptDetails(int id)
         {
             var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -170,20 +166,28 @@ namespace API.Controllers
         /// [ADMIN/STAFF] Lấy TẤT CẢ hóa đơn trong hệ thống (có lọc, phân trang).
         /// </summary>
         [HttpGet("admin")]
-        [Authorize(Roles = $"{AppConstant.Roles.Operator},{AppConstant.Roles.Admin}")]
+        [Authorize(Roles = $"{AppConstant.Roles.Manager}, {AppConstant.Roles.Admin}")]
         public async Task<IActionResult> GetAllReceiptsForAdmin(
             [FromQuery] ReceiptFilterParams filterParams,
             [FromQuery] PagingParams pagingParams)
         {
             var result = await _receiptService.GetAllReceiptsForAdminAsync(filterParams, pagingParams);
-            return Ok(result.Data);
+            var paged = result.Data;
+            return Ok(new
+            {
+                items = paged.ToList(),
+                pageNumber = paged.PageNumber,
+                pageSize = paged.PageSize,
+                totalItemCount = paged.TotalItemCount,
+                pageCount = paged.PageCount
+            });
         }
 
         /// <summary>
         /// [ADMIN/STAFF] Lấy chi tiết một hóa đơn BẤT KỲ theo ID.
         /// </summary>
         [HttpGet("admin/{id}")]
-        [Authorize(Roles = $"{AppConstant.Roles.Operator},{AppConstant.Roles.Admin}")]
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}, {AppConstant.Roles.Manager}")]
         public async Task<IActionResult> GetReceiptByIdForAdmin(int id)
         {
             var result = await _receiptService.GetReceiptByIdForAdminAsync(id);
@@ -194,6 +198,16 @@ namespace API.Controllers
             }
 
             return Ok(result.Data);
+        }
+
+        [HttpGet("operator")]
+        [Authorize(Roles = AppConstant.Roles.Operator)]
+        public async Task<IActionResult> GetPendingReceiptsForOperator()
+        {
+            var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(staffId)) Unauthorized();
+            var receipts = await _receiptService.GetPendingReceiptForOperator(staffId); 
+            return Ok(receipts);
         }
     }
 }

@@ -47,6 +47,7 @@ namespace API.Entities
         // 3. Phí chiếm dụng
         // Đây là một loại phí đặc biệt, tính theo phút
         // thay vì kWh như các loại trên.
-        OccupancyFee    // Phí chiếm dụng (tính theo phút)
+        OccupancyFee,    // Phí chiếm dụng (tính theo phút)
+        OverstayFee      // Phí phạt quá giờ đặt chỗ (tính theo phút) - Áp dụng khi sạc quá giờ đặt chỗ
     }
 }

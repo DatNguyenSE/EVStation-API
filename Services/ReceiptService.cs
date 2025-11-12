@@ -9,6 +9,7 @@ using API.Helpers.Enums;
 using API.Interfaces;
 using API.Interfaces.IServices;
 using API.Mappers;
+using Microsoft.EntityFrameworkCore;
 using X.PagedList;
 using X.PagedList.EF;
 
@@ -18,10 +19,12 @@ namespace API.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IWalletService _walletService;
-        public ReceiptService(IUnitOfWork uow, IWalletService walletService)
+        private readonly IEmailService _emailService;
+        public ReceiptService(IUnitOfWork uow, IWalletService walletService, IEmailService emailService)
         {
             _uow = uow;
             _walletService = walletService;
+            _emailService = emailService;
         }
 
         public async Task<ServiceResult> CancelReceiptAsync(int receiptId, string reason, string managerId)
@@ -49,7 +52,7 @@ namespace API.Services
             return new ServiceResult(false, "Lỗi khi lưu vào cơ sở dữ liệu.");
         }
 
-        public async Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, string paymentMethod)
+        public async Task<ServiceResult> ConfirmWalkInPaymentAsync(int receiptId, string staffId, PaymentMethod paymentMethod)
         {
             // 1. Lấy dữ liệu từ repository
             var receipt = await _uow.Receipts.GetReceiptWithChargingSessionsAsync(receiptId);
@@ -57,12 +60,6 @@ namespace API.Services
             if (receipt == null)
             {
                 return new ServiceResult(false, "Không tìm thấy hóa đơn.");
-            }
-
-            // 2. Xử lý logic nghiệp vụ
-            if (!string.IsNullOrWhiteSpace(receipt.AppUserId))
-            {
-                return new ServiceResult(false, "Đây không phải là hóa đơn của khách vãng lai.");
             }
 
             if (receipt.Status != ReceiptStatus.Pending)
@@ -74,7 +71,7 @@ namespace API.Services
             receipt.Status = ReceiptStatus.Paid;
             receipt.ConfirmedByStaffId = staffId;
             receipt.ConfirmedAt = DateTime.UtcNow.AddHours(7);
-            receipt.PaymentMethod = paymentMethod;
+            receipt.PaymentMethod = paymentMethod.ToString();
             _uow.Receipts.Update(receipt);
 
             await _uow.ChargingSessions.UpdatePayingStatusAsync(receipt.ChargingSessions.Select(cs => cs.Id).ToList());
@@ -85,6 +82,11 @@ namespace API.Services
             if (!success)
             {
                 return new ServiceResult(false, "Lỗi khi lưu vào cơ sở dữ liệu.");
+            }
+
+            if(!string.IsNullOrEmpty(receipt.AppUserId) && receipt.AppUser != null)
+            {
+                await _emailService.SendChargingReceiptAsync(receipt.AppUser.Email!, receipt);
             }
 
             return new ServiceResult(true);
@@ -98,7 +100,6 @@ namespace API.Services
         public async Task<ServiceResult<IPagedList<ReceiptSummaryDto>>> GetAllReceiptsForAdminAsync(ReceiptFilterParams filterParams, PagingParams pagingParams)
         {
             var query = _uow.Receipts.GetReceiptsQuery(); // Lấy IQueryable
-
             // Lọc
             if (filterParams.Status.HasValue)
                 query = query.Where(r => r.Status == filterParams.Status.Value);
@@ -108,6 +109,12 @@ namespace API.Services
                 query = query.Where(r => r.CreateAt.Date <= filterParams.EndDate.Value.Date);
             if (filterParams.IsWalkInOnly == true)
                 query = query.Where(r => r.AppUserId == null);
+            if (!string.IsNullOrEmpty(filterParams.AppUserName))
+            {
+                query = query.Where(r => r.AppUser != null &&
+                                         EF.Functions.Like(r.AppUser.FullName, $"%{filterParams.AppUserName}%"));
+            }
+
 
             // Sắp xếp
             query = query.OrderByDescending(r => r.CreateAt);
@@ -115,13 +122,13 @@ namespace API.Services
             // THAY ĐỔI: Thực thi truy vấn và Phân trang thủ công
             // 1. Phân trang trên IQueryable<Receipt> trước
             var pagedEntities = await query.ToPagedListAsync(pagingParams.PageNumber, pagingParams.PageSize);
-            
+
             // 2. Map danh sách đã phân trang sang DTO
             var dtoList = pagedEntities.Select(r => r.ToReceiptSummaryDto()).ToList();
 
             // 3. Tạo PagedList tĩnh (StaticPagedList) từ DTO list
             var pagedResult = new StaticPagedList<ReceiptSummaryDto>(dtoList, pagedEntities);
-            
+
             return ServiceResult<IPagedList<ReceiptSummaryDto>>.Success(pagedResult);
         }
 
@@ -181,7 +188,7 @@ namespace API.Services
 
             // 3. Tạo StaticPagedList
             var pagedResult = new StaticPagedList<ReceiptSummaryDto>(dtoList, pagedEntities);
-            
+
             return ServiceResult<IPagedList<ReceiptSummaryDto>>.Success(pagedResult);
         }
 
@@ -232,12 +239,24 @@ namespace API.Services
                 await transaction.CommitAsync();
                 return new ServiceResult(true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 // TODO: Log ex
                 return new ServiceResult(false, "Đã xảy ra lỗi hệ thống khi hoàn tiền.");
             }
+        }
+
+        public async Task<IEnumerable<ReceiptSummaryDto>> GetPendingReceiptForOperator(string staffId)
+        {
+            var assignment = await _uow.Assignments.GetCurrentAssignmentAsync(staffId);
+            if (assignment != null)
+            {
+                var receipts = await _uow.Receipts.GetPendingReceiptForOperator(assignment.StationId);
+                return receipts.Select(r => r.ToReceiptSummaryDto());
+            }
+
+            return Enumerable.Empty<ReceiptSummaryDto>();
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class FixReceiptAppUserRelation : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -320,28 +320,28 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Assignment",
+                name: "Assignments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ShiftDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ShiftStart = table.Column<TimeSpan>(type: "time", nullable: false),
-                    ShiftEnd = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     StaffId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Assignment", x => x.Id);
+                    table.PrimaryKey("PK_Assignments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Assignment_AspNetUsers_StaffId",
+                        name: "FK_Assignments_AspNetUsers_StaffId",
                         column: x => x.StaffId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Assignment_Stations_StationId",
+                        name: "FK_Assignments_Stations_StationId",
                         column: x => x.StationId,
                         principalTable: "Stations",
                         principalColumn: "Id",
@@ -394,7 +394,10 @@ namespace API.Migrations
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PricingName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PricePerKwhSnapshot = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    PricePerKwhSnapshot = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ConfirmedByStaffId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -405,6 +408,11 @@ namespace API.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Receipts_AspNetUsers_ConfirmedByStaffId",
+                        column: x => x.ConfirmedByStaffId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Receipts_DriverPackages_PackageId",
                         column: x => x.PackageId,
@@ -612,9 +620,9 @@ namespace API.Migrations
                 columns: new[] { "Id", "Address", "CloseTime", "Code", "Description", "Latitude", "Longitude", "Name", "OpenTime", "Status" },
                 values: new object[,]
                 {
-                    { 1, "12 Lê Lợi, Quận 1, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "Q1HCM", "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC", 10.776899999999999, 106.7009, "Trạm sạc VinFast Quận 1", new TimeSpan(0, 6, 0, 0, 0), "Active" },
-                    { 2, "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "TDHCM", "Trạm sạc khu vực Thủ Đức, gần Vincom", 10.849500000000001, 106.7689, "Trạm sạc VinFast Thủ Đức", new TimeSpan(0, 6, 0, 0, 0), "Active" },
-                    { 3, "88 Đại Lộ Bình Dương, Thuận An, Bình Dương", new TimeSpan(0, 22, 0, 0, 0), "BDBD", "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa", 10.949999999999999, 106.75, "Trạm sạc VinFast Bình Dương", new TimeSpan(0, 6, 0, 0, 0), "Active" }
+                    { 1, "12 Lê Lợi, Quận 1, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "HCM01", "Trạm sạc trung tâm TP.HCM, hỗ trợ cả AC và DC", 10.776899999999999, 106.7009, "Trạm sạc VinFast Quận 1", new TimeSpan(0, 6, 0, 0, 0), "Active" },
+                    { 2, "35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", new TimeSpan(0, 22, 0, 0, 0), "HCM02", "Trạm sạc khu vực Thủ Đức, gần Vincom", 10.849500000000001, 106.7689, "Trạm sạc VinFast Thủ Đức", new TimeSpan(0, 6, 0, 0, 0), "Active" },
+                    { 3, "88 Đại Lộ Bình Dương, Thuận An, Bình Dương", new TimeSpan(0, 22, 0, 0, 0), "BD03", "Trạm sạc khu vực Bình Dương, thuận tiện cho xe di chuyển xa", 10.949999999999999, 106.75, "Trạm sạc VinFast Bình Dương", new TimeSpan(0, 6, 0, 0, 0), "Active" }
                 });
 
             migrationBuilder.InsertData(
@@ -659,30 +667,30 @@ namespace API.Migrations
                 columns: new[] { "Id", "Code", "ConnectorType", "IsWalkIn", "PowerKW", "QRCode", "StationId", "StationName", "Status", "Type" },
                 values: new object[,]
                 {
-                    { 1, "Q1-Type2-A", "Type2", false, 11m, null, 1, "", "Available", "Normal" },
-                    { 2, "Q1-Type2-B", "Type2", true, 11m, null, 1, "", "Available", "Normal" },
-                    { 3, "Q1-CCS2-A", "CCS2", false, 60m, null, 1, "", "Available", "Fast" },
-                    { 4, "Q1-CCS2-B", "CCS2", true, 60m, null, 1, "", "Available", "Fast" },
-                    { 5, "Q1-ULTRA-A", "CCS2", false, 150m, null, 1, "", "Available", "Fast" },
-                    { 6, "Q1-ULTRA-B", "CCS2", true, 150m, null, 1, "", "Available", "Fast" },
-                    { 7, "Q1-SC-A", "VinEScooter", false, 1.2m, null, 1, "", "Available", "Scooter" },
-                    { 8, "Q1-SC-B", "VinEScooter", true, 1.2m, null, 1, "", "Available", "Scooter" },
-                    { 9, "TD-Type2-A", "Type2", false, 11m, null, 2, "", "Available", "Normal" },
-                    { 10, "TD-Type2-B", "Type2", true, 11m, null, 2, "", "Available", "Normal" },
-                    { 11, "TD-CCS2-A", "CCS2", false, 60m, null, 2, "", "Available", "Fast" },
-                    { 12, "TD-CCS2-B", "CCS2", true, 60m, null, 2, "", "Available", "Fast" },
-                    { 13, "TD-ULTRA-A", "CCS2", false, 150m, null, 2, "", "Available", "Fast" },
-                    { 14, "TD-ULTRA-B", "CCS2", true, 150m, null, 2, "", "Available", "Fast" },
-                    { 15, "TD-SC-A", "VinEScooter", false, 1.2m, null, 2, "", "Available", "Scooter" },
-                    { 16, "TD-SC-B", "VinEScooter", true, 1.2m, null, 2, "", "Available", "Scooter" },
-                    { 17, "BD-Type2-A", "Type2", false, 11m, null, 3, "", "Available", "Normal" },
-                    { 18, "BD-Type2-B", "Type2", true, 11m, null, 3, "", "Available", "Normal" },
-                    { 19, "BD-CCS2-A", "CCS2", false, 60m, null, 3, "", "Available", "Fast" },
-                    { 20, "BD-CCS2-B", "CCS2", true, 60m, null, 3, "", "Available", "Fast" },
-                    { 21, "BD-ULTRA-A", "CCS2", false, 150m, null, 3, "", "Available", "Fast" },
-                    { 22, "BD-ULTRA-B", "CCS2", true, 150m, null, 3, "", "Available", "Fast" },
-                    { 23, "BD-SC-A", "VinEScooter", false, 1.2m, null, 3, "", "Available", "Scooter" },
-                    { 24, "BD-SC-B", "VinEScooter", true, 1.2m, null, 3, "", "Available", "Scooter" }
+                    { 1, "HCM01-CHG001", "Type2", false, 11m, null, 1, "", "Available", "Normal" },
+                    { 2, "HCM01-CHG002", "Type2", true, 11m, null, 1, "", "Available", "Normal" },
+                    { 3, "HCM01-CHG003", "CCS2", false, 60m, null, 1, "", "Available", "Fast" },
+                    { 4, "HCM01-CHG004", "CCS2", true, 60m, null, 1, "", "Available", "Fast" },
+                    { 5, "HCM01-CHG005", "CCS2", false, 150m, null, 1, "", "Available", "Fast" },
+                    { 6, "HCM01-CHG006", "CCS2", true, 150m, null, 1, "", "Available", "Fast" },
+                    { 7, "HCM01-CHG007", "VinEScooter", false, 1.2m, null, 1, "", "Available", "Scooter" },
+                    { 8, "HCM01-CHG008", "VinEScooter", true, 1.2m, null, 1, "", "Available", "Scooter" },
+                    { 9, "HCM02-CHG001", "Type2", false, 11m, null, 2, "", "Available", "Normal" },
+                    { 10, "HCM02-CHG002", "Type2", true, 11m, null, 2, "", "Available", "Normal" },
+                    { 11, "HCM02-CHG003", "CCS2", false, 60m, null, 2, "", "Available", "Fast" },
+                    { 12, "HCM02-CHG004", "CCS2", true, 60m, null, 2, "", "Available", "Fast" },
+                    { 13, "HCM02-CHG005", "CCS2", false, 150m, null, 2, "", "Available", "Fast" },
+                    { 14, "HCM02-CHG006", "CCS2", true, 150m, null, 2, "", "Available", "Fast" },
+                    { 15, "HCM02-CHG007", "VinEScooter", false, 1.2m, null, 2, "", "Available", "Scooter" },
+                    { 16, "HCM02-CHG008", "VinEScooter", true, 1.2m, null, 2, "", "Available", "Scooter" },
+                    { 17, "BD03-CHG001", "Type2", false, 11m, null, 3, "", "Available", "Normal" },
+                    { 18, "BD03-CHG002", "Type2", true, 11m, null, 3, "", "Available", "Normal" },
+                    { 19, "BD03-CHG003", "CCS2", false, 60m, null, 3, "", "Available", "Fast" },
+                    { 20, "BD03-CHG004", "CCS2", true, 60m, null, 3, "", "Available", "Fast" },
+                    { 21, "BD03-CHG005", "CCS2", false, 150m, null, 3, "", "Available", "Fast" },
+                    { 22, "BD03-CHG006", "CCS2", true, 150m, null, 3, "", "Available", "Fast" },
+                    { 23, "BD03-CHG007", "VinEScooter", false, 1.2m, null, 3, "", "Available", "Scooter" },
+                    { 24, "BD03-CHG008", "VinEScooter", true, 1.2m, null, 3, "", "Available", "Scooter" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -725,13 +733,13 @@ namespace API.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Assignment_StaffId",
-                table: "Assignment",
+                name: "IX_Assignments_StaffId",
+                table: "Assignments",
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Assignment_StationId",
-                table: "Assignment",
+                name: "IX_Assignments_StationId",
+                table: "Assignments",
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
@@ -773,6 +781,11 @@ namespace API.Migrations
                 name: "IX_Receipts_AppUserId",
                 table: "Receipts",
                 column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Receipts_ConfirmedByStaffId",
+                table: "Receipts",
+                column: "ConfirmedByStaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Receipts_PackageId",
@@ -851,7 +864,7 @@ namespace API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Assignment");
+                name: "Assignments");
 
             migrationBuilder.DropTable(
                 name: "ChargingSessions");

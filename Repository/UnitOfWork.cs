@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Interfaces;
+using API.Interfaces.IRepositories;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -28,6 +29,7 @@ namespace API.Repository
         public IPricingRepository Pricings { get; }
         public IReceiptRepository Receipts { get; }
         public IReportRepository Reports { get; }
+        public IAssignmentRepository Assignments { get; }
 
         public UnitOfWork(
             AppDbContext context,
@@ -43,7 +45,8 @@ namespace API.Repository
             IChargingSessionRepository chargingSession,
             IPricingRepository pricing,
             IReceiptRepository receipts,
-            IReportRepository report)
+            IReportRepository report,
+            IAssignmentRepository assignments)
         {
             _context = context;
             Reservations = reservations;
@@ -59,6 +62,7 @@ namespace API.Repository
             Pricings = pricing;
             Receipts = receipts;
             Reports = report;
+            Assignments = assignments;
         }
 
         public async Task<bool> Complete()

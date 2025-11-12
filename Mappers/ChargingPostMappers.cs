@@ -44,6 +44,7 @@ namespace API.Mappers
         {
             return postModels.Select(post => new PostOfStationDto
             {
+                Id  = post.Id,
                 Code = post.Code,
                 Type = post.Type,
                 PowerKW = post.PowerKW,

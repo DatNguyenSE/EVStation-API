@@ -14,7 +14,9 @@ using API.Entities.Email;
 using API.Helpers;
 using API.Hubs;
 using API.SignalR;
+using API.Interfaces.IRepositories;
 using API.Interfaces.IServices;
+using API.Entities.Cloudinary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,6 +135,7 @@ builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository
 builder.Services.AddScoped<IPricingRepository, PricingRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -147,7 +150,10 @@ builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -164,7 +170,7 @@ builder.Services.AddHostedService<ReservationMonitorService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
@@ -184,9 +190,9 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
 app.MapHub<NotificationHub>("/hubs/notification");
-// Bật tính năng này để có thể truy cập ảnh từ URL
-app.UseStaticFiles();
-app.UseRouting();
+// // Bật tính năng này để có thể truy cập ảnh từ URL
+// app.UseStaticFiles();
+// app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -196,8 +202,8 @@ app.MapControllers();
 app.MapHub<ChargingHub>("/hubs/charging");
 
 
-//DatNguyen-SignalR
-app.MapHub<PresenceHub>("hubs/presence");
+//DatNguyen-SignalR-End_Point
+app.MapHub<ConnectCharging>("/hubs/connect-charging");
 app.MapHub<ReservationHub>("hubs/reservation");
 
 app.Run();

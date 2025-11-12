@@ -160,9 +160,22 @@ namespace API.Services
 
                     if (!isFreeCharging)
                     {
-                        if (walletDto == null || walletDto.Balance < 50000)
+                        if (walletDto == null)
                         {
-                            throw new Exception("Số dư ví phải trên 50k để bắt đầu sạc");
+                            throw new Exception("Lỗi hệ thống: Không thể khởi tạo/tìm ví người dùng.");
+                        }
+
+                        // Quy tắc 1: Cấm sạc nếu đang có nợ
+                        if (walletDto.IsDebt) // Lấy thông tin IsDebt từ WalletDto
+                        {
+                            throw new Exception($"Không thể bắt đầu phiên sạc do đang có khoản nợ: {walletDto.Debt:N0} VNĐ. Vui lòng nạp tiền để thanh toán nợ trước.");
+                        }
+                        
+                        // Quy tắc 2: Yêu cầu số dư tối thiểu
+                        const decimal MIN_BALANCE_REQUIRED = 50000;
+                        if (walletDto.Balance < MIN_BALANCE_REQUIRED)
+                        {
+                            throw new Exception($"Số dư ví phải trên {MIN_BALANCE_REQUIRED:N0} VNĐ để bắt đầu sạc. Số dư hiện tại: {walletDto.Balance:N0} VNĐ.");
                         }
                     }
                 }
@@ -330,6 +343,7 @@ namespace API.Services
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? null,
+                    StationId = session.ChargingPost.StationId,
                     EnergyConsumed = totalEnergyConsumed,
                     EnergyCost = totalCost,
                     IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
@@ -341,7 +355,8 @@ namespace API.Services
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = ReceiptStatus.Pending,
-                    AppUser = session.Vehicle?.Owner
+                    AppUser = session.Vehicle?.Owner,
+                    PaymentMethod = "Tiền mặt"
                 };
                 foreach (var s in unpaid)
                 {
@@ -349,6 +364,8 @@ namespace API.Services
                 }
 
                 await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
             }
             else // reservation session
             {
@@ -360,10 +377,10 @@ namespace API.Services
                 var discountAmount = 0;
 
                 var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
-                if(driverPackage != null)
+                if (driverPackage != null)
                 {
-                    discountAmount = total;
-                    total = 0;
+                    discountAmount = energyCost;
+                    total -= discountAmount;
                 }
 
                 session.Status = SessionStatus.Completed;
@@ -399,6 +416,7 @@ namespace API.Services
                 receipt = new Receipt
                 {
                     AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
+                    StationId = session.ChargingPost.StationId,
                     EnergyConsumed = energyConsumed,
                     EnergyCost = energyCost,
                     IdleStartTime = idle > 0 ? session.IdleFeeStartTime : null,
@@ -410,8 +428,9 @@ namespace API.Services
                     PricePerKwhSnapshot = pricing!.PricePerKwh,
                     CreateAt = DateTime.UtcNow.AddHours(7),
                     Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
-                    PackageId = driverPackage != null ? driverPackage.Package.Id : null,
-                    DiscountAmount = discountAmount
+                    PackageId = driverPackage != null ? driverPackage.Id : null,
+                    DiscountAmount = discountAmount,
+                    PaymentMethod = driverPackage != null ? "Gói thuê bao" : "Ví tiền"
                 };
                 receipt.ChargingSessions.Add(session);
 
@@ -422,35 +441,43 @@ namespace API.Services
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
                 }
 
-                if(endReservation == true)
+                if (endReservation == true)
                 {
-                    if(session.Reservation != null)
+                    if (session.Reservation != null)
                     {
                         var reservation = session.Reservation.Status = ReservationStatus.Completed;
                     }
                 }
-            }
-            await _uow.Receipts.AddAsync(receipt);
-            await _uow.Complete();
 
-            // Wallet charge for reservation members
-            if (session.Vehicle?.OwnerId != null && total > 0)
-            {
-                var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
-            }
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
 
-            // send email if available
-            if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
-            {
-                var dto = receipt.MapToDto();
-                await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, dto);
-            }
+                if (session.Vehicle?.OwnerId != null && total > 0)
+                {
+                    var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
+                }
 
+                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
+                {
+                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, receipt);
+                }
+            }
+            
             // signal
             await _hubContext.Clients.Group($"session-{sessionId}")
                 .SendAsync("ReceiveSessionCompleted", sessionId, receipt.MapToDto());
 
-            return receipt.MapToDto();
+            var receiptDto = receipt.MapToDto();
+            if (session.Vehicle!.OwnerId != null)
+            {
+                receiptDto.ShouldSuggestRegistration = false;
+            }
+            else
+            {
+                receiptDto.ShouldSuggestRegistration = true;
+            }
+
+            return receiptDto;
         }
 
         // Keep UpdatePlate logic (from your original code) — unchanged except ensure StopReason/IsWalkIn interactions later
@@ -482,7 +509,7 @@ namespace API.Services
             }
             else
             {
-                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal) powerKW);
+                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal)powerKW);
                 if (compatibleModels?.Any() != true) throw new Exception("Không tìm thấy mẫu xe tương thích");
 
                 var random = new Random();
@@ -586,14 +613,21 @@ namespace API.Services
                     walletBalance: 0
                 );
 
-                var update = new EnergyUpdateDto
+                var update = new 
                 {
                     SessionId = sessionId,
                     BatteryPercentage = Math.Round(currentPercentage, 1),
                     EnergyConsumed = energyConsumed,
                     Cost = cost,
                     TimeRemain = currentPercentage >= 100 ? 0 : (int)Math.Ceiling((100 - currentPercentage) / percentageStep / 60.0),
-                    IsTempMode = false
+                    IsTempMode = false,
+                    // ✅ Thêm thông tin xe
+                    VehicleInfo = session.Vehicle != null ? new 
+                    {
+                        Plate = session.Vehicle.Plate,
+                        Model = session.Vehicle.Model,
+                        BatteryCapacityKWh = session.Vehicle.BatteryCapacityKWh
+                    } : null
                 };
 
                 await _hubContext.Clients.Group($"session-{sessionId}")

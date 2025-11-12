@@ -28,6 +28,7 @@ namespace API.Mappers
         {
             return new DriverPackageViewDto
             {
+                Id = userPackage.Id,
                 PackageName = userPackage.Package.Name,
                 Description = userPackage.Package.Description,
                 StartDate = userPackage.StartDate,

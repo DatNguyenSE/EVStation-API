@@ -22,15 +22,12 @@ namespace API.Controllers
         }
 
         [HttpPost("validate-scan")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateScan([FromQuery] int postId)
         {
             var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(driverId))
-            {
-                return Unauthorized();
-            }
 
-            var (canStart, message) = await _chargingService.ValidateScanAsync(postId, driverId);
+            var (canStart, message, reservationId, vehicleId) = await _chargingService.ValidateScanAsync(postId, driverId);
 
             if (!canStart)
             {
@@ -38,7 +35,13 @@ namespace API.Controllers
                 return Conflict(new { Message = message });
             }
 
-            return Ok(new { Message = message });
+            return Ok(new
+            {
+                Message = message,
+                PostId = postId,
+                ReservationId = reservationId,
+                VehicleId = vehicleId,
+            });
         }
     }
 }

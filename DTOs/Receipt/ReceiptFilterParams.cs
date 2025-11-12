@@ -13,7 +13,6 @@ namespace API.DTOs.Receipt
         public DateTime? EndDate { get; set; }
         public bool? IsWalkInOnly { get; set; } // Lọc chỉ hóa đơn của khách vãng lai (AppUserId == null)
         // Bạn có thể thêm các trường lọc khác như StationId, StaffId, v.v.
-        public int? StationId { get; set; }
-        public string? SearchTerm { get; set; } // Tìm kiếm theo tên người dùng, ID hóa đơn, v.v.
+        public string? AppUserName { get; set; } // Tìm kiếm theo tên người dùng, ID hóa đơn, v.v.
     }
 }

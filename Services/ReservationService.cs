@@ -19,12 +19,14 @@ namespace API.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IVehicleRepository _vehicleRepo;
+        private readonly IWalletService _walletService;
         private readonly IHubContext<ReservationHub> _hubContext;
         
-        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository, IHubContext<ReservationHub> hubContext)
+        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository, IWalletService walletService, IHubContext<ReservationHub> hubContext)
         {
             _uow = uow;
             _vehicleRepo = vehicleRepository;
+            _walletService = walletService;
             _hubContext = hubContext;
         }
 
@@ -70,6 +72,10 @@ namespace API.Services
                 // Commit transaction nếu mọi thứ thành công
                 await transaction.CommitAsync();
 
+                var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+                await _hubContext.Clients.Group(driverId)
+                    .SendAsync("UpdateUpcomingReservations", upcomingReservations);
+
                 return reservation.ToReservationResponseDto();
                 
             } catch (Exception)
@@ -89,8 +95,8 @@ namespace API.Services
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
 
             // Kiểm tra giờ chẵn (phút, giây, mili giây phải = 0)
-            if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
-                throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
+            // if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
+            //     throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
 
             // Kiểm tra không đặt trong quá khứ
             if (timeSlotStartUtc < now)
@@ -109,6 +115,23 @@ namespace API.Services
             var post = await _uow.ChargingPosts.GetByIdAsync(dto.ChargingPostId);
             if (post == null)
                 throw new Exception("Trụ sạc không tồn tại.");
+
+            if (post.IsWalkIn)
+            {
+                throw new Exception("Không thể đặt trụ vãng lai");
+            }
+            
+            // === THÊM LOGIC KIỂM TRA NỢ ===
+            var walletDto = await _walletService.GetWalletForUserAsync(driverId);
+            if (walletDto == null)
+            {
+                throw new Exception("Lỗi hệ thống: Không thể khởi tạo hoặc tìm ví người dùng.");
+            }
+            
+            if (walletDto.IsDebt)
+            {
+                throw new Exception($"Không thể đặt chỗ do đang có khoản nợ: {walletDto.Debt:N0}. Vui lòng nạp tiền để thanh toán nợ trước khi đặt chỗ.");
+            }
 
             // Kiểm tra trạng thái trụ
             if (post.Status == PostStatus.Maintenance || post.Status == PostStatus.Offline)
@@ -201,9 +224,9 @@ namespace API.Services
             return details;
         }
 
-        public async Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId)
+        public async Task<List<ReservationResponseDto>> GetAllHistoryReservationsByDriverAsync(string driverId)
         {
-            var historyReservationModels = await _uow.Reservations.GetReservationHistoryByDriverAsync(driverId);
+            var historyReservationModels = await _uow.Reservations.GetAllHistoryReservationsByDriverAsync(driverId);
 
             return historyReservationModels
                 .Select(r => r.ToReservationResponseDto())
