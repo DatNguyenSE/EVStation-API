@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/charging")]
-    [Authorize]
+    [Authorize(Roles = AppConstant.Roles.Driver)]
     public class ChargingController : ControllerBase
     {
         private readonly IChargingService _chargingService;
@@ -21,15 +22,12 @@ namespace API.Controllers
         }
 
         [HttpPost("validate-scan")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateScan([FromQuery] int postId)
         {
             var driverId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(driverId))
-            {
-                return Unauthorized();
-            }
 
-            var (canStart, message) = await _chargingService.ValidateScanAsync(postId, driverId);
+            var (canStart, message, reservationId, vehicleId) = await _chargingService.ValidateScanAsync(postId, driverId);
 
             if (!canStart)
             {
@@ -37,7 +35,13 @@ namespace API.Controllers
                 return Conflict(new { Message = message });
             }
 
-            return Ok(new { Message = message });
+            return Ok(new
+            {
+                Message = message,
+                PostId = postId,
+                ReservationId = reservationId,
+                VehicleId = vehicleId,
+            });
         }
     }
 }

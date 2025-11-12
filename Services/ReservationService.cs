@@ -10,6 +10,8 @@ using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using API.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Services
 {
@@ -17,11 +19,15 @@ namespace API.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IVehicleRepository _vehicleRepo;
-
-        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository)
+        private readonly IWalletService _walletService;
+        private readonly IHubContext<ReservationHub> _hubContext;
+        
+        public ReservationService(IUnitOfWork uow, IVehicleRepository vehicleRepository, IWalletService walletService, IHubContext<ReservationHub> hubContext)
         {
             _uow = uow;
             _vehicleRepo = vehicleRepository;
+            _walletService = walletService;
+            _hubContext = hubContext;
         }
 
         public async Task<ReservationResponseDto> CancelReservationAsync(int reservationId, string driverId)
@@ -66,6 +72,10 @@ namespace API.Services
                 // Commit transaction nếu mọi thứ thành công
                 await transaction.CommitAsync();
 
+                var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+                await _hubContext.Clients.Group(driverId)
+                    .SendAsync("UpdateUpcomingReservations", upcomingReservations);
+
                 return reservation.ToReservationResponseDto();
                 
             } catch (Exception)
@@ -79,14 +89,14 @@ namespace API.Services
         public async Task<ReservationResponseDto> CreateReservationAsync(CreateReservationDto dto, string driverId)
         {
             // var now = DateTime.UtcNow.AddHours(AppConstant.ReservationRules.TimezoneOffsetHours);
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
 
             // Ép kiểu DateTime nhận được thành UTC để đảm bảo tính nhất quán
             var timeSlotStartUtc = DateTime.SpecifyKind(dto.TimeSlotStart, DateTimeKind.Utc);
 
             // Kiểm tra giờ chẵn (phút, giây, mili giây phải = 0)
-            if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
-                throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
+            // if (timeSlotStartUtc.Minute != 0 || timeSlotStartUtc.Second != 0 || timeSlotStartUtc.Millisecond != 0)
+            //     throw new Exception("Thời gian bắt đầu phải là giờ chẵn (ví dụ: 08:00, 09:00, 10:00).");
 
             // Kiểm tra không đặt trong quá khứ
             if (timeSlotStartUtc < now)
@@ -94,8 +104,8 @@ namespace API.Services
 
             // Kiểm tra xe có tồn tại không
             var vehicle = await _vehicleRepo.GetVehicleByIdAsync(dto.VehicleId);
-            if (vehicle == null)
-                throw new Exception("Xe không tồn tại.");
+            if (vehicle == null || vehicle.RegistrationStatus != VehicleRegistrationStatus.Approved)
+                throw new Exception("Xe không tồn tại hoặc chưa được xác thực.");
 
             // Kiểm tra quyền sở hữu
             if (vehicle.OwnerId != driverId)
@@ -106,8 +116,25 @@ namespace API.Services
             if (post == null)
                 throw new Exception("Trụ sạc không tồn tại.");
 
+            if (post.IsWalkIn)
+            {
+                throw new Exception("Không thể đặt trụ vãng lai");
+            }
+            
+            // === THÊM LOGIC KIỂM TRA NỢ ===
+            var walletDto = await _walletService.GetWalletForUserAsync(driverId);
+            if (walletDto == null)
+            {
+                throw new Exception("Lỗi hệ thống: Không thể khởi tạo hoặc tìm ví người dùng.");
+            }
+            
+            if (walletDto.IsDebt)
+            {
+                throw new Exception($"Không thể đặt chỗ do đang có khoản nợ: {walletDto.Debt:N0}. Vui lòng nạp tiền để thanh toán nợ trước khi đặt chỗ.");
+            }
+
             // Kiểm tra trạng thái trụ
-            if (post.Status != Helpers.Enums.PostStatus.Available)
+            if (post.Status == PostStatus.Maintenance || post.Status == PostStatus.Offline)
                 throw new Exception($"Trụ sạc hiện đang ở trạng thái {post.Status}, không thể đặt chỗ.");
 
             // So sánh trực tiếp loại cổng sạc của xe và của trụ.
@@ -137,8 +164,10 @@ namespace API.Services
             // Kiểm tra driver đã đặt bao nhiêu lần trong ngày
             var today = now.Date;
             var countToday = await _uow.Reservations.CountByDriverInDateAsync(driverId, today);
-            if (countToday > AppConstant.ReservationRules.MaxReservationsPerDay)
+            if (countToday >= AppConstant.ReservationRules.MaxReservationsPerDay)
+            {
                 throw new Exception($"Mỗi tài xế chỉ được đặt tối đa {AppConstant.ReservationRules.MaxReservationsPerDay} lần mỗi ngày.");
+            }
 
             // Bắt đầu Transaction (mức cô lập cao để tránh 2 người cùng đặt)
             await using var transaction = await _uow.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -159,7 +188,7 @@ namespace API.Services
                     TimeSlotStart = start,
                     TimeSlotEnd = end,
                     Status = ReservationStatus.Confirmed,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 // Thêm Reservation vào Context (chưa lưu)
                 await _uow.Reservations.AddReservationAsync(reservation);
@@ -171,6 +200,10 @@ namespace API.Services
                 }
 
                 await transaction.CommitAsync();
+// đẩy vô reservationHub
+                var upcomingReservations = await _uow.Reservations.GetUpcomingReservationsByDriverAsync(driverId);
+                await _hubContext.Clients.Group(driverId)
+                    .SendAsync("UpdateUpcomingReservations", upcomingReservations);
 
                 return reservation.ToReservationResponseDto();
             }
@@ -191,9 +224,9 @@ namespace API.Services
             return details;
         }
 
-        public async Task<List<ReservationResponseDto>> GetReservationHistoryByDriverAsync(string driverId)
+        public async Task<List<ReservationResponseDto>> GetAllHistoryReservationsByDriverAsync(string driverId)
         {
-            var historyReservationModels = await _uow.Reservations.GetReservationHistoryByDriverAsync(driverId);
+            var historyReservationModels = await _uow.Reservations.GetAllHistoryReservationsByDriverAsync(driverId);
 
             return historyReservationModels
                 .Select(r => r.ToReservationResponseDto())

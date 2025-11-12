@@ -13,6 +13,10 @@ using System.Security.Claims;
 using API.Entities.Email;
 using API.Helpers;
 using API.Hubs;
+using API.SignalR;
+using API.Interfaces.IRepositories;
+using API.Interfaces.IServices;
+using API.Entities.Cloudinary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +102,22 @@ builder.Services.AddAuthentication(options =>
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
         ),
     };
+    options.Events = new JwtBearerEvents // WebSocket không cho phép trình duyệt thêm 'custom header' -> dùng (Authorization: Bearer ...)
+    {
+
+        OnMessageReceived = context => // mỗi khi có request yêu cầu xthuc jwt
+        {
+            var accessToken = context.Request.Query["access_token"];//Lấy giá trị token nằm trong query string của request
+
+            var path = context.HttpContext.Request.Path; //Lấy đường dẫn của request hiện tại: /hubs/presence [?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6...]
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 
@@ -112,6 +132,10 @@ builder.Services.AddScoped<IChargingPackageRepository, ChargingPackageRepository
 builder.Services.AddScoped<IDriverPackageRepository, DriverPackageRepository>();
 builder.Services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
 builder.Services.AddScoped<IChargingSessionRepository, ChargingSessionRepository>();
+builder.Services.AddScoped<IPricingRepository, PricingRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
 // Đăng ký Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -124,6 +148,12 @@ builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
 builder.Services.AddScoped<IChargingService, ChargingService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Cấu hình Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -133,12 +163,14 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 // đăng ký service check status gói của người dùng mỗi 24h
 builder.Services.AddHostedService<PackageStatusChecker>();
 builder.Services.AddHostedService<ReservationCleanupService>();
+builder.Services.AddHostedService<IdleFeeService>();
+builder.Services.AddHostedService<ReservationMonitorService>();
 
 // Đăng ký SignalR
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
-builder.Services.AddHostedService(provider => (ChargingSimulationService)provider.GetRequiredService<IChargingSimulationService>());
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
@@ -150,15 +182,29 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-.WithOrigins("https://localhost:4200", "http://localhost:4200")); //set connect
+.WithOrigins("https://localhost:4200", "http://localhost:4200").WithOrigins("https://localhost:4200", "http://localhost:4200")
+  .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials()); //set connect
 
-// Thêm endpoint cho hub
-app.MapHub<ChargingHub>("/hubs/charging");
+
+// Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"
+app.MapHub<NotificationHub>("/hubs/notification");
+// // Bật tính năng này để có thể truy cập ảnh từ URL
+// app.UseStaticFiles();
+// app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Thêm endpoint cho hub
+app.MapHub<ChargingHub>("/hubs/charging");
+
+
+//DatNguyen-SignalR-End_Point
+app.MapHub<ConnectCharging>("/hubs/connect-charging");
+app.MapHub<ReservationHub>("hubs/reservation");
 
 app.Run();
 

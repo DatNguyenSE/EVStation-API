@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs.Station;
@@ -51,7 +52,8 @@ namespace API.Controllers
             return Ok(station.ToStationDto());
         }
 
-        [HttpPost]
+        [HttpPost] 
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Create([FromBody] CreateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -68,6 +70,7 @@ namespace API.Controllers
 
         [HttpPut]
         [Route("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -86,6 +89,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}/status")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] StationStatus status)
         {
             var stationModel = await _uow.Stations.UpdateStatusAsync(id, status);
@@ -99,6 +103,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -118,17 +123,17 @@ namespace API.Controllers
 
         // API gợi ý trạm gần nhất
         [HttpGet("nearest")]
-        public async Task<IActionResult> GetNearest([FromQuery] double lat, [FromQuery] double lon)
+        public async Task<IActionResult> GetNearest([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int count = 5)
         {
-            var station = await _uow.Stations.GetNearestAsync(lat, lon);
+            var stations = await _uow.Stations.GetNearestAsync(lat, lon, count);
 
             // Nếu không tìm thấy trạm nào (CSDL rỗng), trả về lỗi 404 Not Found
-            if (station == null)
+            if (stations == null)
             {
                 return NotFound("Không tìm thấy trạm nào.");
             }
-            var stationDto = station.ToStationDto();
-            return Ok(stationDto);
+            var stationDtos = stations.Select(s => s.ToStationDto());
+            return Ok(stationDtos);
         }
 
         // API tìm kiếm trạm
@@ -156,27 +161,29 @@ namespace API.Controllers
             }
 
             // chỉ lấy những trạm dành cho đặt trước
-            var posts = station.Posts.Where(p => p.IsWalkIn == false);
+            var postsQuery = station.Posts.Where(p => p.IsWalkIn == false);
+            var vehicleMaxPower = vehicle.MaxChargingPowerKW;
 
             // Nếu là xe ô tô và loại sạc CCS2
             if (vehicle.Type == VehicleType.Car && vehicle.ConnectorType == ConnectorType.CCS2)
             {
-                posts = posts
+                postsQuery = postsQuery
                     .Where(p => p.ConnectorType == ConnectorType.CCS2 || p.ConnectorType == ConnectorType.Type2)
-                    .ToList();
+                    .Where(p => p.PowerKW <= (decimal)vehicleMaxPower);
             }
             else if (vehicle.Type == VehicleType.Motorbike && vehicle.ConnectorType == ConnectorType.VinEScooter)
             {
-                posts = posts
+                postsQuery = postsQuery
                     .Where(p => p.ConnectorType == ConnectorType.VinEScooter)
-                    .ToList();
+                    .Where(p => p.PowerKW <= (decimal)vehicleMaxPower);
             }
             else
             {
-                posts = new List<ChargingPost>();
+                postsQuery = Enumerable.Empty<ChargingPost>().AsQueryable();
             }
+            var compatiblePosts = postsQuery.ToList();
 
-            return Ok(posts.Select(p => p.ToPostDto()));
+            return Ok(compatiblePosts.Select(p => p.ToPostDto()));
         }
         
         [HttpGet("distance")]
@@ -187,5 +194,5 @@ namespace API.Controllers
                 distance = StationCodeHelper.GetDistanceKm(lat1, lon1, lat2, lon2)
             });
         }
-    }   
+    }
 }

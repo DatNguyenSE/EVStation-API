@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Interfaces;
+using API.Interfaces.IRepositories;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -25,6 +26,10 @@ namespace API.Repository
         public IDriverPackageRepository DriverPackages { get; }
         public IVehicleModelRepository VehicleModels { get; }
         public IChargingSessionRepository ChargingSessions { get; }
+        public IPricingRepository Pricings { get; }
+        public IReceiptRepository Receipts { get; }
+        public IReportRepository Reports { get; }
+        public IAssignmentRepository Assignments { get; }
 
         public UnitOfWork(
             AppDbContext context,
@@ -37,7 +42,11 @@ namespace API.Repository
             IChargingPackageRepository chargingPackages,
             IDriverPackageRepository driverPackages,
             IVehicleModelRepository vehicleModels,
-            IChargingSessionRepository chargingSession)
+            IChargingSessionRepository chargingSession,
+            IPricingRepository pricing,
+            IReceiptRepository receipts,
+            IReportRepository report,
+            IAssignmentRepository assignments)
         {
             _context = context;
             Reservations = reservations;
@@ -50,6 +59,10 @@ namespace API.Repository
             DriverPackages = driverPackages;
             VehicleModels = vehicleModels;
             ChargingSessions = chargingSession;
+            Pricings = pricing;
+            Receipts = receipts;
+            Reports = report;
+            Assignments = assignments;
         }
 
         public async Task<bool> Complete()
@@ -60,6 +73,15 @@ namespace API.Repository
         public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel level)
         {
             return await _context.Database.BeginTransactionAsync(level);
+        }
+
+        public void DetachAllEntities()
+        {
+            var changedEntriesCopy = _context.ChangeTracker.Entries()
+                .ToList();
+
+            foreach (var entry in changedEntriesCopy)
+                entry.State = EntityState.Detached;
         }
     }
 }

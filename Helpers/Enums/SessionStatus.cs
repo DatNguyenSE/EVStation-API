@@ -17,6 +17,7 @@ namespace API.Helpers.Enums
         [Description("Lỗi")] // lỗi trụ/trạm, manager cancel trụ/trạm
         Error,
         [Description("Dừng do không đủ tiền trong ví")]
-        StoppedDueToInsufficientFunds
+        StoppedDueToInsufficientFunds,
+        Idle
     }
 }

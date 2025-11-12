@@ -40,16 +40,23 @@ namespace API.Repository
             return userPackageModel;
         }
 
-        public async Task<DriverPackage?> DeleteAsync(int id)
+        public async Task<DriverPackage?> DeactiveAsync(string userId, int id)
         {
-            var userPackageModel = await _context.DriverPackages.FindAsync(id);
+            var userPackageModel = await _context.DriverPackages.FirstOrDefaultAsync(dp => dp.Id == id && dp.AppUserId == userId); 
             if (userPackageModel == null)
             {
                 return null;
             }
 
-            _context.DriverPackages.Remove(userPackageModel);
+            userPackageModel.IsActive = false;
             return userPackageModel;
+        }
+
+        public async Task<DriverPackage?> GetActiveSubscriptionForUserAsync(string ownerId, VehicleType vehicleType)
+        {
+            return await _context.DriverPackages.Include(dp => dp.Package).FirstOrDefaultAsync(dp => dp.AppUserId == ownerId 
+                                                       && dp.VehicleType == vehicleType
+                                                       && dp.IsActive == true);
         }
 
         public Task<List<DriverPackage>> GetAllAsync()
@@ -64,7 +71,7 @@ namespace API.Repository
 
         public Task<List<DriverPackage>> GetByUserAsync(string userId)
         {
-            return _context.DriverPackages.Where(p => p.AppUserId == userId).Include(p => p.Package).ToListAsync();
+            return _context.DriverPackages.Where(p => p.AppUserId == userId && p.IsActive == true).Include(p => p.Package).ToListAsync();
         }
 
         public async Task<bool> HasActivePackageAsync(string userId, VehicleType vehicleType)
@@ -74,6 +81,14 @@ namespace API.Repository
                 d.VehicleType == vehicleType &&
                 d.IsActive &&
                 d.EndDate > DateTime.UtcNow);
+        }
+
+        public Task<List<DriverPackage>> GetPackagesSoldAsync(DateTime startDate, DateTime endDate)
+        {
+            return _context.DriverPackages
+                .Include(dp => dp.Package) 
+                .Where(dp => dp.StartDate >= startDate && dp.StartDate <= endDate)
+                .ToListAsync();
         }
     }
 }

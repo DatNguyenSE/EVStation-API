@@ -27,13 +27,13 @@ namespace API.Services
 
 
         // sau khi quét qr trên trụ sẽ gọi API để kiểm tra để có thể bắt đầu sạc
-        public async Task<(bool CanStart, string Message)> ValidateScanAsync(int postId, string driverId)
+        public async Task<(bool CanStart, string Message, int? ReservationId, int? VehicleId)> ValidateScanAsync(int postId, string? driverId)
         {
             // tìm trụ sạc trong db
             var post = await _uow.ChargingPosts.GetByIdAsync(postId);
             if (post == null)
             {
-                return (false, "Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.");
+                return (false, " Mã QR không hợp lệ hoặc không tìm thấy trụ sạc.", null, null);
             }
 
             // Phân luồng logic dựa vào thuộc tính IsWalkIn
@@ -41,51 +41,70 @@ namespace API.Services
             {
                 if (post.Status == Helpers.Enums.PostStatus.Available)
                 {
-                    return (true, "Trụ vãng lai sẵn sàng. Bạn có thể bắt đầu sạc.");
+                    return (true, "Trụ vãng lai sẵn sàng. Bạn có thể bắt đầu sạc.", null, null);
                 }
                 else
                 {
-                    return (false, $"Trụ đang ở trạng thái {post.Status}. Vui lòng thử lại sau.");
+                    return (false, $"Trụ đang ở trạng thái {post.Status}. Vui lòng thử lại sau.", null, null);
                 }
             }
-            else
+
+            if (string.IsNullOrEmpty(driverId))
             {
-                var now = DateTime.UtcNow;
+                return (false, "Trụ này yêu cầu đặt chỗ trước. Vui lòng đăng nhập để kiểm tra đặt chỗ hợp lệ.", null, null);
+            }
 
-                // Tìm đơn đặt chỗ hợp lệ: đúng người, đúng trụ, đúng trạng thái và TRONG KHUNG GIỜ
-                // Cho phép tài xế check-in sớm 15 phút
-                var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
-                    r.DriverId == driverId &&
-                    r.ChargingPostId == postId &&
-                    r.Status == Entities.ReservationStatus.Confirmed &&
-                    now >= r.TimeSlotStart.AddMinutes(-15) &&
-                    now <= r.TimeSlotEnd);
+            // Nếu là trụ đặt chỗ
+            var now = DateTime.UtcNow.AddHours(7);
+            var reservation = await _uow.Reservations.GetFirstOrDefaultAsync(r =>
+                r.Vehicle.OwnerId == driverId &&
+                r.ChargingPostId == postId &&
+                (r.Status == Entities.ReservationStatus.Confirmed) ||
+                (r.Status == Entities.ReservationStatus.InProgress));
 
-                // Kiểm tra kết quả
-                if (reservation == null)
-                {
-                    return (false, "Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.");
-                }
+            // Nếu không có đơn hợp lệ
+            if (reservation == null)
+            {
+                return (false, " Không tìm thấy đặt chỗ hợp lệ cho trụ này. Vui lòng kiểm tra lại thời gian hoặc mã QR.", null, null);
+            }
 
-                // Người dùng đã có lịch hợp lệ, BÂY GIỜ mới kiểm tra xem trụ có sẵn sàng không.
-                switch (post.Status)
-                {
-                    case PostStatus.Available:
-                        // Hợp lệ, cho phép sạc
-                        return (true, "Xác thực đặt chỗ thành công. Bạn có thể bắt đầu sạc.");
+            // Kiểm tra khung giờ (cho phép check-in sớm 15 phút)
+            bool isEarly = now < reservation.TimeSlotStart.AddMinutes(-15);
+            bool isLate = now > reservation.TimeSlotEnd;
 
-                    case PostStatus.Occupied: // Đang sạc hoặc đã sạc xong nhưng chưa rời đi
-                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang được sử dụng bởi phiên sạc trước. Vui lòng đợi.");
+            // if (isEarly)
+            // {
+            //     return (false,
+            //         $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            // }
 
-                    case PostStatus.Maintenance:
-                    case PostStatus.Offline:
-                        return (false, "Lịch đặt của bạn hợp lệ, nhưng trụ đang bảo trì hoặc bị lỗi. Vui lòng liên hệ hỗ trợ.");
+            // if (isLate)
+            // {
+            //     return (false,
+            //         $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            // }
 
-                    default:
-                        return (false, $"Trụ đang ở trạng thái không xác định ({post.Status}).");
-                }
-                
+            // Người dùng có đặt chỗ hợp lệ, kiểm tra trạng thái trụ
+            switch (post.Status)
+            {
+                case PostStatus.Available:
+                    reservation.Status = Entities.ReservationStatus.InProgress;
+                    _uow.Reservations.Update(reservation);
+                    await _uow.Complete();
+                    return (true,
+                        $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
+
+                case PostStatus.Occupied:
+                    return (false, " Lịch đặt hợp lệ, nhưng trụ đang được sử dụng. Vui lòng đợi.", reservation.Id, reservation.VehicleId);
+
+                case PostStatus.Maintenance:
+                case PostStatus.Offline:
+                    return (false, " Trụ đang bảo trì hoặc offline. Vui lòng liên hệ hỗ trợ.", null, null);
+
+                default:
+                    return (false, $" Trụ đang ở trạng thái không xác định ({post.Status}).", null, null);
             }
         }
+
     }
 }

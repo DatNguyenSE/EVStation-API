@@ -15,5 +15,6 @@ namespace API.DTOs.Vehicle
         public double MaxChargingPowerKW { get; set; }
         public ConnectorType ConnectorType { get; set; }
         public string Plate { get; set; } = string.Empty;
+        public string RegistrationStatus { get; set; } = null!;
     }
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs.ChargingSession;
+using API.DTOs.Pricing;
+using API.Entities;
 using API.Helpers.Enums;
 using API.Hubs;
 using API.Interfaces;
@@ -11,157 +13,355 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace API.Services
 {
-    public class ChargingSimulationService : BackgroundService, IChargingSimulationService
+    public class ChargingSimulationService : IChargingSimulationService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ConcurrentDictionary<int, CancellationTokenSource> _runningSessions = new();
+        private readonly IHubContext<ChargingHub> _hubContext;
 
-        public ChargingSimulationService(IServiceScopeFactory scopeFactory)
+        // RAM state
+        private readonly ConcurrentDictionary<int, SimulationState> _sessionStates = new();
+        private readonly ConcurrentDictionary<int, CancellationTokenSource> _runningSessions = new();
+        private readonly ConcurrentDictionary<int, bool> _stopRequested = new();
+        private readonly ConcurrentDictionary<int, double> _batteryState = new();
+
+        private readonly TimeSpan _flushInterval = TimeSpan.FromSeconds(60);
+
+        public ChargingSimulationService(IServiceScopeFactory scopeFactory, IHubContext<ChargingHub> hubContext)
         {
             _scopeFactory = scopeFactory;
+            _hubContext = hubContext;
+        }
+
+        private class SimulationState
+        {
+            public double CurrentPercentage { get; set; }
+            public double EnergyConsumed { get; set; }
+            public int Cost { get; set; }
+            public double BatteryCapacity { get; set; }
+            public double StartPercentage { get; set; }
+            public bool IsFreeCharging { get; set; }
+            public bool GuestMode { get; set; }
+            public string? OwnerId { get; set; }
+            public decimal WalletBalance { get; set; }
+            public double ChargerPowerKW { get; set; }
+            public ConnectorType ConnectorType { get; set; }
+            public DateTime LastFlushed { get; set; } = DateTime.UtcNow;
         }
 
         public bool IsRunning(int sessionId) => _runningSessions.ContainsKey(sessionId);
 
-        public async Task StartSimulationAsync(int sessionId, double batteryCapacity)
+        public async Task StopSimulationAsync(int sessionId, bool setCompleted)
+{
+    if (_runningSessions.TryGetValue(sessionId, out var cts))
+    {
+        _stopRequested[sessionId] = setCompleted;
+
+        try
+        {
+            // 🔥 Hủy token ngay để vòng lặp thoát tức thì
+            cts.Cancel();
+        }
+        catch { /* ignore */ }
+
+        Console.WriteLine(setCompleted
+            ? $"🟨 Graceful stop requested for session {sessionId}"
+            : $"🟦 Temporary stop requested for session {sessionId}");
+    }
+
+    // 🔥 Loại bỏ session khỏi danh sách đang chạy ngay lập tức
+    _runningSessions.TryRemove(sessionId, out _);
+
+    // Flush state vào DB ngay lập tức
+    if (_sessionStates.TryGetValue(sessionId, out var state))
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        await FlushToDatabase(sessionId, state, fullFlush: setCompleted);
+
+        var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
+        if (session != null)
+        {
+            if (setCompleted)
+            {
+                session.Status = SessionStatus.Idle;
+                session.StopReason = StopReason.ManualStop;
+            }
+
+            uow.ChargingSessions.Update(session);
+            await uow.Complete();
+
+            // 🔔 Thông báo SignalR dừng session
+            await _hubContext.Clients.Group($"session-{sessionId}")
+                .SendAsync("ReceiveSessionStopped", sessionId, session.Status);
+        }
+
+        Console.WriteLine($"💾 Session {sessionId} flushed and stopped (setCompleted={setCompleted})");
+
+        // Sau khi flush xong mới remove state
+        _sessionStates.TryRemove(sessionId, out _);
+    }
+
+    _stopRequested.TryRemove(sessionId, out _);
+}
+
+
+        public async Task StartSimulationAsync(
+    int sessionId,
+    double batteryCapacity,
+    bool isFreeCharging,
+    bool guestMode,
+    double chargerPowerKW,
+    ConnectorType connectorType,
+    double initialPercentage,
+    double initialEnergy,
+    int initialCost,
+    string? ownerId,
+    decimal walletBalance = 0)
         {
             if (_runningSessions.ContainsKey(sessionId))
-                return; // đã chạy rồi thì thôi
+            {
+                Console.WriteLine($"⚠️ Simulation already running for session {sessionId}");
+                return;
+            }
 
             var cts = new CancellationTokenSource();
             _runningSessions[sessionId] = cts;
+            var token = cts.Token;
 
-            _ = Task.Run(() => SimulateChargingAsync(sessionId, batteryCapacity, cts.Token));
-        }
-
-        public Task StopSimulation(int sessionId)
-        {
-            if (_runningSessions.TryRemove(sessionId, out var cts))
+            _sessionStates[sessionId] = new SimulationState
             {
-                cts.Cancel();
-                Console.WriteLine($"🟥 Stop simulation for session {sessionId}");
+                BatteryCapacity = batteryCapacity,
+                StartPercentage = initialPercentage,
+                CurrentPercentage = initialPercentage,
+                EnergyConsumed = initialEnergy,
+                Cost = initialCost,
+                GuestMode = guestMode,
+                IsFreeCharging = isFreeCharging,
+                OwnerId = ownerId,
+                WalletBalance = walletBalance,
+                ChargerPowerKW = chargerPowerKW,
+                ConnectorType = connectorType,
+                LastFlushed = DateTime.UtcNow
+            };
+
+            double percentageStep = chargerPowerKW switch
+            {
+                <= 1.2 => 0.1,
+                <= 11 => 0.2,
+                <= 60 => 0.5,
+                <= 150 => 1.0,
+                <= 250 => 1.5,
+                _ => 0.2
+            };
+
+            bool isAC = connectorType == ConnectorType.Type2 || connectorType == ConnectorType.VinEScooter;
+            bool isDC = !isAC;
+
+            var priceType = (guestMode, isAC) switch
+            {
+                (false, true) => PriceType.Member_AC,
+                (false, false) => PriceType.Member_DC,
+                (true, true) => PriceType.Guest_AC,
+                (true, false) => PriceType.Guest_DC,
+            };
+
+            PricingDto? pricing = null;
+            try
+            {
+                using var pricingScope = _scopeFactory.CreateScope();
+                var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
+                pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
+            }
+            catch (Exception px)
+            {
+                // If pricing lookup fails, log and continue using last-known/default values (pricePerKWh = 0)
+                Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
             }
 
-            return Task.CompletedTask;
-            // using var scope = _scopeFactory.CreateScope();
-            // var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            // var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
-            // if (session != null)
-            // {
-            //     session.Status = API.Helpers.Enums.SessionStatus.Completed;
-            //     uow.ChargingSessions.Update(session);
-            //     await uow.Complete();
-            // }
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    Console.WriteLine($"▶️ Start sim session {sessionId} | initialEnergy={initialEnergy} | initialCost={initialCost} | battery={batteryCapacity} | guest={guestMode}");
 
-            // var hub = scope.ServiceProvider.GetRequiredService<IHubContext<ChargingHub>>();
-            // await hub.Clients.Group($"session_{sessionId}")
-            //     .SendAsync("ReceiveSessionEnded", sessionId, "Stopped by user");
+                    const int intervalMs = 1000;
+
+                    while (true)
+                    {
+                        if (token.IsCancellationRequested)
+                            break;
+
+                        await Task.Delay(intervalMs, token);
+
+                        if (!_sessionStates.TryGetValue(sessionId, out var state))
+                            break;
+
+                        int pricePerKWh = (int)(pricing?.PricePerKwh ?? 0);
+
+                        var previousPercentage = state.CurrentPercentage;
+                        state.CurrentPercentage = Math.Min(state.CurrentPercentage + percentageStep, 100);
+                        state.CurrentPercentage = Math.Round(state.CurrentPercentage, 1);
+
+                        if (state.BatteryCapacity > 0)
+                        {
+                            double addedEnergy = ((state.CurrentPercentage - previousPercentage) / 100.0) * state.BatteryCapacity;
+                            state.EnergyConsumed = Math.Round(state.EnergyConsumed + addedEnergy, 3, MidpointRounding.AwayFromZero);
+
+                            _batteryState[sessionId] = state.CurrentPercentage;
+
+                            state.Cost = (int)Math.Round(state.EnergyConsumed * pricePerKWh, MidpointRounding.AwayFromZero);
+                        }
+                        else
+                        {
+                            // ⚠️ Nếu chưa biết pin (xe chưa xác định) → chỉ update % pin để hiển thị
+                            _batteryState[sessionId] = state.CurrentPercentage;
+                        }
+
+                        // insufficient funds -> stop but mark Idle & StopReason handled by service layer
+                        if (!state.GuestMode && !state.IsFreeCharging && state.Cost > state.WalletBalance)
+                        {
+                            Console.WriteLine($"💸 Session {sessionId} stopped due to insufficient funds (cost={state.Cost}, balance={state.WalletBalance})");
+
+                            await FlushToDatabase(sessionId, state); // flush current values
+
+                            using var scope = _scopeFactory.CreateScope();
+                            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                            var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
+                            if (session != null)
+                            {
+                                session.Status = SessionStatus.Idle;
+                                session.EndBatteryPercentage = (decimal)Math.Round(state.CurrentPercentage, 1);
+                                session.EndTime = DateTime.UtcNow.AddHours(7);
+                                session.StopReason = StopReason.InsufficientFunds;
+                                uow.ChargingSessions.Update(session);
+                                await uow.Complete();
+
+
+                                double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                                double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                                // Tính tổng giây (dạng double)
+                                double totalSecondsDouble = hoursRemaining * 3600;
+
+                                // Làm tròn lên đến giây gần nhất (ceiling)
+                                int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                                // Tạo TimeSpan từ giây đã làm tròn
+                                TimeSpan TimeRemain = TimeSpan.FromSeconds(totalSeconds);
+
+                                await _hubContext.Clients.Group($"session-{sessionId}")
+                                .SendAsync("ReceiveEnergyUpdate", new
+                                {
+                                    SessionId = sessionId,
+                                    BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
+                                    EnergyConsumed = state.EnergyConsumed,
+                                    Cost = state.Cost,
+                                    TimeRemainTotalSeconds = (int)TimeRemain.TotalSeconds
+                                });
+
+                                // SignalR: notify client
+                                await _hubContext.Clients.Group($"session-{sessionId}")
+                                    .SendAsync("ReceiveSessionStopped_InsufficientFunds", sessionId, session.Status);
+                            }
+
+                            break;
+                        }
+
+                        TimeSpan timeRemain = TimeSpan.Zero;
+
+                        if (state.CurrentPercentage < 100 && state.BatteryCapacity > 0 && state.ChargerPowerKW > 0)
+                        {
+                            double energyNeededKWh = (100 - state.CurrentPercentage) / 100.0 * state.BatteryCapacity;
+                            double hoursRemaining = energyNeededKWh / state.ChargerPowerKW;
+
+                            // Tính tổng giây (dạng double)
+                            double totalSecondsDouble = hoursRemaining * 3600;
+
+                            // Làm tròn lên đến giây gần nhất (ceiling)
+                            int totalSeconds = (int)Math.Ceiling(totalSecondsDouble);
+
+                            // Tạo TimeSpan từ giây đã làm tròn
+                            timeRemain = TimeSpan.FromSeconds(totalSeconds);
+                        }
+
+                        // realtime update
+                        await _hubContext.Clients.Group($"session-{sessionId}")
+                            .SendAsync("ReceiveEnergyUpdate", new
+                            {
+                                SessionId = sessionId,
+                                BatteryPercentage = Math.Round(state.CurrentPercentage, 1),
+                                EnergyConsumed = state.EnergyConsumed,
+                                Cost = state.Cost,
+                                // TimeRemainHours = (int)timeRemain.TotalHours,
+                                // TimeRemainMinutes = timeRemain.Minutes,
+                                // TimeRemainSeconds = timeRemain.Seconds,
+                                // Hoặc gửi total seconds nếu FE muốn tự format
+                                TimeRemainTotalSeconds = (int)timeRemain.TotalSeconds
+                            });
+
+                        Console.WriteLine($"⚡ Session {sessionId}: {state.CurrentPercentage}% - {state.EnergyConsumed}kWh - {state.Cost}đ");
+
+                        if (DateTime.UtcNow - state.LastFlushed >= _flushInterval)
+                        {
+                            state.LastFlushed = DateTime.UtcNow;
+                            await FlushToDatabase(sessionId, state);
+                        }
+
+                        if (state.CurrentPercentage >= 100)
+                        {
+                            await FlushToDatabase(sessionId, state, true);
+
+                            await _hubContext.Clients.Group($"session-{sessionId}")
+                                .SendAsync("ReceiveSessionFull", sessionId);
+
+                            Console.WriteLine($"🟩 Session {sessionId} fully charged");
+                            break;
+                        }
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    Console.WriteLine($"🟦 Simulation canceled for session {sessionId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"🟥 Simulation error for session {sessionId}: {ex.ToString()}");
+                }
+                finally
+                {
+                    _runningSessions.TryRemove(sessionId, out _);
+                }
+            }, token);
+
+            return;
         }
 
-        private async Task SimulateChargingAsync(int sessionId, double batteryCapacity, CancellationToken token)
+        private async Task FlushToDatabase(int sessionId, SimulationState state, bool fullFlush = false)
         {
             using var scope = _scopeFactory.CreateScope();
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var hub = scope.ServiceProvider.GetRequiredService<IHubContext<ChargingHub>>();
 
-            try
+            var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) return;
+
+            session.EndBatteryPercentage = (decimal)Math.Round(state.CurrentPercentage, 1);
+            session.EnergyConsumed = state.EnergyConsumed;
+            session.Cost = state.Cost;
+
+            if (fullFlush)
             {
-                Console.WriteLine($"🔋 Start simulate charging for session {sessionId}, battery {batteryCapacity}");
-
-                var session = await uow.ChargingSessions.GetByIdAsync(sessionId);
-                if (session == null) return;
-
-                double pricePerKWh = 5;
-                double currentPercentage = session.StartBatteryPercentage ?? 10;
-                double energyConsumed = 0;
-                int cost = 0;
-                const double ratePerInterval = 0.5; // tăng 0.5%/s
-                const int intervalMs = 1000;
-
-                while (currentPercentage < 100 && !token.IsCancellationRequested)
-                {
-                    await Task.Delay(intervalMs, token);
-
-                    currentPercentage += ratePerInterval;
-                    if (currentPercentage > 100) currentPercentage = 100;
-
-                    double addedEnergy = (ratePerInterval / 100) * batteryCapacity;
-                    energyConsumed += addedEnergy;
-                    cost = (int)(energyConsumed * pricePerKWh);
-
-                    int timeRemain = currentPercentage >= 100 ? 0 : (int)((100 - currentPercentage) / ratePerInterval);
-
-                    var update = new EnergyUpdateDto
-                    {
-                        SessionId = sessionId,
-                        EnergyConsumed = energyConsumed,
-                        BatteryPercentage = currentPercentage,
-                        TimeRemain = timeRemain,
-                        Cost = cost
-                    };
-
-                    // update DB
-                    // var s = await uow.ChargingSessions.GetByIdAsync(sessionId);
-                    // if (s == null) break;
-                    // s.EnergyConsumed = update.EnergyConsumed;
-                    // s.EndBatteryPercentage = (float)update.BatteryPercentage;
-                    // s.Cost = (int) update.Cost;
-
-                    // if (update.BatteryPercentage >= 100)
-                    //     s.Status = API.Helpers.Enums.SessionStatus.Full;
-
-                    // uow.ChargingSessions.Update(s);
-                    // await uow.Complete();
-
-
-                    // CHỈ GỬI SIGNALR, KHÔNG UPDATE DB
-                    await hub.Clients.Group($"session-{sessionId}")
-                        .SendAsync("ReceiveSessionUpdate", update);
-
-                    Console.WriteLine($"⚡ Session {sessionId}: {update.BatteryPercentage:0.0}% - {update.EnergyConsumed:0.0}kWh");
-                }
-
-                // KHI VÒNG LẶP KẾT THÚC (đầy hoặc bị cancel), MỚI CẬP NHẬT DB LẦN CUỐI
-                var finalSession = await uow.ChargingSessions.GetByIdAsync(sessionId);
-                if (finalSession != null && finalSession.Status == SessionStatus.Charging)
-                {
-                    double finalEnergy = (currentPercentage - finalSession.StartBatteryPercentage.Value) / 100.0 * batteryCapacity;
-                    
-                    finalSession.EnergyConsumed = finalEnergy;
-                    finalSession.EndBatteryPercentage = (float)currentPercentage;
-                    finalSession.Cost = (int)(finalEnergy * pricePerKWh);
-                    
-                    if (currentPercentage >= 100)
-                    {
-                        finalSession.Status = SessionStatus.Full;
-                        finalSession.EndTime = DateTime.UtcNow;
-                    }
-                    
-                    uow.ChargingSessions.Update(finalSession);
-                    await uow.Complete();
-                    Console.WriteLine($"💾 Saved final state for session {sessionId}");
-                }
-
-                // Console.WriteLine($"🟩 Simulation finished for session {sessionId}");
+                session.Status = SessionStatus.Idle;
+                session.EndTime = DateTime.UtcNow.AddHours(7);
+                session.StopReason = StopReason.BatteryFull;
             }
-            catch (TaskCanceledException)
-            {
-                Console.WriteLine($"🟥 Simulation for session {sessionId} was canceled.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ ERROR simulate session {sessionId}: {ex.Message}");
-            }
-            finally
-            {
-                _runningSessions.TryRemove(sessionId, out _);
-            }
-        }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            // BackgroundService yêu cầu override, nhưng mình không cần loop riêng
-            return Task.CompletedTask;
+            await uow.Complete();
+
+            Console.WriteLine($"💾 Setting EndBatteryPercentage to {Math.Round(state.CurrentPercentage, 1)} in flush");
+            Console.WriteLine($"💾 Setting EnergyConsumed to {Math.Round(state.EnergyConsumed, 1)} in flush");
+            Console.WriteLine($"💾 Setting Cost to {state.Cost} in flush");
+            Console.WriteLine($"💾 Flushed session {sessionId} to DB {(fullFlush ? "(final -> Idle)" : "")}");
         }
     }
 }

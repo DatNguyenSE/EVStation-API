@@ -10,7 +10,9 @@ namespace API.DTOs.ChargingSession
         public int SessionId { get; set; }
         public double EnergyConsumed { get; set; }
         public double BatteryPercentage { get; set; }
-        public int TimeRemain { get; set; }
+        public float TimeRemain { get; set; }
         public double Cost { get; set; }
+        public bool IsTempMode { get; set; }
+        public VehicleInfoDto? VehicleInfo { get; set; }
     }
 }

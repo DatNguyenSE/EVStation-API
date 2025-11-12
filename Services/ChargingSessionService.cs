@@ -11,261 +11,630 @@ using API.Mappers;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using MimeKit.Text;
-
-// check người dùng có mua gói không => không tính phí
-
+using Microsoft.EntityFrameworkCore;
+using API.DTOs.Receipt;
+using API.DTOs.Pricing;
+using API.Helpers;
 
 namespace API.Services
 {
     public class ChargingSessionService : IChargingSessionService
     {
         private readonly IUnitOfWork _uow;
-        private readonly IWalletService _walletService; // Thêm để kiểm tra ví
+        private readonly IWalletService _walletService;
         private readonly IHubContext<ChargingHub> _hubContext;
         private readonly IChargingSimulationService _simulationService;
+        private readonly IEmailService _emailService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public ChargingSessionService(
             IUnitOfWork uow,
-            IWalletService walletService, // Inject IWalletService
+            IWalletService walletService,
             IHubContext<ChargingHub> hubContext,
-            IChargingSimulationService simulationService)
+            IChargingSimulationService simulationService,
+            IEmailService emailService,
+            IServiceScopeFactory scopeFactory)
         {
             _uow = uow;
             _walletService = walletService;
             _hubContext = hubContext;
             _simulationService = simulationService;
+            _emailService = emailService;
+            _scopeFactory = scopeFactory;
         }
 
-        // Tạo session mới
+        // CREATE / START session
         public async Task<ChargingSessionDto> CreateSessionAsync(CreateChargingSessionDto dto)
         {
-            // --- Validation đầu vào ---
-            if (!dto.VehicleId.HasValue && string.IsNullOrEmpty(dto.VehiclePlate))
-            {
-                throw new InvalidOperationException("Cần cung cấp VehicleId hoặc VehiclePlate để tạo phiên sạc.");
-            }
+            var chargingPost = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
+            if (chargingPost == null) throw new Exception("Không tìm thấy trụ sạc");
+            var powerKW = (double)chargingPost.PowerKW;
+            var connectorType = chargingPost.ConnectorType;
 
-            // --- Bước 1: Tìm thông tin xe bằng mọi cách có thể ---
-            Vehicle? vehicle = null;
-            if (dto.VehicleId.HasValue)
-            {
-                // Ưu tiên tìm theo ID nếu được cung cấp (dành cho user đã đăng nhập)
-                vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId.Value);
-                if (vehicle == null)
-                {
-                    throw new KeyNotFoundException($"Không tìm thấy xe với ID = {dto.VehicleId.Value}.");
-                }
-            }
-            else
-            {
-                // Nếu không có ID, tìm theo biển số (dành cho khách vãng lai hoặc user không chọn xe)
-                vehicle = await _uow.Vehicles.GetByPlateAsync(dto.VehiclePlate);
-            }
+            // snapshot isWalkIn
+            bool isWalkIn = chargingPost.IsWalkIn;
 
-            // --- Bước 2: Xác định dung lượng pin dựa trên kết quả tìm kiếm ---
-            double batteryCapacity;
-            var random = new Random();
+            // choose start battery
+            decimal startBatteryPercentage = new Random().Next(10, 36);
 
-            if (vehicle != null)
+            // If there is an existing Idle session for same user + same post
+            ChargingSession? existingIdle = null;
+            if (!string.IsNullOrEmpty(dto.VehiclePlate))
             {
-                // TRƯỜNG HỢP 1: Đã tìm thấy xe trong DB -> Lấy dung lượng pin thực tế.
-                batteryCapacity = vehicle.BatteryCapacityKWh;
+                // Có biển số → tìm đúng Idle theo biển số
+                existingIdle = await _uow.ChargingSessions.FindIdleSessionForUserAtPost(dto.VehiclePlate, dto.PostId);
             }
             else
             {
-                // TRƯỜNG HỢP 2: Không tìm thấy xe -> Khách vãng lai mới, random dung lượng pin.
-                var chargingPost = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
-                if (chargingPost == null)
-                {
-                    throw new KeyNotFoundException($"Không tìm thấy trụ sạc với ID = {dto.PostId}.");
-                }
-
-                // Lấy các mẫu xe tương thích để random thông tin cho hợp lệ
-                var compatibleModels = (await _uow.VehicleModels.GetCompatibleModelsAsync(chargingPost.ConnectorType)).ToList();
-                if (!compatibleModels.Any())
-                {
-                    throw new InvalidOperationException($"Không tìm thấy mẫu xe nào tương thích với loại trụ sạc '{chargingPost.ConnectorType}'.");
-                }
-                
-                // Random một mẫu xe và lấy dung lượng pin của nó
-                var randomModel = compatibleModels[random.Next(compatibleModels.Count)];
-                batteryCapacity = randomModel.BatteryCapacityKWh;
+                // Không có biển số → tìm Idle gần nhất ở trụ đó
+                existingIdle = await _uow.ChargingSessions.FindLatestIdleSessionAtPostAsync(dto.PostId);
             }
 
-            // --- Bước 3: Tạo và lưu phiên sạc mới ---
-            var session = new ChargingSession
+            if (chargingPost.Status != PostStatus.Available &&
+                existingIdle == null) throw new Exception("Trụ không sẵn sàng");
+
+            if (!isWalkIn && existingIdle != null)
             {
-                VehicleId = vehicle?.Id, // Gán ID nếu tìm thấy xe
-                VehiclePlate = dto.VehiclePlate ?? vehicle?.Plate, // Ưu tiên biển số người dùng nhập
-                PostId = dto.PostId,
-                ReservationId = dto.ReservationId,
-                StartTime = DateTime.UtcNow,
-                Status = SessionStatus.Charging,
-                EnergyConsumed = 0,
-                Cost = 0,
-                // Random % pin khởi điểm từ 10% đến 35%
-                StartBatteryPercentage = random.Next(10, 36)
-            };
-            session.EndBatteryPercentage = session.StartBatteryPercentage;
-
-            var createdSession = await _uow.ChargingSessions.CreateAsync(session);
-            await _uow.Complete();
-
-            // --- Bước 4: Bắt đầu tiến trình mô phỏng sạc ---
-            await _simulationService.StartSimulationAsync(createdSession.Id, batteryCapacity);
-
-            return createdSession.MapToDto();
-
-            /*
-            if (dto.VehicleId == null && string.IsNullOrEmpty(dto.VehiclePlate))
-            {
-                throw new Exception("Cần VehicleId hoặc VehiclePlate");
-            }
-
-            var session = new ChargingSession
-            {
-                VehicleId = dto.VehicleId,
-                VehiclePlate = dto.VehiclePlate ?? string.Empty,
-                PostId = dto.PostId,
-                ReservationId = dto.ReservationId,
-                StartTime = DateTime.UtcNow,
-                Status = SessionStatus.Charging,
-                EnergyConsumed = 0,
-                Cost = 0
-            };
-
-            double batteryCapacity = 0;
-            string plate = string.Empty;
-            var random = new Random();
-
-            if (dto.VehicleId.HasValue)
-            {
-                // Xe của người có tài khoản: Lấy thông tin thực từ DB và random pin
-                var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId.Value);
-                if (vehicle == null) throw new Exception("Không tìm thấy xe");
-
-                batteryCapacity = vehicle.BatteryCapacityKWh; // Dung lượng pin thực
-                plate = vehicle.Plate;
-            }
-            else if (!string.IsNullOrEmpty(dto.VehiclePlate))
-            {
-                // Khách vãng lai: Kiểm tra nếu biển số tồn tại trong DB
-                var vehicle = await _uow.Vehicles.GetByPlateAsync(dto.VehiclePlate);
-                if (vehicle != null)
+                var end = existingIdle.EndTime ?? DateTime.UtcNow.AddHours(7);
+                var minutes = (DateTime.UtcNow.AddHours(7) - end).TotalMinutes;
+                if (minutes <= AppConstant.ChargingRules.IDLE_GRACE_MINUTES)
                 {
-                    // Nếu tồn tại, dùng thông tin xe đó
-                    // model = vehicle.Model;
-                    batteryCapacity = vehicle.BatteryCapacityKWh;
-                    plate = vehicle.Plate;
+                    // Complete old session (create receipt, payment) BEFORE creating new session
+                    await CompleteSessionAsync(existingIdle.Id, false);
+                    // Copy battery value
+                    if (existingIdle.EndBatteryPercentage.HasValue)
+                        startBatteryPercentage = existingIdle.EndBatteryPercentage.Value;
                 }
                 else
                 {
-                    var chargingPost = await _uow.ChargingPosts.GetByIdAsync(session.PostId);
-                    if (chargingPost == null) throw new Exception("Không tìm thấy trụ sạc");
-
-                    // Nếu không tồn tại, random thông tin
-                    // Lấy danh sách mẫu xe tương thích với ConnectorType của trụ
-                    var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(chargingPost.ConnectorType);
-                    if (compatibleModels == null || !compatibleModels.Any())
-                        throw new Exception("Không tìm thấy mẫu xe tương thích với trụ sạc.");
-                    var compatibleModelsList = compatibleModels.ToList();
-                    // Random chọn một mẫu xe
-                    var randomModel = compatibleModelsList[random.Next(compatibleModelsList.Count)];
-                    // model = randomModel.Model;
-                    batteryCapacity = randomModel.BatteryCapacityKWh;
-
-
+                    // too late -> must rebook, block
+                    throw new Exception("Phiên trước đã quá 15 phút ân hạn. Vui lòng đặt chỗ mới.");
                 }
             }
 
-            // Random % pin hiện tại (10-80%) cho cả hai trường hợp
-            session.StartBatteryPercentage = random.Next(10, 36);
-            session.EndBatteryPercentage = session.StartBatteryPercentage;
-            session.VehiclePlate = plate;
-
-            session = await _uow.ChargingSessions.CreateAsync(session);
-            await _uow.Complete();
-            await _simulationService.StartSimulationAsync(session.Id, batteryCapacity);
-
-            return session.MapToDto();
-            */
-        }
-
-        // Cập nhật năng lượng và pin, kiểm tra ví
-        public async Task UpdateEnergyAsync(EnergyUpdateDto update)
-        {
-            var session = await _uow.ChargingSessions.GetByIdAsync(update.SessionId);
-            if (session == null) throw new Exception("Không tìm thấy session");
-
-            if (session.Status != SessionStatus.Charging && session.Status != SessionStatus.Full)
+            // For walk-in: if existing idle present, we do NOT auto-complete; but we will use EndBatteryPercentage as start if available
+            if (isWalkIn && existingIdle != null)
             {
-                throw new Exception("Không thể cập nhật ở trạng thái hiện tại");
+                existingIdle.Status = SessionStatus.Completed;
+                existingIdle.CompletedTime = DateTime.UtcNow.AddHours(7);
+                if (existingIdle.EndBatteryPercentage.HasValue)
+                    startBatteryPercentage = existingIdle.EndBatteryPercentage.Value;
+                if (existingIdle.VehicleId.HasValue)
+                    dto.VehicleId = existingIdle.VehicleId.Value;
+                if (!string.IsNullOrEmpty(existingIdle.VehiclePlate))
+                    dto.VehiclePlate = existingIdle.VehiclePlate;
             }
 
-            // Cập nhật fields
-            session.EnergyConsumed = update.EnergyConsumed;
-            session.EndBatteryPercentage = (float)update.BatteryPercentage;
-            session.Cost = (int)update.Cost;
-
-            // Kiểm tra số dư ví nếu có VehicleId (user đăng ký)
-            if (session.VehicleId.HasValue)
+            if (dto.VehicleId != null)
             {
-                var ownerId = (await _uow.Vehicles.GetVehicleByIdAsync(session.VehicleId.Value))?.OwnerId;
+                var vehicleModel = await _uow.Vehicles.GetVehicleByIdAsync((int)dto.VehicleId);
+                dto.VehiclePlate = vehicleModel?.Plate ?? string.Empty;
+            }
+
+            // Build session
+            var session = new ChargingSession
+            {
+                VehicleId = dto.VehicleId,
+                VehiclePlate = dto.VehiclePlate,
+                ChargingPostId = dto.PostId,
+                ReservationId = dto.ReservationId,
+                StartTime = DateTime.UtcNow.AddHours(7),
+                Status = SessionStatus.Charging,
+                EnergyConsumed = 0,
+                Cost = 0,
+                StartBatteryPercentage = startBatteryPercentage,
+                IsWalkInSession = isWalkIn,
+                IsPaid = false
+            };
+
+            // check wallet/subscription etc
+            bool isFreeCharging = false;
+            decimal walletBalance = 0;
+            string? ownerId = null;
+            double batteryCapacity = 0;
+
+            if (isWalkIn && dto.VehicleId.HasValue)
+            {
+                var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId.Value);
+                if (vehicle != null)
+                {
+                    batteryCapacity = vehicle.BatteryCapacityKWh;
+                    ownerId = vehicle.OwnerId ?? null;
+                }
+            }
+
+            if (!isWalkIn)
+            {
+                // require vehicle
+                var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId!.Value);
+                if (vehicle == null) throw new Exception("Không tìm thấy xe");
+                batteryCapacity = vehicle.BatteryCapacityKWh;
+                ownerId = vehicle.OwnerId;
+                var walletDto = await _walletService.GetWalletForUserAsync(ownerId!);
+                walletBalance = walletDto?.Balance ?? 0;
+
                 if (ownerId != null)
                 {
-                    var walletDto = await _walletService.GetWalletForUserAsync(ownerId);
-                    if (walletDto != null && session.Cost > walletDto.Balance)
+                    var activeSubscription = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(ownerId, vehicle.Type);
+                    if (activeSubscription != null) isFreeCharging = true;
+
+                    if (!isFreeCharging)
                     {
-                        // Phí sạc vượt quá số dư, ngừng sạc
-                        session.Status = SessionStatus.StoppedDueToInsufficientFunds;
-                        _uow.ChargingSessions.Update(session);
-                        await _hubContext.Clients.Group($"session-{update.SessionId}")
-                            .SendAsync("ReceiveSessionStopped", update.SessionId, "Phí sạc vượt quá số dư ví");
-                        return; // Kết thúc hàm, không tiếp tục cập nhật
+                        if (walletDto == null)
+                        {
+                            throw new Exception("Lỗi hệ thống: Không thể khởi tạo/tìm ví người dùng.");
+                        }
+
+                        // Quy tắc 1: Cấm sạc nếu đang có nợ
+                        if (walletDto.IsDebt) // Lấy thông tin IsDebt từ WalletDto
+                        {
+                            throw new Exception($"Không thể bắt đầu phiên sạc do đang có khoản nợ: {walletDto.Debt:N0} VNĐ. Vui lòng nạp tiền để thanh toán nợ trước.");
+                        }
+                        
+                        // Quy tắc 2: Yêu cầu số dư tối thiểu
+                        const decimal MIN_BALANCE_REQUIRED = 50000;
+                        if (walletDto.Balance < MIN_BALANCE_REQUIRED)
+                        {
+                            throw new Exception($"Số dư ví phải trên {MIN_BALANCE_REQUIRED:N0} VNĐ để bắt đầu sạc. Số dư hiện tại: {walletDto.Balance:N0} VNĐ.");
+                        }
                     }
                 }
             }
 
-            // Nếu pin đầy, chuyển status sang Full
-            if (update.BatteryPercentage >= 100)
+            // persist
+            session = await _uow.ChargingSessions.CreateAsync(session);
+            await _uow.ChargingPosts.UpdateStatusAsync(chargingPost.Id, PostStatus.Occupied);
+            await _uow.Complete();
+
+            // start simulation
+            await _simulationService.StartSimulationAsync(
+                session.Id,
+                batteryCapacity,
+                isFreeCharging,
+                guestMode: isWalkIn,
+                chargerPowerKW: powerKW,
+                connectorType: connectorType,
+                initialPercentage: (double)session.StartBatteryPercentage,
+                initialEnergy: 0,
+                initialCost: 0,
+                ownerId: ownerId,
+                walletBalance: walletBalance
+            );
+
+            try
             {
-                session.Status = SessionStatus.Full;
+                await _hubContext.Clients.Group($"session-{session.Id}")
+                    .SendAsync("ReceiveSessionResumed", session.MapToDto());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ SignalR send failed: {ex.Message}");
             }
 
-            _uow.ChargingSessions.Update(session);
-
-            // Gửi cập nhật realtime qua SignalR đến group của session
-            await _hubContext.Clients.Group($"session-{update.SessionId}")
-                .SendAsync("ReceiveSessionUpdate", update);
-            await _uow.Complete();
+            return session.MapToDto();
         }
 
-        // Kết thúc session
-        public async Task<ChargingSessionDto> EndSessionAsync(int sessionId)
+        // Stop charging (user pressed Stop) — sets Idle
+        public async Task StopChargingAsync(int sessionId, StopReason stopReason = StopReason.ManualStop)
         {
             var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
             if (session == null) throw new Exception("Không tìm thấy session");
+            if (session.Status != SessionStatus.Charging) throw new Exception("Chỉ dừng khi đang sạc");
 
-            if (session.Status != SessionStatus.Charging && session.Status != SessionStatus.Full)
+            if (_simulationService.IsRunning(sessionId))
             {
-                throw new Exception("Không thể kết thúc ở trạng thái hiện tại");
+                await _simulationService.StopSimulationAsync(sessionId, setCompleted: true);
             }
 
-            // Chuyển sang Completed mà không trừ tiền (theo yêu cầu)
-            session.Status = SessionStatus.Completed;
-            session.EndTime = DateTime.UtcNow;
+            _uow.DetachAllEntities(); // thêm dòng này ngay trước khi reload
+            session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) throw new Exception("Không tìm thấy session");
+            session.Status = SessionStatus.Idle;
+            session.EndTime = DateTime.UtcNow.AddHours(7);
+            session.StopReason = stopReason;
+
+            if (stopReason == StopReason.ReservationCompleted)
+            {
+                session.IdleFeeStartTime = session.EndTime;
+            }
+            else
+            {
+                session.IdleFeeStartTime = session.EndTime.Value.AddMinutes(AppConstant.ChargingRules.IDLE_GRACE_MINUTES);
+            }
 
             _uow.ChargingSessions.Update(session);
-
-            await _simulationService.StopSimulation(sessionId);
-
-
-            await _hubContext.Clients.Group($"session-{sessionId}")
-                .SendAsync("ReceiveSessionEnded", sessionId, session.Status);
-
             await _uow.Complete();
 
-            return session.MapToDto();
+            // notify
+            await _hubContext.Clients.Group($"session-{sessionId}")
+                .SendAsync("ReceiveSessionStopped", sessionId, session.Status);
+        }
+
+        // Called by simulation when full (or you may call this from simulation flush logic)
+        public async Task HandleSessionFullAsync(int sessionId)
+        {
+            var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) return;
+            if (session.Status != SessionStatus.Charging) return;
+
+            session.Status = SessionStatus.Idle;
+            session.EndTime = DateTime.UtcNow.AddHours(7);
+            session.StopReason = StopReason.BatteryFull;
+
+            _uow.ChargingSessions.Update(session);
+            await _uow.Complete();
+
+            await _hubContext.Clients.Group($"session-{sessionId}")
+                .SendAsync("ReceiveSessionFull", sessionId);
+        }
+
+        // Complete session: user pressed "Complete" (rời trụ) -> create receipt, payment, release post if allowed
+        public async Task<ReceiptDto> CompleteSessionAsync(int sessionId, bool endReservation)
+        {
+            var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) throw new Exception("Không tìm thấy phiên sạc");
+            if (session.Status == SessionStatus.Completed) throw new Exception("Phiên sạc đã hoàn tất");
+
+            if (_simulationService.IsRunning(sessionId))
+            {
+                await _simulationService.StopSimulationAsync(sessionId, setCompleted: true);
+            }
+
+            // reload
+            session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) throw new Exception("Không tìm thấy phiên sạc");
+            int total = 0;
+
+            // For walk-in
+            Receipt receipt;
+            if (session.IsWalkInSession)
+            {
+                // find unpaid sessions with same plate & same post (you can refine time window if needed)
+                var allSessions = await _uow.ChargingSessions.GetAllAsync();
+                var unpaid = (allSessions.Where(s =>
+                    s.IsWalkInSession &&
+                    !s.IsPaid &&
+                    s.VehiclePlate == session.VehiclePlate &&
+                    s.ChargingPostId == session.ChargingPostId)).ToList();
+
+                // mark Completed for these sessions that are currently Idle/Charging
+                foreach (var s in unpaid)
+                {
+                    if (s.Status != SessionStatus.Completed)
+                    {
+                        s.Status = SessionStatus.Completed;
+                        s.CompletedTime = DateTime.UtcNow.AddHours(7);
+                        _uow.ChargingSessions.Update(s);
+                    }
+                }
+
+                await _uow.Complete();
+
+                // compute totals
+                decimal totalEnergyConsumed = (decimal)unpaid.Sum(x => x.EnergyConsumed);
+                int totalCost = unpaid.Sum(x => x.Cost);
+                int totalIdle = unpaid.Sum(x => x.IdleFee);
+                int totalOverstay = unpaid.Sum(x => x.OverstayFee ?? 0);
+                total = totalCost + totalIdle + totalOverstay;
+
+                bool isAC = session.ChargingPost.ConnectorType == ConnectorType.Type2 || session.ChargingPost.ConnectorType == ConnectorType.VinEScooter;
+                bool isDC = !isAC;
+
+                var priceType = (session.IsWalkInSession, isAC) switch
+                {
+                    (false, true) => PriceType.Member_AC,
+                    (false, false) => PriceType.Member_DC,
+                    (true, true) => PriceType.Guest_AC,
+                    (true, false) => PriceType.Guest_DC,
+                };
+
+                PricingDto? pricing = null;
+                try
+                {
+                    using var pricingScope = _scopeFactory.CreateScope();
+                    var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
+                    pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
+                }
+                catch (Exception px)
+                {
+                    Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
+                }
+
+                receipt = new Receipt
+                {
+                    AppUserId = session.Vehicle?.OwnerId ?? null,
+                    StationId = session.ChargingPost.StationId,
+                    EnergyConsumed = totalEnergyConsumed,
+                    EnergyCost = totalCost,
+                    IdleStartTime = totalIdle > 0 ? session.IdleFeeStartTime : null,
+                    IdleEndTime = totalIdle > 0 ? DateTime.UtcNow.AddHours(7) : null,
+                    IdleFee = totalIdle,
+                    OverstayFee = totalOverstay,
+                    TotalCost = total,
+                    PricingName = pricing?.Name ?? string.Empty,
+                    PricePerKwhSnapshot = pricing!.PricePerKwh,
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Status = ReceiptStatus.Pending,
+                    AppUser = session.Vehicle?.Owner,
+                    PaymentMethod = "Tiền mặt"
+                };
+                foreach (var s in unpaid)
+                {
+                    receipt.ChargingSessions.Add(s);
+                }
+
+                await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
+            }
+            else // reservation session
+            {
+                decimal energyConsumed = (decimal)session.EnergyConsumed;
+                int energyCost = session.Cost;
+                int idle = session.IdleFee;
+                int over = session.OverstayFee ?? 0;
+                total = energyCost + idle + over;
+                var discountAmount = 0;
+
+                var driverPackage = await _uow.DriverPackages.GetActiveSubscriptionForUserAsync(session.Vehicle!.OwnerId!, session.Vehicle!.Type);
+                if (driverPackage != null)
+                {
+                    discountAmount = energyCost;
+                    total -= discountAmount;
+                }
+
+                session.Status = SessionStatus.Completed;
+                session.CompletedTime = DateTime.UtcNow.AddHours(7);
+                session.IsPaid = true;
+
+                _uow.ChargingSessions.Update(session);
+
+                bool isAC = session.ChargingPost.ConnectorType == ConnectorType.Type2 || session.ChargingPost.ConnectorType == ConnectorType.VinEScooter;
+                bool isDC = !isAC;
+
+                var priceType = (session.IsWalkInSession, isAC) switch
+                {
+                    (false, true) => PriceType.Member_AC,
+                    (false, false) => PriceType.Member_DC,
+                    (true, true) => PriceType.Guest_AC,
+                    (true, false) => PriceType.Guest_DC,
+                };
+
+                PricingDto? pricing = null;
+                try
+                {
+                    using var pricingScope = _scopeFactory.CreateScope();
+                    var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
+                    pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
+                }
+                catch (Exception px)
+                {
+                    // If pricing lookup fails, log and continue using last-known/default values (pricePerKWh = 0)
+                    Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
+                }
+
+                receipt = new Receipt
+                {
+                    AppUserId = session.Vehicle?.OwnerId ?? string.Empty,
+                    StationId = session.ChargingPost.StationId,
+                    EnergyConsumed = energyConsumed,
+                    EnergyCost = energyCost,
+                    IdleStartTime = idle > 0 ? session.IdleFeeStartTime : null,
+                    IdleEndTime = idle > 0 ? DateTime.UtcNow.AddHours(7) : null,
+                    IdleFee = idle,
+                    OverstayFee = over,
+                    TotalCost = total,
+                    PricingName = pricing?.Name ?? string.Empty,
+                    PricePerKwhSnapshot = pricing!.PricePerKwh,
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Status = total == 0 ? ReceiptStatus.Paid : ReceiptStatus.Pending,
+                    PackageId = driverPackage != null ? driverPackage.Id : null,
+                    DiscountAmount = discountAmount,
+                    PaymentMethod = driverPackage != null ? "Gói thuê bao" : "Ví tiền"
+                };
+                receipt.ChargingSessions.Add(session);
+
+                // release post only if reservation completed or null
+                var post = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
+                if (post != null)
+                {
+                    await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
+                }
+
+                if (endReservation == true)
+                {
+                    if (session.Reservation != null)
+                    {
+                        var reservation = session.Reservation.Status = ReservationStatus.Completed;
+                    }
+                }
+
+                await _uow.Receipts.AddAsync(receipt);
+                await _uow.Complete();
+
+                if (session.Vehicle?.OwnerId != null && total > 0)
+                {
+                    var payResult = await _walletService.PayingChargeWalletAsync(receipt.Id, session.Vehicle.OwnerId, total, TransactionType.PayCharging);
+                }
+
+                if (session.Vehicle?.Owner != null && !string.IsNullOrEmpty(session.Vehicle.Owner.Email))
+                {
+                    await _emailService.SendChargingReceiptAsync(session.Vehicle.Owner.Email, receipt);
+                }
+            }
+            
+            // signal
+            await _hubContext.Clients.Group($"session-{sessionId}")
+                .SendAsync("ReceiveSessionCompleted", sessionId, receipt.MapToDto());
+
+            var receiptDto = receipt.MapToDto();
+            if (session.Vehicle!.OwnerId != null)
+            {
+                receiptDto.ShouldSuggestRegistration = false;
+            }
+            else
+            {
+                receiptDto.ShouldSuggestRegistration = true;
+            }
+
+            return receiptDto;
+        }
+
+        // Keep UpdatePlate logic (from your original code) — unchanged except ensure StopReason/IsWalkIn interactions later
+        public async Task<ChargingSession> UpdatePlateAsync(int sessionId, string plate)
+        {
+            var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
+            if (session == null) throw new Exception("Không tìm thấy session");
+            if (session.VehicleId != null) throw new Exception("Chỉ dành cho vãng lai (VehicleId = null)");
+            if (session.Status != SessionStatus.Charging) throw new Exception("Chỉ update khi đang sạc");
+
+            var chargingPost = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
+            if (chargingPost == null) throw new Exception("Không tìm thấy trụ sạc");
+
+            var powerKW = (double)chargingPost.PowerKW;
+            var connectorType = chargingPost.ConnectorType;
+
+            session.VehiclePlate = plate;
+
+            double batteryCapacity = 1.0;
+            bool isFreeCharging = false;
+            bool guestMode = true;
+
+            var vehicle = await _uow.Vehicles.GetByPlateAsync(plate);
+            if (vehicle != null)
+            {
+                session.VehicleId = vehicle.Id;
+                session.Vehicle = vehicle;
+                batteryCapacity = vehicle.BatteryCapacityKWh;
+            }
+            else
+            {
+                var compatibleModels = await _uow.VehicleModels.GetCompatibleModelsAsync(connectorType, (decimal)powerKW);
+                if (compatibleModels?.Any() != true) throw new Exception("Không tìm thấy mẫu xe tương thích");
+
+                var random = new Random();
+                var compatibleModelsList = compatibleModels.ToList();
+                var randomModel = compatibleModelsList[random.Next(compatibleModelsList.Count)];
+                batteryCapacity = randomModel.BatteryCapacityKWh;
+
+                var newVehicle = new Vehicle
+                {
+                    Model = randomModel.Model,
+                    Type = randomModel.Type,
+                    BatteryCapacityKWh = randomModel.BatteryCapacityKWh,
+                    MaxChargingPowerKW = (double)(randomModel.Type == VehicleType.Car ? randomModel.MaxChargingPowerDC_KW : randomModel.MaxChargingPowerKW),
+                    ConnectorType = randomModel.ConnectorType,
+                    Plate = plate,
+                    OwnerId = null
+                };
+                var vehicleModel = await _uow.Vehicles.AddVehicleAsync(newVehicle);
+                await _uow.Complete();
+                session.VehicleId = vehicleModel.Id;
+                session.Vehicle = await _uow.Vehicles.GetVehicleByIdAsync((int)session.VehicleId);
+            }
+            await _uow.Complete();
+
+            if (_simulationService.IsRunning(sessionId))
+            {
+                bool setCompleted = false;
+                await _simulationService.StopSimulationAsync(sessionId, setCompleted);
+
+                await Task.Delay(1000);
+
+                // DÙNG SCOPE MỚI ĐỂ LOAD FRESH DATA
+                using var loadScope = _scopeFactory.CreateScope();
+                var loadUow = loadScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var freshSession = await loadUow.ChargingSessions.GetByIdAsync(sessionId);
+
+                if (freshSession == null) throw new Exception("Session không tồn tại");
+
+                // DÙNG freshSession, KHÔNG DÙNG session cũ (có cache)
+                double currentPercentage = (double)(freshSession.EndBatteryPercentage ?? freshSession.StartBatteryPercentage);
+
+                double chargedPercentage = (double)(currentPercentage - (double)session.StartBatteryPercentage);
+                if (chargedPercentage < 0) chargedPercentage = 0;
+
+                double energyConsumed = (batteryCapacity > 0) ? ((chargedPercentage / 100.0) * batteryCapacity) : 0.0;
+                energyConsumed = Math.Round(energyConsumed, 3, MidpointRounding.AwayFromZero);
+
+                bool isAC = connectorType == ConnectorType.Type2 || connectorType == ConnectorType.VinEScooter;
+                bool isDC = !isAC;
+
+                var priceType = (guestMode, isAC) switch
+                {
+                    (false, true) => PriceType.Member_AC,
+                    (false, false) => PriceType.Member_DC,
+                    (true, true) => PriceType.Guest_AC,
+                    (true, false) => PriceType.Guest_DC,
+                };
+
+                PricingDto? pricing = null;
+                try
+                {
+                    using var pricingScope = _scopeFactory.CreateScope();
+                    var pricingService = pricingScope.ServiceProvider.GetRequiredService<IPricingService>();
+                    pricing = await pricingService.GetCurrentActivePriceByTypeAsync(priceType);
+                }
+                catch (Exception px)
+                {
+                    // If pricing lookup fails, log and continue using last-known/default values (pricePerKWh = 0)
+                    Console.WriteLine($"⚠️ Pricing lookup failed for session {sessionId}: {px}");
+                }
+                int pricePerKWh = (int)(pricing?.PricePerKwh ?? 0);
+                int cost = (int)Math.Round(energyConsumed * pricePerKWh, MidpointRounding.AwayFromZero);
+
+                freshSession.EnergyConsumed = energyConsumed;
+                freshSession.Cost = cost;
+                await loadUow.Complete();
+
+                Console.WriteLine($"[FRESH LOAD] EndBattery: {freshSession.EndBatteryPercentage}, Energy: {energyConsumed}, Cost: {cost}");
+
+                double percentageStep = powerKW switch
+                {
+                    <= 1.2 => 0.1,   // sạc chậm Type2
+                    <= 11 => 0.2,   // sạc chậm Type2
+                    <= 60 => 0.5,   // sạc nhanh 60kW
+                    <= 150 => 1.0,  // siêu nhanh 150kW
+                    <= 250 => 1.5,  // ultra fast 250kW
+                    _ => 0.2
+                };
+
+                await _simulationService.StartSimulationAsync(
+                    sessionId,
+                    batteryCapacity,
+                    isFreeCharging,
+                    guestMode: guestMode,
+                    chargerPowerKW: powerKW,
+                    connectorType: connectorType,
+                    initialPercentage: currentPercentage,
+                    initialEnergy: energyConsumed,
+                    initialCost: cost,
+                    ownerId: null,
+                    walletBalance: 0
+                );
+
+                var update = new 
+                {
+                    SessionId = sessionId,
+                    BatteryPercentage = Math.Round(currentPercentage, 1),
+                    EnergyConsumed = energyConsumed,
+                    Cost = cost,
+                    TimeRemain = currentPercentage >= 100 ? 0 : (int)Math.Ceiling((100 - currentPercentage) / percentageStep / 60.0),
+                    IsTempMode = false,
+                    // ✅ Thêm thông tin xe
+                    VehicleInfo = session.Vehicle != null ? new 
+                    {
+                        Plate = session.Vehicle.Plate,
+                        Model = session.Vehicle.Model,
+                        BatteryCapacityKWh = session.Vehicle.BatteryCapacityKWh
+                    } : null
+                };
+
+                await _hubContext.Clients.Group($"session-{sessionId}")
+                    .SendAsync("ReceiveSessionUpdate", update);
+            }
+
+            return session;
         }
     }
 }

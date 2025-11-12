@@ -21,6 +21,14 @@ namespace API.Repository
 
         public async Task<ChargingPackage> CreateAsync(ChargingPackage packageModel)
         {
+            if (packageModel.Price < 0)
+            {
+                throw new ArgumentException("Giá gói sạc không được nhỏ hơn 0.", nameof(packageModel.Price));
+            }
+            if(packageModel.DurationDays < 0)
+            {
+                throw new ArgumentException("Thời hạn gói sạc phải lớn hơn 0.", nameof(packageModel.DurationDays));
+            }
             await _context.ChargingPackages.AddAsync(packageModel);
             return packageModel;
         }
@@ -58,11 +66,23 @@ namespace API.Repository
             if (packageDto.Description != null)
                 packageModel.Description = packageDto.Description;
             if (packageDto.Price.HasValue)
+            {
+                if(packageDto.Price.Value < 0)
+                {
+                    throw new ArgumentException("Giá gói sạc không được nhỏ hơn 0.", nameof(packageDto.Price));
+                }
                 packageModel.Price = packageDto.Price.Value;
+            }
             if (packageDto.VehicleType.HasValue)
                 packageModel.VehicleType = packageDto.VehicleType.Value;
             if (packageDto.DurationDays.HasValue)
+            {
+                if(packageDto.DurationDays.Value < 0)
+                {
+                    throw new ArgumentException("Thời hạn gói sạc phải lớn hơn 0.", nameof(packageDto.DurationDays));
+                }
                 packageModel.DurationDays = packageDto.DurationDays.Value;
+            }
             if (packageDto.IsActive.HasValue)
                 packageModel.IsActive = packageDto.IsActive.Value;
             return packageModel;

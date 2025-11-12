@@ -88,7 +88,7 @@ namespace API.Repository
 
         public async Task<IEnumerable<Reservation>> GetOverdueReservationsAsync(int gracePeriodMinutes)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.AddHours(7);
             var cutoffTime = now.AddMinutes(-gracePeriodMinutes);
 
             return await _context.Reservations
@@ -106,13 +106,11 @@ namespace API.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<Reservation>> GetReservationHistoryByDriverAsync(string driverId)
+        public async Task<List<Reservation>> GetAllHistoryReservationsByDriverAsync(string driverId)
         {
-            DateTime now = DateTime.UtcNow;
             return await _context.Reservations
-                .Where(r => r.DriverId == driverId &&
-                            r.Status != ReservationStatus.Confirmed) // Lọc trạng thái không phải là Confirmed 
-                .OrderByDescending(r => r.TimeSlotEnd) // Sắp xếp theo thời gian kết thúc mới nhất
+                .Where(r => r.DriverId == driverId) // Lọc trạng thái không phải là Confirmed 
+                .OrderByDescending(r => r.TimeSlotStart) // Sắp xếp theo thời gian kết thúc mới nhất
                 .ToListAsync();
         }
 
@@ -147,13 +145,14 @@ namespace API.Repository
 
                     // Post
                     PostId = x.post.Id,
+                    PostCode = x.post.Code,
                     ConnectorType = x.post.ConnectorType.ToString(),
                     PowerKW = x.post.PowerKW,
 
                     // Station
                     StationId = x.station.Id,
-                    StationName = x.station.Name, 
-                    StationAddress = x.station.Address 
+                    StationName = x.station.Name,
+                    StationAddress = x.station.Address
                 })
                 .FirstOrDefaultAsync(); // Chỉ lấy một kết quả
 
@@ -163,6 +162,50 @@ namespace API.Repository
             }
 
             return result;
+        }
+
+        public async Task<List<Reservation>> GetAllAsync()
+        {
+            return await _context.Reservations.ToListAsync();
+        }
+
+        public void Update(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+        }
+
+        public async Task<List<Reservation>> GetUpcomingReservationsForPostAsync(int postId)
+        {
+            return await _context.Reservations
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            r.TimeSlotStart > DateTime.UtcNow)
+                .ToListAsync();
+        }
+
+        public async Task<List<Reservation>> GetConflictingReservationsAsync(int postId, DateTime maintenanceStart, DateTime maintenanceEnd)
+        {
+            return await _context.Reservations
+                .Include(r => r.Vehicle) // Cần để lấy OwnerId
+                .Where(r => r.ChargingPostId == postId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            // Logic kiểm tra sự trùng lặp thời gian:
+                            // (StartA < EndB) and (EndA > StartB)
+                            r.TimeSlotStart < maintenanceEnd &&
+                            r.TimeSlotEnd > maintenanceStart)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Reservation>> FindAllAsync(Expression<Func<Reservation, bool>> predicate, bool asNoTracking = false)
+        {
+            IQueryable<Reservation> query = _context.Reservations.Where(predicate);
+
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace API.Entities
         public TimeSpan CloseTime { get; set; }
         [Column(TypeName = "nvarchar(20)")]   // set type cho column chứ không nó để thành int
         public StationStatus Status { get; set; } = StationStatus.Active;
-        public List<ChargingPost> Posts { get; set; } = new();
+        public List<ChargingPost> Posts { get; set; } = new List<ChargingPost>();
     }
 
     
