@@ -17,6 +17,10 @@ using API.SignalR;
 using API.Interfaces.IRepositories;
 using API.Interfaces.IServices;
 using API.Entities.Cloudinary;
+using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using API.Bot;
+using Microsoft.Bot.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,15 +84,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme =
-    options.DefaultChallengeScheme =
-    options.DefaultForbidScheme =
-    options.DefaultScheme =
-    options.DefaultSignInScheme =
-    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -172,6 +168,18 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
+// Thêm dịch vụ HTTPClient (cần cho Bot Framework)
+builder.Services.AddHttpClient();
+
+// Tạo và đăng ký Bot Framework Authentication
+builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
+
+// Đăng ký Adapter xử lý lỗi
+builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+
+// Đăng ký lớp logic Bot của bạn
+// AddTransient nghĩa là một instance mới sẽ được tạo cho mỗi lượt hội thoại
+builder.Services.AddTransient<IBot, SimpleEvBot>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -205,6 +213,7 @@ app.MapHub<ChargingHub>("/hubs/charging");
 //DatNguyen-SignalR-End_Point
 app.MapHub<ConnectCharging>("/hubs/connect-charging");
 app.MapHub<ReservationHub>("hubs/reservation");
+app.MapHub<BotHub>("/hubs/bot");
 
 app.Run();
 

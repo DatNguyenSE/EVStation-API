@@ -11,6 +11,7 @@ using API.Helpers;
 using API.Interfaces;
 using API.Interfaces.IServices;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;

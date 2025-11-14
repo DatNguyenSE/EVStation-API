@@ -10,6 +10,7 @@ using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -19,6 +20,7 @@ namespace API.Controllers
 {
     [Route("api/station")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class StationController : ControllerBase
     {
         private readonly IUnitOfWork _uow;

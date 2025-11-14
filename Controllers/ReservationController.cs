@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DTOs.Reservation;
 using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/reservation")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;

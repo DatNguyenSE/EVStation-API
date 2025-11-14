@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.DTOs.Revenue;
 using API.Helpers;
 using API.Interfaces.IServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,7 @@ namespace API.Controllers
 {
     [Route("api/revenue")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AnalyticsController : ControllerBase
     {
         private readonly IAnalyticsService _analyticsService;

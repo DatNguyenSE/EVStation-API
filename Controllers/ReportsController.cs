@@ -12,13 +12,14 @@ using X.PagedList; // <--- Rất quan trọng, chứa IPagedList và PaginationM
 using System.Text.Json; // <--- Dùng để serialize header
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using API.Entities.Cloudinary; // <--- Dùng để truy cập Response.Headers
+using API.Entities.Cloudinary;
+using Microsoft.AspNetCore.Authentication.JwtBearer; // <--- Dùng để truy cập Response.Headers
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/reports")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;

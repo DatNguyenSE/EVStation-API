@@ -88,9 +88,10 @@ namespace API.Services
             switch (post.Status)
             {
                 case PostStatus.Available:
-                    reservation.Status = Entities.ReservationStatus.InProgress;
-                    _uow.Reservations.Update(reservation);
-                    await _uow.Complete();
+                    // ✅ FIX: Không thay đổi trạng thái reservation ở đây
+                    // Chỉ thay đổi trạng thái KHÔNG thế khi CreateSessionAsync thành công
+                    // Điều này tránh được trường hợp reservation bị stuck ở InProgress 
+                    // nếu CreateSessionAsync thất bại do ví không đủ tiền
                     return (true,
                         $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
 
