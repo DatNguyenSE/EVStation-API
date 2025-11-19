@@ -16,5 +16,7 @@ namespace API.DTOs.Vehicle
         public ConnectorType ConnectorType { get; set; }
         public string Plate { get; set; } = string.Empty;
         public string RegistrationStatus { get; set; } = null!;
+        public string? VehicleRegistrationFrontUrl { get; set; }
+        public string? VehicleRegistrationBackUrl { get; set; }
     }
 }

@@ -163,6 +163,78 @@ namespace API.Controllers
             }
         }
 
+        [HttpPost("update-docs")]
+        [Authorize(Roles = AppConstant.Roles.Driver)]
+        public async Task<IActionResult> UpdateVehicleDocuments([FromForm] UpdateVehicleDocsDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var username = User.GetUsername();
+            var appUser = await _userManager.FindByNameAsync(username);
+            if (appUser == null) return Unauthorized();
+
+            // 1. Tìm xe
+            var vehicle = await _uow.Vehicles.GetVehicleByIdAsync(dto.VehicleId);
+            if (vehicle == null) return NotFound("Không tìm thấy phương tiện.");
+
+            // 2. Kiểm tra quyền sở hữu
+            if (vehicle.OwnerId != appUser.Id) return Forbid("Bạn không sở hữu phương tiện này.");
+
+            // 3. (Tùy chọn) Kiểm tra xem xe đã được duyệt chưa. 
+            // Nếu đã Approved thì không cho sửa ảnh nữa (hoặc tùy logic của bạn)
+            if (vehicle.RegistrationStatus == VehicleRegistrationStatus.Approved)
+            {
+                return BadRequest("Phương tiện đã được phê duyệt, không thể cập nhật giấy tờ.");
+            }
+
+            // 4. Upload ảnh lên Cloudinary
+            string frontUrl = "";
+            string backUrl = "";
+            try
+            {
+                var settings = cloudinaryConfig.Value;
+                var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                var cloudinary = new Cloudinary(account);
+
+                // Upload mặt trước
+                using var streamFront = dto.RegistrationImageFront.OpenReadStream();
+                var uploadFront = await cloudinary.UploadAsync(new ImageUploadParams
+                {
+                    File = new FileDescription(dto.RegistrationImageFront.FileName, streamFront),
+                    Folder = "evms/vehicles"
+                });
+                frontUrl = uploadFront.SecureUrl.ToString();
+
+                // Upload mặt sau
+                using var streamBack = dto.RegistrationImageBack.OpenReadStream();
+                var uploadBack = await cloudinary.UploadAsync(new ImageUploadParams
+                {
+                    File = new FileDescription(dto.RegistrationImageBack.FileName, streamBack),
+                    Folder = "evms/vehicles"
+                });
+                backUrl = uploadBack.SecureUrl.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500, "Lỗi khi upload ảnh lên Cloudinary.");
+            }
+
+            // 5. Cập nhật vào DB
+            vehicle.VehicleRegistrationFrontUrl = frontUrl;
+            vehicle.VehicleRegistrationBackUrl = backUrl;
+
+            // Quan trọng: Đưa trạng thái về Pending để Admin thấy trong danh sách chờ duyệt
+            vehicle.RegistrationStatus = VehicleRegistrationStatus.Pending;
+
+            await _uow.Vehicles.UpdateVehicleAsync(vehicle);
+            var result = await _uow.Complete();
+
+            if (!result) return BadRequest("Cập nhật giấy tờ thất bại.");
+
+            return Ok(new { message = "Đã bổ sung giấy tờ thành công. Vui lòng chờ duyệt." });
+        }
+
         // lấy thông tin xe của User
         [HttpGet("my")]
         [Authorize]
