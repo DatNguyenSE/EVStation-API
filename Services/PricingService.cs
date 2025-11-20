@@ -143,17 +143,27 @@ namespace API.Services
             pricing.IsActive = updateDto.IsActive;
 
             // ### Logic nghiệp vụ 3: Xử lý logic OccupancyFee (tương tự Create) ###
-            if (pricing.PriceType == PriceType.OccupancyFee)
+            bool isTimeBased = pricing.PriceType == PriceType.OccupancyFee || 
+                   pricing.PriceType == PriceType.OverstayFee;
+
+            if (isTimeBased)
             {
                 pricing.PricePerKwh = 0;
+                pricing.PricePerMinute = updateDto.PricePerMinute;
                 if (!pricing.PricePerMinute.HasValue || pricing.PricePerMinute <= 0)
                 {
                     throw new InvalidOperationException("Occupancy fee must have a valid PricePerMinute > 0.");
                 }
             }
-            else if (pricing.PricePerKwh <= 0)
+            else
             {
-                throw new InvalidOperationException("PricePerKwh must be > 0 for this price type.");
+                pricing.PricePerKwh = updateDto.PricePerKwh; // Cập nhật Kwh
+                pricing.PricePerMinute = null;               // <-- QUAN TRỌNG: Set về null để DB không bị lỗi
+
+                if (pricing.PricePerKwh <= 0)
+                {
+                    throw new InvalidOperationException("PricePerKwh must be > 0 for this price type.");
+                }
             }
 
             _unitOfWork.Pricings.Update(pricing);
