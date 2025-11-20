@@ -20,7 +20,6 @@ namespace API.Controllers
 {
     [Route("api/station")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class StationController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
@@ -32,6 +31,7 @@ namespace API.Controllers
 
         [HttpGet]
         [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAll()
         {
             var stations = await _uow.Stations.GetAllAsync();
@@ -56,6 +56,7 @@ namespace API.Controllers
 
         [HttpPost] 
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Create([FromBody] CreateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -73,6 +74,7 @@ namespace API.Controllers
         [HttpPut]
         [Route("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStationDto stationDto)
         {
             if (!ModelState.IsValid)
@@ -92,6 +94,7 @@ namespace API.Controllers
 
         [HttpPut("{id}/status")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] StationStatus status)
         {
             var stationModel = await _uow.Stations.UpdateStatusAsync(id, status);
@@ -106,6 +109,7 @@ namespace API.Controllers
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)

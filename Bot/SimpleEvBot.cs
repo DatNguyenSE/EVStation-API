@@ -25,13 +25,15 @@ namespace API.Bot
                     botResponse = "Chào bạn! Tôi là bot hỗ trợ trạm sạc. Bạn cần giúp gì?";
                     break;
 
-                case "trạm sạc":
-                case "tìm trạm":
-                    botResponse = "Hiện tại bạn có thể tìm trạm trên bản đồ. Bạn muốn tôi hiển thị các trạm gần nhất không?";
+                case "hướng dẵn đặt chỗ":
+                    botResponse = "Để đặt chỗ sạc, bạn cần đăng nhập vào ứng dụng, chọn trạm và trụ sạc, sau đó chọn khung giờ và xác nhận đặt chỗ.";
+                    break;
+                case "hướng dẫn tìm trạm":
+                    botResponse = "Để tìm trạm sạc gần bạn, hãy sử dụng chức năng tìm kiếm trong ứng dụng và nhập địa chỉ hoặc sử dụng định vị GPS.";
                     break;
 
-                case "hỗ trợ":
-                    botResponse = "Bạn có thể báo cáo sự cố hoặc gọi hotline 123456 để được hỗ trợ.";
+                case "hướng dẫn mua gói cước":
+                    botResponse = "Để mua gói cước, vào mục dịch vụ trong ứng dụng, chọn gói cước phù hợp và thực hiện thanh toán qua các phương thức có sẵn.";
                     break;
 
                 default:
