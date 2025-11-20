@@ -34,7 +34,7 @@ namespace API.Controllers
             bool isMaintenanceScheduled = await _uow.Reports.IsPostScheduledForMaintenanceAsync(dto.ChargingPostId, dto.TimeSlotStart, dto.TimeSlotStart.AddHours(dto.SlotCount));
             if (isMaintenanceScheduled)
             {
-                return BadRequest(new ProblemDetails { Title = "Trụ đang được lên lịch bảo trì vào thời gian này. Vui lòng chọn khung giờ khác." });
+                return BadRequest( new { Message = "Trụ đang được lên lịch bảo trì vào thời gian này. Vui lòng chọn khung giờ khác."} );
             }
             try
             {

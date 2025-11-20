@@ -93,7 +93,7 @@ namespace API.Services
             await _uow.Complete();
 
             await _notificationHubContext.Clients.Group("Admins").NewReportReceived(
-                $"Có báo cáo sự cố mới tại trụ {post.Code}.");
+                report);
 
             return report;
         }
