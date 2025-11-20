@@ -7,6 +7,7 @@ using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc; //Cung cấp các tính năng để xây dựng Web API như ControllerBase, [HttpGet], ActionResult, v.v.
@@ -18,6 +19,7 @@ namespace API;
 
 [Route("api/users")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController : ControllerBase //cung cấp nhiều phương thức tiện ích như Ok(), NotFound(), BadRequest()…
 {
     private readonly UserManager<AppUser> _userManager;

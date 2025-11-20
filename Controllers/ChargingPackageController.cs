@@ -7,6 +7,7 @@ using API.DTOs.ChargingPackage;
 using API.Helpers;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace API.Controllers
 {
     [Route("api/charging-package")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChargingPackageController : ControllerBase
     {
         private readonly IUnitOfWork _uow;

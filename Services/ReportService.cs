@@ -104,7 +104,7 @@ namespace API.Services
             Console.WriteLine("--- !!! ĐANG CHẠY EvaluateReportAsync PHIÊN BẢN MỚI NHẤT !!! ---");
             var report = await _uow.Reports.GetReportWithPostAsync(reportId);
             if (report == null || report.Status != ReportStatus.New)
-                throw new Exception("Report not found or already evaluated");
+                throw new Exception("Báo cáo không tồn tại hoặc không ở trạng thái 'New'.");
 
             if (dto.IsCritical)
             {
@@ -231,11 +231,11 @@ namespace API.Services
             // === CHANGED ===
             var report = await _uow.Reports.GetReportWithPostAsync(reportId);
             if (report == null || report.Status != ReportStatus.Pending)
-                throw new Exception("Report not found or invalid status");
+                throw new Exception("Báo cáo không tồn tại hoặc không ở trạng thái 'Pending'.");
 
             var techUser = await _userManager.FindByIdAsync(dto.TechnicianId);
             if (techUser == null || !await _userManager.IsInRoleAsync(techUser, AppConstant.Roles.Technician))
-                throw new Exception("Invalid technician");
+                throw new Exception("Kỹ thuật viên không tồn tại hoặc không hợp lệ.");
 
             var notifiedUserIds = new List<string>();
 
@@ -293,9 +293,9 @@ namespace API.Services
             var report = await _uow.Reports.GetByIdAsync(reportId);
 
             if (report == null || report.TechnicianId != technicianId)
-                throw new Exception("Unauthorized or report not found");
+                throw new Exception("Báo cáo không tồn tại hoặc bạn không được gán cho công việc này.");
             if (report.Status != ReportStatus.InProgress)
-                throw new Exception("Invalid report status");
+                throw new Exception("Báo cáo không ở trạng thái 'In Progress'.");
 
             report.Status = ReportStatus.Resolved;
             report.FixedNote = dto.FixedNote;
@@ -339,16 +339,14 @@ namespace API.Services
         // Luồng 5: Admin xác nhận và kích hoạt lại trụ
         public async Task<bool> CloseReportAsync(int reportId)
         {
-            // === CHANGED ===
             var report = await _uow.Reports.GetReportWithPostAsync(reportId);
 
             if (report == null || report.Status != ReportStatus.Resolved)
-                throw new Exception("Report not found or not in resolved status");
+                throw new Exception("Báo cáo không tồn tại hoặc không ở trạng thái 'Resolve'.");
 
             report.Status = ReportStatus.Closed;
             report.ChargingPost.Status = PostStatus.Available;
 
-            // === CHANGED ===
             await _uow.Complete();
 
             // 1. Thông báo cho Admin (để UI cập nhật)
@@ -361,8 +359,6 @@ namespace API.Services
                 await _notificationHubContext.Clients.User(report.TechnicianId).TaskCompleted(
                     $"Công việc của bạn tại trụ {report.ChargingPost.Code} đã được Admin xác nhận.");
             }
-
-            // ... SignalR logic (thông báo cho Drivers) ...
             return true;
         }
 

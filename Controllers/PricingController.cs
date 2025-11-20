@@ -6,6 +6,7 @@ using API.DTOs.Pricing;
 using API.Entities;
 using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ namespace API.Controllers
     [ApiController]
     [Route("api/pricing")]
     [Authorize(Roles = AppConstant.Roles.Admin)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PricingController : ControllerBase
     {
         private readonly IPricingService _pricingService;

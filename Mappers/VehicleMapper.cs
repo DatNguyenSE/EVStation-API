@@ -20,6 +20,8 @@ namespace API.Mappers
                 MaxChargingPowerKW = vehicleModel.MaxChargingPowerKW,
                 ConnectorType = vehicleModel.ConnectorType,
                 Plate = vehicleModel.Plate,
+                VehicleRegistrationFrontUrl = vehicleModel.VehicleRegistrationFrontUrl,
+                VehicleRegistrationBackUrl = vehicleModel.VehicleRegistrationBackUrl,
                 RegistrationStatus = vehicleModel.RegistrationStatus.ToString()
             };
         }

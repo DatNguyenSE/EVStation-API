@@ -12,13 +12,14 @@ using X.PagedList; // <--- Rất quan trọng, chứa IPagedList và PaginationM
 using System.Text.Json; // <--- Dùng để serialize header
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using API.Entities.Cloudinary; // <--- Dùng để truy cập Response.Headers
+using API.Entities.Cloudinary;
+using Microsoft.AspNetCore.Authentication.JwtBearer; // <--- Dùng để truy cập Response.Headers
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/reports")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -44,7 +45,7 @@ namespace API.Controllers
 
             var paginationHeader = JsonSerializer.Serialize(metaData, jsonOptions);
 
-            Response.Headers["X-Pagination"] = paginationHeader; 
+            Response.Headers["X-Pagination"] = paginationHeader;
             Response.Headers["Access-Control-Expose-Headers"] = "X-Pagination";
         }
 
@@ -61,17 +62,17 @@ namespace API.Controllers
             AddPaginationHeader(new PaginationMetaData(pagedReports));
             return Ok(pagedReports);
         }
-        
+
         /// <summary>
         /// [Admin, Technician] Lấy lịch sử sự cố/bảo trì của một trụ sạc
         /// </summary>
-        [HttpGet("post/{postId}/history")] 
+        [HttpGet("post/{postId}/history")]
         [Authorize(Roles = $"{AppConstant.Roles.Admin}, {AppConstant.Roles.Manager}")]
         [ProducesResponseType(typeof(IEnumerable<ReportSummaryDto>), 200)]
         public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetReportHistoryForPost(int postId)
         {
             var result = await _reportService.GetReportHistoryForPostAsync(postId);
-            
+
             return Ok(result);
         }
 
@@ -96,9 +97,16 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> EvaluateReport(int id, [FromBody] EvaluateReportDto dto)
         {
-            var result = await _reportService.EvaluateReportAsync(id, dto);
-            if (!result) return BadRequest("Không thể đánh giá báo cáo. (Có thể sai trạng thái hoặc ID)");
-            return Ok(new { message = "Đánh giá báo cáo thành công." });
+            try
+            {
+                var result = await _reportService.EvaluateReportAsync(id, dto);
+                if (!result) return BadRequest("Không thể đánh giá báo cáo. (Có thể sai trạng thái hoặc ID)");
+                return Ok(new { message = "Đánh giá báo cáo thành công." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // 3. (Admin) Gán việc cho Kỹ thuật viên
@@ -106,9 +114,16 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> AssignTechnician(int id, [FromBody] AssignTechnicianDto dto)
         {
-            var result = await _reportService.AssignTechnicianAsync(id, dto);
-            if (!result) return BadRequest("Không thể gán việc. (Kiểm tra ID KTV hoặc trạng thái báo cáo)");
-            return Ok(new { message = "Gán việc cho KTV thành công." });
+            try
+            {
+                var result = await _reportService.AssignTechnicianAsync(id, dto);
+                if (!result) return BadRequest("Không thể gán việc. (Kiểm tra ID KTV hoặc trạng thái báo cáo)");
+                return Ok(new { message = "Gán việc cho KTV thành công." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // 4. (Technician) Báo cáo đã sửa xong
@@ -117,9 +132,16 @@ namespace API.Controllers
         public async Task<IActionResult> CompleteFix(int id, [FromForm] CompleteFixDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
         {
             var technicianId = GetCurrentUserId();
-            var result = await _reportService.CompleteFixAsync(id, dto, technicianId!, cloudinaryConfig);
-            if (!result) return BadRequest("Không thể hoàn tất. (Bạn không được gán hoặc báo cáo sai trạng thái)");
-            return Ok(new { message = "Báo cáo hoàn tất sửa chữa thành công." });
+            try
+            {
+                var result = await _reportService.CompleteFixAsync(id, dto, technicianId!, cloudinaryConfig);
+                if (!result) return BadRequest("Không thể hoàn tất. (Bạn không được gán hoặc báo cáo sai trạng thái)");
+                return Ok(new { message = "Báo cáo hoàn tất sửa chữa thành công." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // 5. (Admin) Xác nhận và đóng báo cáo
@@ -127,9 +149,17 @@ namespace API.Controllers
         [Authorize(Roles = AppConstant.Roles.Admin)]
         public async Task<IActionResult> CloseReport(int id)
         {
-            var result = await _reportService.CloseReportAsync(id);
-            if (!result) return BadRequest("Không thể đóng báo cáo. (Báo cáo chưa được KTV xử lý)");
-            return Ok(new { message = "Báo cáo đã được đóng và trụ sạc đã kích hoạt." });
+            try
+            {
+                var result = await _reportService.CloseReportAsync(id);
+                if (!result) return BadRequest("Không thể đóng báo cáo.");
+
+                return Ok(new { message = "Báo cáo đã được đóng và trụ sạc đã kích hoạt." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // --- CÁC API LẤY DỮ LIỆU (GET) CHO UI ---
@@ -163,10 +193,10 @@ namespace API.Controllers
         }
 
         [HttpPost("{id}/start-repair")]
-        [Authorize(Roles = AppConstant.Roles.Technician)] 
+        [Authorize(Roles = AppConstant.Roles.Technician)]
         public async Task<IActionResult> StartRepair(int id)
         {
-            var technicianId = GetCurrentUserId(); 
+            var technicianId = GetCurrentUserId();
             var result = await _reportService.StartRepairAsync(id, technicianId!);
             if (!result)
             {

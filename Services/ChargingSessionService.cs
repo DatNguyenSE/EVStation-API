@@ -184,6 +184,20 @@ namespace API.Services
             // persist
             session = await _uow.ChargingSessions.CreateAsync(session);
             await _uow.ChargingPosts.UpdateStatusAsync(chargingPost.Id, PostStatus.Occupied);
+            
+            // ✅ FIX: Thay đổi trạng thái Reservation thành InProgress SAU khi session được tạo thành công
+            // Điều này đảm bảo rằng nếu CreateSessionAsync thất bại (do ví không đủ tiền),
+            // reservation vẫn giữ trạng thái Confirmed để user có thể quét lại sau khi nạp tiền
+            if (dto.ReservationId.HasValue)
+            {
+                var reservation = await _uow.Reservations.GetReservationByIdAsync(dto.ReservationId.Value);
+                if (reservation != null && reservation.Status == ReservationStatus.Confirmed)
+                {
+                    reservation.Status = ReservationStatus.InProgress;
+                    _uow.Reservations.Update(reservation);
+                }
+            }
+            
             await _uow.Complete();
 
             // start simulation
