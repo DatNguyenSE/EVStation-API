@@ -24,18 +24,15 @@ namespace API.Bot
                 case "chào":
                     botResponse = "Chào bạn! Tôi là bot hỗ trợ trạm sạc. Bạn cần giúp gì?";
                     break;
-
-                case "hướng dẵn đặt chỗ":
+                case "hướng dẫn đặt chỗ":
                     botResponse = "Để đặt chỗ sạc, bạn cần đăng nhập vào ứng dụng, chọn trạm và trụ sạc, sau đó chọn khung giờ và xác nhận đặt chỗ.";
                     break;
                 case "hướng dẫn tìm trạm":
                     botResponse = "Để tìm trạm sạc gần bạn, hãy sử dụng chức năng tìm kiếm trong ứng dụng và nhập địa chỉ hoặc sử dụng định vị GPS.";
                     break;
-
                 case "hướng dẫn mua gói cước":
                     botResponse = "Để mua gói cước, vào mục dịch vụ trong ứng dụng, chọn gói cước phù hợp và thực hiện thanh toán qua các phương thức có sẵn.";
                     break;
-
                 default:
                     // Lặp lại lời người dùng (Echo bot) nếu không hiểu
                     botResponse = $"Tôi chưa hiểu ý bạn. Bạn đã nói: '{turnContext.Activity.Text}'";
