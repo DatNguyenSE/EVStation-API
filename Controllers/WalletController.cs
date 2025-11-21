@@ -21,7 +21,6 @@ namespace API.Controllers
     // [Authorize(Roles = AppConstant.Roles.Driver)]
     [ApiController]
     [Route("api/wallet")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class WalletController : ControllerBase
     {
         private readonly IWalletService _walletService; // SỬ DỤNG SERVICE
@@ -36,6 +35,7 @@ namespace API.Controllers
         // Lấy ví của user
         [HttpGet("me")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetMyWallet()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -56,6 +56,7 @@ namespace API.Controllers
         // Lấy lịch sử giao dịch
         [HttpGet("transactions")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetTransaction([FromQuery] PagingParams paging)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -77,6 +78,7 @@ namespace API.Controllers
 
         [HttpPost("top-up")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CreatePayment([FromBody] PaymentInformationModel model)
         {
             if (!ModelState.IsValid)
@@ -103,6 +105,22 @@ namespace API.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        [Authorize(Roles = $"{AppConstant.Roles.Manager}, ${AppConstant.Roles.Admin}")] // Chỉ cho phép Manager hoặc Admin
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("manual-topup")]
+        public async Task<IActionResult> ManualTopUp([FromBody] ManualTopUpDto model)
+        {
+            // Lấy tên Manager từ Token
+            var managerName = User.GetUsername();
+
+            var result = await _walletService.ManualTopUpByManagerAsync(model.DriverUserName, model.Amount, managerName);
+
+            if (result.Success)
+                return Ok(new { message = result.Message });
+
+            return BadRequest(new { message = result.Message });
         }
     }
 }

@@ -8,12 +8,12 @@ using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using X.PagedList; // <--- Rất quan trọng, chứa IPagedList và PaginationMetaData
-using System.Text.Json; // <--- Dùng để serialize header
+using X.PagedList;
+using System.Text.Json; 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using API.Entities.Cloudinary;
-using Microsoft.AspNetCore.Authentication.JwtBearer; // <--- Dùng để truy cập Response.Headers
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace API.Controllers
 {
@@ -54,13 +54,16 @@ namespace API.Controllers
         /// </summary>
         [HttpGet] // <-- Sẽ match route "api/reports"
         [Authorize(Roles = AppConstant.Roles.Admin)]
-        [ProducesResponseType(typeof(IEnumerable<ReportSummaryDto>), 200)]
         public async Task<ActionResult<IEnumerable<ReportSummaryDto>>> GetAllReports(
             [FromQuery] ReportFilterParams filterParams)
         {
             var pagedReports = await _reportService.GetAllReportsAsync(filterParams);
-            AddPaginationHeader(new PaginationMetaData(pagedReports));
-            return Ok(pagedReports);
+            var meta = new PaginationMetaData(pagedReports);
+            return Ok(new
+            {
+                items = pagedReports,
+                pagination = meta
+            });
         }
 
         /// <summary>

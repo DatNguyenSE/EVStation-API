@@ -17,7 +17,6 @@ namespace API.Controllers
 {
     [Route("api/posts")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChargingPostController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
@@ -30,6 +29,7 @@ namespace API.Controllers
         // Lấy danh sách trụ
         [HttpGet]
         [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAll()
         {
             var posts = await _uow.ChargingPosts.GetAllAsync();
@@ -39,7 +39,6 @@ namespace API.Controllers
 
         // Lấy chi tiết trụ theo id
         [HttpGet("{id:int}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -57,6 +56,7 @@ namespace API.Controllers
         // lấy qrcode trụ
         [HttpGet("{id:int}/qrcode")]
         [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetQRCode(int id)
         {
             var post = await _uow.ChargingPosts.GetByIdAsync(id);
@@ -68,6 +68,7 @@ namespace API.Controllers
 
         [HttpPost("{stationId}/post")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Create([FromRoute] int stationId, [FromBody] CreateChargingPostDto postDto)
         {
             if (!ModelState.IsValid)
@@ -91,6 +92,7 @@ namespace API.Controllers
         // Cập nhật trụ sạc
         [HttpPut("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateChargingPostDto postDto)
         {
             if (!ModelState.IsValid)
@@ -110,6 +112,7 @@ namespace API.Controllers
         // Cập nhật trạng thái trụ sạc
         [HttpPut("{id}/status")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] PostStatus status)
         {
             var postModel = await _uow.ChargingPosts.UpdateStatusAsync(id, status);
@@ -124,6 +127,7 @@ namespace API.Controllers
         // Xóa trụ sạc
         [HttpDelete("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -143,6 +147,7 @@ namespace API.Controllers
         // Lấy các khung giờ còn trống của một trụ sạc
         [HttpGet("{postId:int}/available-slots")]
         [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAvailableSlots([FromRoute] int postId)
         {
             var post = await _uow.ChargingPosts.GetByIdAsync(postId);

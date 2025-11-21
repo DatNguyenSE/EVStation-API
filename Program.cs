@@ -19,7 +19,6 @@ using API.Interfaces.IServices;
 using API.Entities.Cloudinary;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using API.Bot;
 using Microsoft.Bot.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -175,11 +174,11 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
 
 // Đăng ký Adapter xử lý lỗi
-builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+// builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
 
 // Đăng ký lớp logic Bot của bạn
 // AddTransient nghĩa là một instance mới sẽ được tạo cho mỗi lượt hội thoại
-builder.Services.AddTransient<IBot, SimpleEvBot>();
+// builder.Services.AddTransient<IBot, SimpleEvBot>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

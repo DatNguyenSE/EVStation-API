@@ -106,7 +106,7 @@ namespace API.Services
                 Amount = (decimal)model.Amount!,
                 BalanceBefore = wallet.Balance,
                 BalanceAfter = wallet.Balance,
-                Description = "Nạp tiền vào ví",
+                Description = "Nạp tiền vào ví qua VNPay",
                 Status = Helpers.Enums.TransactionStatus.Pending,
                 PaymentMethod = "VNPAY",
                 VnpTxnRef = txnRef,
@@ -245,7 +245,7 @@ namespace API.Services
                     Amount = total,
                     BalanceBefore = balanceBefore,
                     BalanceAfter = userWallet.Balance,
-                    Description = userWallet.IsDept ? $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} (Phát sinh nợ {userWallet.Dept:N0})." 
+                    Description = userWallet.IsDept ? $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} (Phát sinh nợ {userWallet.Dept:N0})."
                                                     : $"Thanh toán phiên sạc: {string.Join(", ", receiptOfSession.ChargingSessions.Select(cs => cs.Id))} thành công.",
                     ReferenceId = receiptOfSession.Id,
                     Status = TransactionStatus.Success,
@@ -322,6 +322,100 @@ namespace API.Services
             // Service gọi hàm này (ReceiptService) sẽ chịu trách nhiệm
             // gọi _uow.Complete() và Commit/Rollback transaction.
             return (true, "Giao dịch hoàn tiền đã được tạo.");
+        }
+
+        public async Task<(bool Success, string Message)> ManualTopUpByManagerAsync(string driverUserName, decimal amount, string managerName)
+        {
+            if (amount <= 0)
+            {
+                return (false, "Số tiền nạp phải lớn hơn 10000.");
+            }
+            var driverUser = await _userManager.FindByNameAsync(driverUserName);
+            if (driverUser == null)
+            {
+                return (false, $"Không tìm thấy tài xế có username: {driverUserName}");
+            }
+
+            var wallet = await _uow.Wallets.GetWalletByUserIdAsync(driverUser.Id);
+            if (wallet == null)
+            {
+                wallet = await _uow.Wallets.CreateWalletAsync(driverUser.Id);
+                await _uow.Complete(); // Lưu ví mới trước
+                wallet = await _uow.Wallets.GetWalletByUserIdAsync(driverUser.Id); // Get lại để chắc chắn có Id
+            }
+
+            await using var dbTransaction = await _uow.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            try
+            {
+                // 3. Lưu trạng thái trước khi nạp
+                decimal balanceBefore = wallet.Balance;
+                decimal initialDebt = wallet.Dept;
+                bool wasInDebt = wallet.IsDept;
+                string txnDescription = "";
+
+                // 4. Xử lý logic cộng tiền (Ưu tiên trừ nợ giống hệt VNPAY)
+                if (wallet.IsDept && wallet.Dept > 0)
+                {
+                    if (amount >= wallet.Dept) // Nạp đủ hoặc dư để trả hết nợ
+                    {
+                        decimal remaining = amount - wallet.Dept;
+                        decimal debtPaid = wallet.Dept;
+
+                        wallet.Dept = 0;
+                        wallet.IsDept = false;
+                        wallet.Balance += remaining;
+
+                        txnDescription = $"Nạp tiền mặt ({amount:N0}đ) - Đã trả hết nợ ({debtPaid:N0}đ). Số dư mới: {wallet.Balance:N0}đ. (Thực hiện bởi: {managerName})";
+                    }
+                    else // Nạp không đủ để trả hết nợ (Vẫn còn nợ ít hơn)
+                    {
+                        wallet.Dept -= amount;
+                        // Balance vẫn bằng 0 hoặc giữ nguyên (tùy logic, thường đang nợ thì balance = 0)
+
+                        txnDescription = $"Nạp tiền mặt ({amount:N0}đ) - Bù nợ một phần. Nợ còn lại: {wallet.Dept:N0}đ. (Thực hiện bởi: {managerName})";
+                    }
+                }
+                else // Không nợ, cộng thẳng vào số dư
+                {
+                    wallet.Balance += amount;
+                    txnDescription = $"Nạp tiền mặt tại quầy ({amount:N0}đ). Số dư: {wallet.Balance:N0}đ. (Thực hiện bởi: {managerName})";
+                }
+
+                // 5. Tạo giao dịch WalletTransaction
+                var transaction = new WalletTransaction
+                {
+                    WalletId = wallet.Id,
+                    TransactionType = TransactionType.Topup,
+                    Amount = amount,
+                    BalanceBefore = balanceBefore,
+                    BalanceAfter = wallet.Balance,
+                    Description = txnDescription,
+                    Status = TransactionStatus.Success, // Tiền mặt trao tay nên Success luôn
+                    PaymentMethod = "CASH_MANAGER",     // Đánh dấu là tiền mặt
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
+                    VnpTxnRef = $"MANUAL_{DateTime.UtcNow.Ticks}" // Mã tham chiếu tự sinh để phân biệt
+                };
+
+                // 6. Lưu xuống DB
+                await _uow.WalletTransactions.AddTransactionAsync(transaction);
+                await _uow.Wallets.UpdateWalletAsync(wallet);
+
+                if (await _uow.Complete())
+                {
+                    await dbTransaction.CommitAsync();
+                    return (true, txnDescription);
+                }
+                else
+                {
+                    await dbTransaction.RollbackAsync();
+                    return (false, "Lỗi lưu dữ liệu hệ thống.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await dbTransaction.RollbackAsync();
+                return (false, $"Lỗi hệ thống: {ex.Message}");
+            }
         }
     }
 }

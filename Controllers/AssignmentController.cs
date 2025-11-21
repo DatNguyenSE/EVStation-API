@@ -42,8 +42,7 @@ namespace API.Controllers
 
 
         [HttpGet("staff/{staffId}")]
-       [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}")] // thêm manager or ,...
-
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}")]
         public async Task<IActionResult> GetAssignmentByStaffId([FromRoute] string staffId)
         {
             try
@@ -59,7 +58,6 @@ namespace API.Controllers
 
         [HttpPost]
         [Authorize(Roles = AppConstant.Roles.Admin)]
-
         public async Task<IActionResult> CreateAssignment([FromBody] AssignmentCreateDto createDto)
         {
             if (!ModelState.IsValid)
@@ -80,7 +78,6 @@ namespace API.Controllers
 
         [HttpPatch("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
-
         public async Task<IActionResult> UpdateAssignment([FromRoute] int id,
                                                     [FromBody] AssignmentUpdateDto updateDto)
         {

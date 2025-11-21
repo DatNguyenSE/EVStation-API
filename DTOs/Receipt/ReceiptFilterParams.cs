@@ -8,6 +8,7 @@ namespace API.DTOs.Receipt
 {
     public class ReceiptFilterParams
     {
+        public int? StationId { get; set; }
         public ReceiptStatus? Status { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

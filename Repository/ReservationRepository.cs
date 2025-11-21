@@ -110,7 +110,8 @@ namespace API.Repository
         {
             return await _context.Reservations
                 .Where(r => r.DriverId == driverId) // Lọc trạng thái không phải là Confirmed 
-                .OrderByDescending(r => r.TimeSlotStart) // Sắp xếp theo thời gian kết thúc mới nhất
+                .OrderByDescending(r => r.TimeSlotStart)
+                .ThenByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 

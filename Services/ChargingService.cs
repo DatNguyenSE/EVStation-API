@@ -75,13 +75,13 @@ namespace API.Services
             // if (isEarly)
             // {
             //     return (false,
-            //         $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
+            //         $" Chưa đến thời gian đặt chỗ. Giờ hiện tại: {now:HH:mm}. Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
             // }
 
             // if (isLate)
             // {
             //     return (false,
-            //         $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
+            //         $" Đã quá thời gian đặt chỗ. Giờ hiện tại: {now:HH:mm}. Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
             // }
 
             // Người dùng có đặt chỗ hợp lệ, kiểm tra trạng thái trụ

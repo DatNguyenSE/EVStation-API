@@ -103,6 +103,8 @@ namespace API.Services
             // Lọc
             if (filterParams.Status.HasValue)
                 query = query.Where(r => r.Status == filterParams.Status.Value);
+            if (filterParams.StationId.HasValue)
+                query = query.Where(r => r.StationId == filterParams.StationId.Value);
             if (filterParams.StartDate.HasValue)
                 query = query.Where(r => r.CreateAt.Date >= filterParams.StartDate.Value.Date);
             if (filterParams.EndDate.HasValue)
