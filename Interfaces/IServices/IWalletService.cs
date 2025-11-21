@@ -20,5 +20,6 @@ namespace API.Interfaces
         Task<PaymentResponseModel> HandleVnpayCallbackAsync(IQueryCollection query);
         Task<(bool Success, string Message)> PayingChargeWalletAsync(int receiptId, string driverId, int total, TransactionType transactionType);
         Task<(bool Success, string Message)> CreateRefundTransactionAsync(string userId, decimal amount, string description, int receiptId);
+        Task<(bool Success, string Message)> ManualTopUpByManagerAsync(string driverUserName, decimal amount, string managerName);
     }
 }
