@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DTOs.Receipt;
 using API.Helpers;
 using API.Interfaces.IServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/receipts")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReceiptsController : ControllerBase
     {
         private readonly IReceiptService _receiptService;

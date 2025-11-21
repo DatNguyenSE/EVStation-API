@@ -17,6 +17,7 @@ namespace API.DTOs.Assignment
         [Required]
         public DateTime EffectiveFrom { get; set; }
 
-        public DateTime? EffectiveTo { get; set; }
+        [Required]
+        public DateTime EffectiveTo { get; set; }
     }
 }

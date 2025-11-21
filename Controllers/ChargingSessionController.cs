@@ -9,6 +9,7 @@ using API.Helpers;
 using API.Helpers.Enums;
 using API.Interfaces;
 using API.Mappers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,6 +63,7 @@ namespace API.Controllers
 
         [HttpPost("{sessionId}/update-plate")]
         [Authorize(Roles = AppConstant.Roles.Operator)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdatePlate(int sessionId, [FromBody] UpdatePlateRequest vehiclePlate)
         {
             try
@@ -172,6 +174,7 @@ namespace API.Controllers
 
         [HttpGet("history")]
         [Authorize(Roles = AppConstant.Roles.Driver)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetHistorySessions([FromQuery] PagingParams pagingParams)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -190,6 +193,7 @@ namespace API.Controllers
 
         [HttpGet("{sessionId}/detail")]
         [Authorize(Roles = $"{AppConstant.Roles.Driver}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetDetailHistorySession(int sessionId)
         {
             var session = await _uow.ChargingSessions.GetByIdAsync(sessionId);
@@ -203,6 +207,7 @@ namespace API.Controllers
 
         [HttpGet("all")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAllSession()
         {
             var sessions = await _uow.ChargingSessions.GetAllAsync();
@@ -222,6 +227,7 @@ namespace API.Controllers
 
         [HttpGet("by-station/{stationId}")]
         [Authorize(Roles = $"{AppConstant.Roles.Manager}, {AppConstant.Roles.Operator}, {AppConstant.Roles.Admin}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetSessionsByStation(int stationId)
         {
             var staffId = User.FindFirstValue(ClaimTypes.NameIdentifier);

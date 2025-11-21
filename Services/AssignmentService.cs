@@ -36,8 +36,8 @@ namespace API.Services
                 throw new KeyNotFoundException($"Không tìm thấy trạm sạc (StationId: {assignmentModel.StationId}).");
             }
 
-            List<string> validRoles = new List<string> { AppConstant.Roles.Operator, 
-                                                         AppConstant.Roles.Manager, 
+            List<string> validRoles = new List<string> { AppConstant.Roles.Operator,
+                                                         AppConstant.Roles.Manager,
                                                          AppConstant.Roles.Technician };
 
             var userRoles = await _userManager.GetRolesAsync(staff);
@@ -55,11 +55,14 @@ namespace API.Services
                 throw new InvalidOperationException("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
             }
 
+            assignmentModel.EffectiveFrom = assignmentModel.EffectiveFrom.AddHours(7);
+            assignmentModel.EffectiveTo = assignmentModel.EffectiveTo?.AddHours(7);
+
             await _uow.Assignments.CreateAsync(assignmentModel);
             await _uow.Complete();
 
             assignmentModel.Staff = staff!;
-            assignmentModel.Station = station!; 
+            assignmentModel.Station = station!;
 
             return assignmentModel.ToAssignmentDto();
         }

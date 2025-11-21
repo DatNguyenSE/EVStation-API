@@ -10,6 +10,7 @@ using API.Entities.Wallet;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ namespace API.Controllers
     // [Authorize(Roles = AppConstant.Roles.Driver)]
     [ApiController]
     [Route("api/wallet")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class WalletController : ControllerBase
     {
         private readonly IWalletService _walletService; // SỬ DỤNG SERVICE

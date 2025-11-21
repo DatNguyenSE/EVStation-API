@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using API.Mappers;
 using API.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace API.Controllers
 {
     [Route("api/assignments")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AssignmentController : ControllerBase
     {
         private readonly IAssignmentService _assignmentService;
@@ -40,8 +42,7 @@ namespace API.Controllers
 
 
         [HttpGet("staff/{staffId}")]
-       [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}")] // thêm manager or ,...
-
+        [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}")]
         public async Task<IActionResult> GetAssignmentByStaffId([FromRoute] string staffId)
         {
             try
@@ -57,7 +58,6 @@ namespace API.Controllers
 
         [HttpPost]
         [Authorize(Roles = AppConstant.Roles.Admin)]
-
         public async Task<IActionResult> CreateAssignment([FromBody] AssignmentCreateDto createDto)
         {
             if (!ModelState.IsValid)
@@ -78,7 +78,6 @@ namespace API.Controllers
 
         [HttpPatch("{id:int}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
-
         public async Task<IActionResult> UpdateAssignment([FromRoute] int id,
                                                     [FromBody] AssignmentUpdateDto updateDto)
         {

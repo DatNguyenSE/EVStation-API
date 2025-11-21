@@ -75,22 +75,23 @@ namespace API.Services
             // if (isEarly)
             // {
             //     return (false,
-            //         $" Chưa đến thời gian đặt chỗ.- Giờ hiện tại: {now:HH:mm}- Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            //         $" Chưa đến thời gian đặt chỗ. Giờ hiện tại: {now:HH:mm}. Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
             // }
 
             // if (isLate)
             // {
             //     return (false,
-            //         $" Đã quá thời gian đặt chỗ. - Giờ hiện tại: {now:HH:mm} - Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).");
+            //         $" Đã quá thời gian đặt chỗ. Giờ hiện tại: {now:HH:mm}. Giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", null, null);
             // }
 
             // Người dùng có đặt chỗ hợp lệ, kiểm tra trạng thái trụ
             switch (post.Status)
             {
                 case PostStatus.Available:
-                    reservation.Status = Entities.ReservationStatus.InProgress;
-                    _uow.Reservations.Update(reservation);
-                    await _uow.Complete();
+                    // ✅ FIX: Không thay đổi trạng thái reservation ở đây
+                    // Chỉ thay đổi trạng thái KHÔNG thế khi CreateSessionAsync thành công
+                    // Điều này tránh được trường hợp reservation bị stuck ở InProgress 
+                    // nếu CreateSessionAsync thất bại do ví không đủ tiền
                     return (true,
                         $" Xác thực đặt chỗ thành công. - Giờ hiện tại: {now:HH:mm} - Khung giờ đặt: {reservation.TimeSlotStart:HH:mm} - {reservation.TimeSlotEnd:HH:mm} (UTC).", reservation.Id, reservation.VehicleId);
 

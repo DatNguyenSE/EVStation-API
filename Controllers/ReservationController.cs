@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.DTOs.Reservation;
 using API.Helpers;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/reservation")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservationService;
@@ -34,7 +36,7 @@ namespace API.Controllers
             bool isMaintenanceScheduled = await _uow.Reports.IsPostScheduledForMaintenanceAsync(dto.ChargingPostId, dto.TimeSlotStart, dto.TimeSlotStart.AddHours(dto.SlotCount));
             if (isMaintenanceScheduled)
             {
-                return BadRequest(new ProblemDetails { Title = "Trụ đang được lên lịch bảo trì vào thời gian này. Vui lòng chọn khung giờ khác." });
+                return BadRequest( new { Message = "Trụ đang được lên lịch bảo trì vào thời gian này. Vui lòng chọn khung giờ khác."} );
             }
             try
             {

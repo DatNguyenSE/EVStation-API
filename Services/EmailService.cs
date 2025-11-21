@@ -172,7 +172,7 @@ namespace API.Services
                                 <tr><td style='padding:8px;'>Phí năng lượng</td><td style='text-align:right;'>{receipt.EnergyCost:N0}</td></tr>
                                 <tr><td style='padding:8px;'>Phí chờ</td><td style='text-align:right;'>{receipt.IdleFee:N0}</td></tr>
                                 <tr><td style='padding:8px;'>Phí quá giờ</td><td style='text-align:right;'>{receipt.OverstayFee:N0}</td></tr>
-                                <tr><td style='padding:8px;'>Giảm giá</td><td style='text-align:right; color:#2e7d32;'>-{receipt.DiscountAmount:N0}</td></tr>
+                                <tr><td style='padding:8px;'>Ưu đãi gói</td><td style='text-align:right; color:#2e7d32;'>-{receipt.DiscountAmount:N0}</td></tr>
                                 <tr style='border-top:2px solid #ddd;'>
                                     <td style='padding:12px 8px; font-weight:600;'>Tổng cộng</td>
                                     <td style='text-align:right; padding:12px 8px; color:#d32f2f; font-weight:600;'>{receipt.TotalCost:N0}</td>

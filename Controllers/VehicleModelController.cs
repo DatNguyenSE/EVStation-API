@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Helpers.Enums;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace API.Controllers
 {
     [Route("api/vehiclemodels")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class VehicleModelController : ControllerBase
     {
         private readonly IUnitOfWork _uow;

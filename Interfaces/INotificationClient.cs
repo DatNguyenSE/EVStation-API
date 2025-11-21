@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Entities;
 
 namespace API.Interfaces
 {
@@ -11,7 +12,7 @@ namespace API.Interfaces
         Task ReservationCancelled(string message);
         Task NewTaskAssigned(string message);
         
-        Task NewReportReceived(string message); // Gửi cho Admin
+        Task NewReportReceived(Report notificationReport); // Gửi cho Admin
         Task FixCompleted(string message);      // Gửi cho Admin
         Task ReportClosed(string message);      // Gửi cho Admin
         Task TaskCompleted(string message);     // Gửi cho Technician

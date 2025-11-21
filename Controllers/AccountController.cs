@@ -11,6 +11,7 @@ using API.Helpers;
 using API.Interfaces;
 using API.Interfaces.IServices;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
@@ -375,6 +376,7 @@ namespace API.Controllers
 
         [HttpGet("drivers")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetDriversAsync()
         {
             string targetRole = AppConstant.Roles.Driver;
@@ -407,6 +409,7 @@ namespace API.Controllers
 
         [HttpGet("staffs")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetStaffsAsync()
         {
             var staffRolesOrder = new List<string>
@@ -445,6 +448,7 @@ namespace API.Controllers
 
         [HttpPost("register-staff")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> RegisterStaffByAdmin([FromBody] RegisterStaffDto dto)
         {
             if (!ModelState.IsValid)
@@ -504,6 +508,7 @@ namespace API.Controllers
 
         [HttpPost("BanUser/{userId}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> BanUser(string userId, [FromQuery] int days)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -582,6 +587,7 @@ namespace API.Controllers
 
         [HttpPost("UnbanUser/{userId}")]
         [Authorize(Roles = AppConstant.Roles.Admin)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UnbanUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
