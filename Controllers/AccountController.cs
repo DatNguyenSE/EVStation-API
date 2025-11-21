@@ -167,7 +167,7 @@ namespace API.Controllers
                     return BadRequest(roleResult.Errors);
                 }
                 // url FE
-                var frontendUrl = "http://localhost:4200";
+                var frontendUrl = "https://evoltstation.io.vn";
                 // Tạo token xác nhận email
                 var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                 // Encode token để truyền qua URL
@@ -347,7 +347,7 @@ namespace API.Controllers
             // Tạo token mới
             var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailToken));
-            var frontendUrl = "http://localhost:4200";
+            var frontendUrl = "https://evoltstation.io.vn";
             var baseUrl = _configuration["AppSettings:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
             var confirmationLink = $"{frontendUrl}/api/account/confirm-email?userId={user.Id}&token={encodedToken}";
 

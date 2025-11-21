@@ -54,7 +54,7 @@ namespace API.Services
 
         public async Task SendEmailConfirmationAsync(string toEmail, string userId, string token)
         {
-            var frontendUrl = "http://localhost:4200";
+            var frontendUrl = "https://evoltstation.io.vn";
             var encodeToken = Uri.EscapeDataString(token);
             var confirmationLink = $"{frontendUrl}/confirm-email?userId={userId}&token={encodeToken}";
 
