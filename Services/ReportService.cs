@@ -265,6 +265,9 @@ namespace API.Services
             report.TechnicianId = dto.TechnicianId;
             report.Status = ReportStatus.InProgress;
 
+            await _notificationHubContext.Clients.User(report.TechnicianId).NewTaskAssigned(
+                    $"Công việc của bạn tại trụ {report.ChargingPost.Code} đã được Admin giao.");
+
             // === CHANGED ===
             await _uow.Complete();
 
