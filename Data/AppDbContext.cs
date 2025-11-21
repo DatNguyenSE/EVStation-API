@@ -224,99 +224,53 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 SecurityStamp = "E1F3B6A7-8D9C-4A5B-9E8F-7C6D5B4A3E2D",
                 ConcurrencyStamp = "F2A4C7B8-9E1D-5B6C-8F7A-6D5E4B3C2A1F",
                 PhoneNumber = "0900000000",
-                PhoneNumberConfirmed = true,
-                Vehicles = new List<Vehicle>()
-            },
-            new AppUser
-            {
-                Id = "2",
-                UserName = "operator",
-                NormalizedUserName = "OPERATOR",
-                Email = "operator@evsystem.com",
-                NormalizedEmail = "OPERATOR@EVSYSTEM.COM",
-                EmailConfirmed = true,
-                FullName = "Trạm Operator",
-                DateOfBirth = new DateTime(1995, 5, 5),
-                PasswordHash = "AQAAAAIAAYagAAAAEPti/a9dQXrb7L6sjniNdM3QWjQhWtlZLB7tQwUaCxsyewD+D8MBhuXsE4afjntGfg==",
-                SecurityStamp = "A1111111-B222-4333-C444-D55555555555",
-                ConcurrencyStamp = "11111111-2222-3333-4444-555555555555",
-                PhoneNumber = "0911111111",
-                PhoneNumberConfirmed = true
-            },
-            new AppUser
-            {
-                Id = "3",
-                UserName = "manager",
-                NormalizedUserName = "MANAGER",
-                Email = "manager@evsystem.com",
-                NormalizedEmail = "MANAGER@EVSYSTEM.COM",
-                EmailConfirmed = true,
-                FullName = "Khu vực Manager",
-                DateOfBirth = new DateTime(1992, 3, 3),
-                PasswordHash = "AQAAAAIAAYagAAAAENMyFIG2LA4//qtHgDgkZB8TC+wvdKnkwxiD6JHIkMCX0dd+twv8zV7ea/CMfQnChw==",
-                SecurityStamp = "B1111111-C222-4333-D444-E55555555555",
-                ConcurrencyStamp = "66666666-7777-8888-9999-AAAAAAAAAAAA",
-                PhoneNumber = "0922222222",
-                PhoneNumberConfirmed = true
-            },
-            new AppUser
-            {
-                Id = "4",
-                UserName = "technician",
-                NormalizedUserName = "TECHNICIAN",
-                Email = "technician@evsystem.com",
-                NormalizedEmail = "TECHNICIAN@EVSYSTEM.COM",
-                EmailConfirmed = true,
-                FullName = "Kỹ thuật viên bảo trì",
-                DateOfBirth = new DateTime(1994, 8, 8),
-                PasswordHash = "AQAAAAIAAYagAAAAEKV4vb55tRNp0q0sO0pF/Ua5A46af0IC1l5PZuNofciWemJVAk7vjQYutf5YQKjxfQ==",
-                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
-                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
-                PhoneNumber = "0933333333",
-                PhoneNumberConfirmed = true
-            },
-            new AppUser
-            {
-                Id = "5",
-                UserName = "d1",
-                NormalizedUserName = "D1",
-                Email = "d1@evsystem.com",
-                NormalizedEmail = "D1@EVSYSTEM.COM",
-                EmailConfirmed = true,
-                FullName = "Tài xế 1",
-                DateOfBirth = new DateTime(1994, 8, 8),
-                PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
-                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
-                PhoneNumber = "0933334333",
-                PhoneNumberConfirmed = true
-            },
-
-            new AppUser
-            {
-                Id = "6",
-                UserName = "d2",
-                NormalizedUserName = "D2",
-                Email = "d2@evsystem.com",
-                NormalizedEmail = "D2@EVSYSTEM.COM",
-                EmailConfirmed = true,
-                FullName = "Tài xế 2",
-                DateOfBirth = new DateTime(1994, 8, 8),
-                PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
-                ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
-                PhoneNumber = "0933333343",
                 PhoneNumberConfirmed = true
             }
         );
+
+        var commonPasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==";
+        var newUsers = new List<AppUser>();
+        var newRoles = new List<IdentityUserRole<string>>();
+        var stamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF";
+        var currentId = 2;
+
+        // --- 5 MANAGERS ---
+        for (int i = 1; i <= 5; i++)
+        {
+            var id = currentId++.ToString();
+            newUsers.Add(new AppUser { Id = id, UserName = $"manager{i}", Email = $"manager{i}@evsystem.com", NormalizedUserName = $"MANAGER{i}", NormalizedEmail = $"MANAGER{i}@EVSYSTEM.COM", EmailConfirmed = true, FullName = $"Lý Quản Lý {i}", DateOfBirth = new DateTime(1995, 1, i), PasswordHash = commonPasswordHash, SecurityStamp = stamp, ConcurrencyStamp = stamp, PhoneNumber = $"099900000{i}", PhoneNumberConfirmed = true });
+            newRoles.Add(new IdentityUserRole<string> { UserId = id, RoleId = "3" }); // RoleId 3: Manager
+        }
+
+        // --- 5 OPERATORS ---
+        for (int i = 1; i <= 5; i++)
+        {
+            var id = currentId++.ToString();
+            newUsers.Add(new AppUser { Id = id, UserName = $"operator{i}", Email = $"operator{i}@evsystem.com", NormalizedUserName = $"OPERATOR{i}", NormalizedEmail = $"OPERATOR{i}@EVSYSTEM.COM", EmailConfirmed = true, FullName = $"Trần Vận Hành {i}", DateOfBirth = new DateTime(1996, 2, i), PasswordHash = commonPasswordHash, SecurityStamp = stamp, ConcurrencyStamp = stamp, PhoneNumber = $"099910000{i}", PhoneNumberConfirmed = true });
+            newRoles.Add(new IdentityUserRole<string> { UserId = id, RoleId = "4" }); // RoleId 4: Operator
+        }
+
+        // --- 5 TECHNICIANS ---
+        for (int i = 1; i <= 5; i++)
+        {
+            var id = currentId++.ToString();
+            newUsers.Add(new AppUser { Id = id, UserName = $"tech{i}", Email = $"tech{i}@evsystem.com", NormalizedUserName = $"TECH{i}", NormalizedEmail = $"TECH{i}@EVSYSTEM.COM", EmailConfirmed = true, FullName = $"Hoàng Kỹ Thuật {i}", DateOfBirth = new DateTime(1997, 3, i), PasswordHash = commonPasswordHash, SecurityStamp = stamp, ConcurrencyStamp = stamp, PhoneNumber = $"099920000{i}", PhoneNumberConfirmed = true });
+            newRoles.Add(new IdentityUserRole<string> { UserId = id, RoleId = "5" }); // RoleId 5: Technician
+        }
+
+        // --- 10 DRIVERS ---
+        for (int i = 1; i <= 10; i++)
+        {
+            var id = currentId++.ToString();
+            newUsers.Add(new AppUser { Id = id, UserName = $"driver{i}", Email = $"driver{i}@evsystem.com", NormalizedUserName = $"DRIVER{i}", NormalizedEmail = $"DRIVER{i}@EVSYSTEM.COM", EmailConfirmed = true, FullName = $"Phạm Tài Xế {i}", DateOfBirth = new DateTime(1998, 4, i), PasswordHash = commonPasswordHash, SecurityStamp = stamp, ConcurrencyStamp = stamp });
+            newRoles.Add(new IdentityUserRole<string> { UserId = id, RoleId = "2" }); // RoleId 2: Driver
+        }
+        builder.Entity<AppUser>().HasData(newUsers);
+
         builder.Entity<IdentityUserRole<string>>().HasData(
-            new IdentityUserRole<string> { RoleId = "1", UserId = "1" }, // Admin
-            new IdentityUserRole<string> { RoleId = "4", UserId = "2" }, // Staff (Operator)
-            new IdentityUserRole<string> { RoleId = "3", UserId = "3" }, // Manager
-            new IdentityUserRole<string> { RoleId = "5", UserId = "4" },
-            new IdentityUserRole<string> { RoleId = "2", UserId = "5" },
-            new IdentityUserRole<string> { RoleId = "2", UserId = "6" }  // Technician
+            new IdentityUserRole<string> { RoleId = "1", UserId = "1" } // Technician
         );
+        builder.Entity<IdentityUserRole<string>>().HasData(newRoles);
 
         builder.Entity<Station>().HasData(
             new Station
@@ -357,44 +311,70 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 OpenTime = new TimeSpan(6, 0, 0),
                 CloseTime = new TimeSpan(22, 0, 0),
                 Status = StationStatus.Active
+            },
+            new Station
+            {
+                Id = 4,
+                Name = "Trạm sạc VinFast Sân bay",
+                Code = StationCodeHelper.GenerateStationCode("Quận Tân Bình, TP.HCM", 4),
+                Address = "Sân bay Tân Sơn Nhất, Quận Tân Bình, TP.HCM",
+                Latitude = 10.8169828,
+                Longitude = 106.6470536,
+                Description = "Trạm sạc tại khu vực sân bay, tiện cho xe công nghệ",
+                OpenTime = new TimeSpan(6, 0, 0),
+                CloseTime = new TimeSpan(22, 0, 0),
+                Status = StationStatus.Active
+            },
+            new Station
+            {
+                Id = 5,
+                Name = "Trạm sạc VinFast Quận 7",
+                Code = StationCodeHelper.GenerateStationCode("Quận 7, TP.HCM", 5),
+                Address = "172 Nguyễn Văn Linh, Quận 7, TP.HCM",
+                Latitude = 10.7519827,
+                Longitude = 106.7210539,
+                Description = "Trạm sạc khu vực Phú Mỹ Hưng, tập trung nhiều xe ô tô",
+                OpenTime = new TimeSpan(6, 0, 0),
+                CloseTime = new TimeSpan(22, 0, 0),
+                Status = StationStatus.Active
             }
         );
 
-        var station1Code = StationCodeHelper.GenerateStationCode("12 Lê Lợi, Quận 1, TP.HCM", 1);
-        var station2Code = StationCodeHelper.GenerateStationCode("35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", 2);
-        var station3Code = StationCodeHelper.GenerateStationCode("88 Đại Lộ Bình Dương, Thuận An, Bình Dương", 3);
+        // var station1Code = StationCodeHelper.GenerateStationCode("12 Lê Lợi, Quận 1, TP.HCM", 1);
+        // var station2Code = StationCodeHelper.GenerateStationCode("35 Võ Văn Ngân, TP. Thủ Đức, TP.HCM", 2);
+        // var station3Code = StationCodeHelper.GenerateStationCode("88 Đại Lộ Bình Dương, Thuận An, Bình Dương", 3);
 
-        builder.Entity<ChargingPost>().HasData(
-            // ==== Trạm 1 ====
-            new ChargingPost { Id = 1, StationId = 1, Code = $"{station1Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 2, StationId = 1, Code = $"{station1Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 3, StationId = 1, Code = $"{station1Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 4, StationId = 1, Code = $"{station1Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 5, StationId = 1, Code = $"{station1Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 6, StationId = 1, Code = $"{station1Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 7, StationId = 1, Code = $"{station1Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 8, StationId = 1, Code = $"{station1Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+        // builder.Entity<ChargingPost>().HasData(
+        //     // ==== Trạm 1 ====
+        //     new ChargingPost { Id = 1, StationId = 1, Code = $"{station1Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 2, StationId = 1, Code = $"{station1Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 3, StationId = 1, Code = $"{station1Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 4, StationId = 1, Code = $"{station1Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 5, StationId = 1, Code = $"{station1Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 6, StationId = 1, Code = $"{station1Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 7, StationId = 1, Code = $"{station1Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 8, StationId = 1, Code = $"{station1Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-            // ==== Trạm 2 ====
-            new ChargingPost { Id = 9, StationId = 2, Code = $"{station2Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 10, StationId = 2, Code = $"{station2Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 11, StationId = 2, Code = $"{station2Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 12, StationId = 2, Code = $"{station2Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 13, StationId = 2, Code = $"{station2Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 14, StationId = 2, Code = $"{station2Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 15, StationId = 2, Code = $"{station2Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 16, StationId = 2, Code = $"{station2Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
+        //     // ==== Trạm 2 ====
+        //     new ChargingPost { Id = 9, StationId = 2, Code = $"{station2Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 10, StationId = 2, Code = $"{station2Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 11, StationId = 2, Code = $"{station2Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 12, StationId = 2, Code = $"{station2Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 13, StationId = 2, Code = $"{station2Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 14, StationId = 2, Code = $"{station2Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 15, StationId = 2, Code = $"{station2Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 16, StationId = 2, Code = $"{station2Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true },
 
-            // ==== Trạm 3 ====
-            new ChargingPost { Id = 17, StationId = 3, Code = $"{station3Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 18, StationId = 3, Code = $"{station3Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 19, StationId = 3, Code = $"{station3Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 20, StationId = 3, Code = $"{station3Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 21, StationId = 3, Code = $"{station3Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 22, StationId = 3, Code = $"{station3Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
-            new ChargingPost { Id = 23, StationId = 3, Code = $"{station3Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
-            new ChargingPost { Id = 24, StationId = 3, Code = $"{station3Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
-        );
+        //     // ==== Trạm 3 ====
+        //     new ChargingPost { Id = 17, StationId = 3, Code = $"{station3Code}-CHG001", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 18, StationId = 3, Code = $"{station3Code}-CHG002", Type = PostType.Normal, PowerKW = 11, ConnectorType = ConnectorType.Type2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 19, StationId = 3, Code = $"{station3Code}-CHG003", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 20, StationId = 3, Code = $"{station3Code}-CHG004", Type = PostType.Fast, PowerKW = 60, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 21, StationId = 3, Code = $"{station3Code}-CHG005", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 22, StationId = 3, Code = $"{station3Code}-CHG006", Type = PostType.Fast, PowerKW = 150, ConnectorType = ConnectorType.CCS2, Status = PostStatus.Available, IsWalkIn = true },
+        //     new ChargingPost { Id = 23, StationId = 3, Code = $"{station3Code}-CHG007", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = false },
+        //     new ChargingPost { Id = 24, StationId = 3, Code = $"{station3Code}-CHG008", Type = PostType.Scooter, PowerKW = 1.2m, ConnectorType = ConnectorType.VinEScooter, Status = PostStatus.Available, IsWalkIn = true }
+        // );
 
         builder.Entity<ChargingPackage>().HasData(
             new ChargingPackage
@@ -420,5 +400,45 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 CreatedAt = effectiveDate
             }
         );
+
+        // ====================================================================
+        // C. GÁN VỊ TRÍ (ASSIGNMENTS)
+        // ====================================================================
+
+        var newAssignments = new List<Assignment>();
+        var effectiveFrom = new DateTime(2025, 1, 1);
+        var effectiveTo = new DateTime(2026, 2, 1);
+
+        for (int stationId = 1; stationId <= 5; stationId++)
+        {
+            // Gán Manager (ID 2 -> 6)
+            newAssignments.Add(new Assignment { Id = newAssignments.Count + 1, EffectiveFrom = effectiveFrom, EffectiveTo = effectiveTo, IsActive = true, StaffId = (2 + (stationId - 1)).ToString(), StationId = stationId });
+            // Gán Operator (ID 7 -> 11)
+            newAssignments.Add(new Assignment { Id = newAssignments.Count + 1, EffectiveFrom = effectiveFrom, EffectiveTo = effectiveTo, IsActive = true, StaffId = (7 + (stationId - 1)).ToString(), StationId = stationId });
+            // Gán Technician (ID 12 -> 16)
+            newAssignments.Add(new Assignment { Id = newAssignments.Count + 1, EffectiveFrom = effectiveFrom, EffectiveTo = effectiveTo, IsActive = true, StaffId = (12 + (stationId - 1)).ToString(), StationId = stationId });
+        }
+
+        builder.Entity<Assignment>().HasData(newAssignments);
+
+        // ====================================================================
+        // D. VÍ TIỀN (WALLETS)
+        // ====================================================================
+
+        var newWallets = new List<Wallet>();
+        var driverUserIds = newUsers.Where(u => u.Email!.Contains("@evsystem.com") && u.UserName!.StartsWith("driver")).Select(u => u.Id).ToList();
+
+        newWallets.Add(new Wallet { Id = 1, UserId = driverUserIds[0], Balance = 500000m, Dept = 0m, IsDept = false });  // Driver 3: Có tiền
+        newWallets.Add(new Wallet { Id = 2, UserId = driverUserIds[1], Balance = 100000m, Dept = 0m, IsDept = false });  // Driver 4: Có tiền
+        newWallets.Add(new Wallet { Id = 3, UserId = driverUserIds[2], Balance = 0m, Dept = 25000m, IsDept = true });   // Driver 5: Nợ
+        newWallets.Add(new Wallet { Id = 4, UserId = driverUserIds[3], Balance = 200000m, Dept = 0m, IsDept = false }); // Driver 6: Có tiền
+        newWallets.Add(new Wallet { Id = 5, UserId = driverUserIds[4], Balance = 0m, Dept = 0m, IsDept = false });   // Driver 7: Vừa đủ
+        newWallets.Add(new Wallet { Id = 6, UserId = driverUserIds[5], Balance = 150000m, Dept = 0m, IsDept = false }); // Driver 8
+        newWallets.Add(new Wallet { Id = 7, UserId = driverUserIds[6], Balance = 50000m, Dept = 0m, IsDept = false });  // Driver 9
+        newWallets.Add(new Wallet { Id = 8, UserId = driverUserIds[7], Balance = 0m, Dept = 10000m, IsDept = true });  // Driver 10: Nợ
+        newWallets.Add(new Wallet { Id = 9, UserId = driverUserIds[8], Balance = 300000m, Dept = 0m, IsDept = false }); // Driver 11
+        newWallets.Add(new Wallet { Id = 10, UserId = driverUserIds[9], Balance = 50000m, Dept = 0m, IsDept = false });  // Driver 12
+
+        builder.Entity<Wallet>().HasData(newWallets);
     }
 }
