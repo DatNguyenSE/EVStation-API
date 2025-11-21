@@ -189,11 +189,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-.WithOrigins("https://localhost:4200", "http://localhost:4200").WithOrigins("https://localhost:4200", "http://localhost:4200")
-  .AllowAnyHeader()
+app.UseCors(x => x
+    .AllowAnyHeader()
     .AllowAnyMethod()
-    .AllowCredentials()); //set connect
+    .AllowCredentials()
+    .WithOrigins(
+        "http://localhost:4200",   // Cho phép Localhost (HTTP)
+        "https://localhost:4200",  // Cho phép Localhost (HTTPS)
+        "https://evoltstation.io.vn", // Cho phép VPS (HTTPS) - QUAN TRỌNG
+        "http://evoltstation.io.vn"   // Cho phép VPS (HTTP - Phòng hờ)
+    )); //set connect
 
 
 // Client (Angular) sẽ kết nối đến đường dẫn "/hubs/notification"

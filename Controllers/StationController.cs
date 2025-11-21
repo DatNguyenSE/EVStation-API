@@ -20,7 +20,7 @@ namespace API.Controllers
 {
     [Route("api/station")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class StationController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
