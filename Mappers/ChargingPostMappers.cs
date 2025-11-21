@@ -22,7 +22,7 @@ namespace API.Mappers
                 Status = postModel.Status,
                 IsWalkIn = postModel.IsWalkIn,
                 QRCodeUrl = postModel.QRCode != null
-                    ? $"http://localhost:5001/api/posts/{postModel.Id}/qrcode"
+                    ? $"https://evoltstation.io.vn/api/posts/{postModel.Id}/qrcode"
                     : string.Empty // BỎ CÁI NÀY VÔ THẺ <img> LÀ NÓ RA QR CODE
                                    // <img src={post.qrCodeUrl} alt="QR code" /> => VÍ DỤ THÔI NHA
             };
