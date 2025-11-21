@@ -20,6 +20,7 @@ using API.Entities.Cloudinary;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder;
+using Microsoft.AspNetCore.HttpOverrides; // Thêm dòng này lên đầu file Program.cs
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -137,7 +138,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký service (tầng logic)
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IReservationService, ReservationService>();
+// builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
@@ -179,6 +180,13 @@ builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFramew
 // Đăng ký lớp logic Bot của bạn
 // AddTransient nghĩa là một instance mới sẽ được tạo cho mỗi lượt hội thoại
 // builder.Services.AddTransient<IBot, SimpleEvBot>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -187,6 +195,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseForwardedHeaders();
 
 app.UseCors(x => x
     .AllowAnyHeader()

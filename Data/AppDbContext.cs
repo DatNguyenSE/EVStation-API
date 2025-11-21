@@ -440,5 +440,109 @@ public class AppDbContext : IdentityDbContext<AppUser>
         newWallets.Add(new Wallet { Id = 10, UserId = driverUserIds[9], Balance = 50000m, Dept = 0m, IsDept = false });  // Driver 12
 
         builder.Entity<Wallet>().HasData(newWallets);
+
+        // ====================================================================
+        // F. THÊM 10 PHƯƠNG TIỆN (VEHICLES) CHO 10 DRIVERS MỚI
+        // * Cần phải trùng khớp Type/Connector/MaxPower của VehicleModel (ID 1-19)
+        // ====================================================================
+
+        builder.Entity<Vehicle>().HasData(
+            // Cars (42kWh, CCS2, 60kW) - Model ID 15
+            new Vehicle { Id = 2, OwnerId = "18", Type = VehicleType.Car, Model = "VF e34", BatteryCapacityKWh = 42, MaxChargingPowerKW = 60, ConnectorType = ConnectorType.CCS2, Plate = "51F-D12.34", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 3, OwnerId = "19", Type = VehicleType.Car, Model = "VF 6", BatteryCapacityKWh = 59.6, MaxChargingPowerKW = 150, ConnectorType = ConnectorType.CCS2, Plate = "60A-F98.76", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 4, OwnerId = "20", Type = VehicleType.Car, Model = "VF 8", BatteryCapacityKWh = 87.7, MaxChargingPowerKW = 150, ConnectorType = ConnectorType.CCS2, Plate = "51G-333.33", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 5, OwnerId = "21", Type = VehicleType.Car, Model = "VF 3", BatteryCapacityKWh = 18.64, MaxChargingPowerKW = 60, ConnectorType = ConnectorType.CCS2, Plate = "51C-555.55", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 6, OwnerId = "22", Type = VehicleType.Car, Model = "VF 7", BatteryCapacityKWh = 75.3, MaxChargingPowerKW = 150, ConnectorType = ConnectorType.CCS2, Plate = "51A-777.77", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+
+            // Motorbikes (3.5kWh, VinEScooter, 1.2kW) - Model ID 1
+            new Vehicle { Id = 7, OwnerId = "23", Type = VehicleType.Motorbike, Model = "Theon S", BatteryCapacityKWh = 3.5, MaxChargingPowerKW = 1.2, ConnectorType = ConnectorType.VinEScooter, Plate = "59-E56.78", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 8, OwnerId = "24", Type = VehicleType.Motorbike, Model = "Evo 200/200 Lite", BatteryCapacityKWh = 3.5, MaxChargingPowerKW = 1.2, ConnectorType = ConnectorType.VinEScooter, Plate = "51H-222.22", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 9, OwnerId = "25", Type = VehicleType.Motorbike, Model = "Klara S2 (2022)", BatteryCapacityKWh = 3.5, MaxChargingPowerKW = 1.2, ConnectorType = ConnectorType.VinEScooter, Plate = "59-B44.44", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null },
+            new Vehicle { Id = 10, OwnerId = "26", Type = VehicleType.Motorbike, Model = "Feliz S", BatteryCapacityKWh = 3.5, MaxChargingPowerKW = 1.2, ConnectorType = ConnectorType.VinEScooter, Plate = "59-C66.66", IsActive = true, RegistrationStatus = VehicleRegistrationStatus.Approved, VehicleRegistrationFrontUrl = null, VehicleRegistrationBackUrl = null }
+        );
+
+        // ====================================================================
+        // G. DỮ LIỆU DEMO LỚN: 15 GIAO DỊCH HOÀN CHỈNH
+        // ====================================================================
+
+        var demoReceipts = new List<Receipt>();
+        var demoReservations = new List<Reservation>();
+        var demoSessions = new List<ChargingSession>();
+
+        var driverIds = new[] { "17", "18", "22", "23", "24" }; // Driver d1, d2 và 3 Driver mới
+        var postIds = new[] { 25, 31, 32, 41, 42, 43 }; // Các trụ sạc nhanh (Fast)
+        var stationIds = new[] { 1, 2, 3, 4, 5 }; // Các trụ sạc nhanh (Fast)
+        var startTime = new DateTime(2025, 11, 21, 10, 0, 0, DateTimeKind.Utc); // Ngày bắt đầu
+
+        for (int i = 1; i <= 15; i++)
+        {
+            var dateOffset = i * 2;
+            var currentStart = startTime.AddHours(dateOffset);
+            var currentEnd = currentStart.AddMinutes(30); // Giả định sạc 30 phút
+
+            var receiptId = 100 + i;
+            var reservationId = 100 + i;
+            var sessionId = 100 + i;
+
+            // --- 1. RECEIPT (Hóa đơn) ---
+            demoReceipts.Add(new Receipt
+            {
+                Id = receiptId,
+                AppUserId = driverIds[i % driverIds.Length], // Gán user ID luân phiên
+                Status = ReceiptStatus.Paid, // 1: Paid/Completed
+                CreateAt = currentEnd,
+                TotalCost = 48000m,
+                EnergyCost = 42000m,
+                IdleFee = 6000m,
+                OverstayFee = 0m,
+                DiscountAmount = 0m,
+                EnergyConsumed = 10m,
+                PricingName = "Thành viên - Sạc nhanh DC",
+                PricePerKwhSnapshot = 4200m,
+                StationId = stationIds[i % stationIds.Length]
+            });
+
+            // --- 2. RESERVATION (Đặt chỗ) ---
+            demoReservations.Add(new Reservation
+            {
+                Id = reservationId,
+                DriverId = driverIds[i % driverIds.Length],
+                ChargingPostId = postIds[i % postIds.Length],
+                VehicleId = 3, // Dùng tạm VehicleId 3 (VF8) cho hầu hết các phiên
+                TimeSlotStart = currentStart.AddMinutes(-60),
+                TimeSlotEnd = currentStart,
+                Status = ReservationStatus.Completed,
+                CreatedAt = currentStart.AddHours(-1),
+                IsProcessedByDiscipline = false
+            });
+
+            // --- 3. CHARGING SESSION (Phiên sạc) ---
+            demoSessions.Add(new ChargingSession
+            {
+                Id = sessionId,
+                ChargingPostId = postIds[i % postIds.Length],
+                ReservationId = reservationId,
+                ReceiptId = receiptId,
+                VehiclePlate = $"Demo-{i}",
+                StartTime = currentStart,
+                EndTime = currentEnd,
+                CompletedTime = currentEnd.AddSeconds(5),
+                StartBatteryPercentage = 20m,
+                EndBatteryPercentage = 60m,
+                EnergyConsumed = 10.0, // Lượng tiêu thụ mẫu
+                Cost = 42000,
+                Status = SessionStatus.Completed,
+                IdleFee = 6000,
+                StopReason = 0,
+                IsWalkInSession = false,
+                IsPaid = true,
+                IsOverstay = false,
+                OverstayFee = 0 // Tạm thời 0, nếu bạn cần tạo lỗi thì sửa sau
+            });
+        }
+
+        builder.Entity<Receipt>().HasData(demoReceipts);
+        builder.Entity<Reservation>().HasData(demoReservations);
+        builder.Entity<ChargingSession>().HasData(demoSessions);
     }
 }

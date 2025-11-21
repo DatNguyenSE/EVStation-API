@@ -17,10 +17,6 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/charging-sessions")]
-<<<<<<< HEAD
-    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-=======
->>>>>>> 6a547882b79c1d59e47fb53d0ba5649bce1d5277
     public class ChargingSessionsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
