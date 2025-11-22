@@ -88,11 +88,18 @@ namespace API.Controllers
         [Authorize(Roles = $"{AppConstant.Roles.Operator}, {AppConstant.Roles.Manager}, {AppConstant.Roles.Technician}")]
         public async Task<IActionResult> CreateReport([FromForm] CreateReportDto dto, [FromServices] IOptions<CloudinarySettings> cloudinaryConfig)
         {
-            var staffId = GetCurrentUserId();
-            // Khi hàm service này được gọi...
-            var report = await _reportService.CreateReportAsync(dto, staffId!, cloudinaryConfig);
-            // ...thì SignalR sẽ được kích hoạt TỪ BÊN TRONG service
-            return Ok(report);
+            try
+            {
+                var staffId = GetCurrentUserId();
+                // Khi hàm service này được gọi...
+                var report = await _reportService.CreateReportAsync(dto, staffId!, cloudinaryConfig);
+                // ...thì SignalR sẽ được kích hoạt TỪ BÊN TRONG service
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // 2. (Admin) Đánh giá báo cáo (Critical / No)

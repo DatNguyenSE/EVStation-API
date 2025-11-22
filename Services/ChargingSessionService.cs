@@ -377,7 +377,10 @@ namespace API.Services
                     receipt.ChargingSessions.Add(s);
                 }
 
-                await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
+                if(session.ChargingPost.Status == PostStatus.Occupied)
+                {
+                    await _uow.ChargingPosts.UpdateStatusAsync(session.ChargingPostId, PostStatus.Available);
+                }
                 await _uow.Receipts.AddAsync(receipt);
                 await _uow.Complete();
             }
@@ -450,7 +453,7 @@ namespace API.Services
 
                 // release post only if reservation completed or null
                 var post = await _uow.ChargingPosts.GetByIdAsync(session.ChargingPostId);
-                if (post != null)
+                if (post != null && session.ChargingPost.Status == PostStatus.Occupied)
                 {
                     await _uow.ChargingPosts.UpdateStatusAsync(post.Id, PostStatus.Available);
                 }
