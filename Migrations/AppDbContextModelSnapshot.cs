@@ -117,466 +117,96 @@ namespace API.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1995, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager1@evsystem.com",
+                            ConcurrencyStamp = "11111111-2222-3333-4444-555555555555",
+                            DateOfBirth = new DateTime(1995, 5, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "operator@evsystem.com",
                             EmailConfirmed = true,
-                            FullName = "Lý Quản Lý 1",
+                            FullName = "Trạm Operator",
                             LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER1@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999000001",
+                            NormalizedEmail = "OPERATOR@EVSYSTEM.COM",
+                            NormalizedUserName = "OPERATOR",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPti/a9dQXrb7L6sjniNdM3QWjQhWtlZLB7tQwUaCxsyewD+D8MBhuXsE4afjntGfg==",
+                            PhoneNumber = "0911111111",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
+                            SecurityStamp = "A1111111-B222-4333-C444-D55555555555",
                             TwoFactorEnabled = false,
-                            UserName = "manager1"
+                            UserName = "operator"
                         },
                         new
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1995, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager2@evsystem.com",
+                            ConcurrencyStamp = "66666666-7777-8888-9999-AAAAAAAAAAAA",
+                            DateOfBirth = new DateTime(1992, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "manager@evsystem.com",
                             EmailConfirmed = true,
-                            FullName = "Lý Quản Lý 2",
+                            FullName = "Khu vực Manager",
                             LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER2@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER2",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999000002",
+                            NormalizedEmail = "MANAGER@EVSYSTEM.COM",
+                            NormalizedUserName = "MANAGER",
+                            PasswordHash = "AQAAAAIAAYagAAAAENMyFIG2LA4//qtHgDgkZB8TC+wvdKnkwxiD6JHIkMCX0dd+twv8zV7ea/CMfQnChw==",
+                            PhoneNumber = "0922222222",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
+                            SecurityStamp = "B1111111-C222-4333-D444-E55555555555",
                             TwoFactorEnabled = false,
-                            UserName = "manager2"
+                            UserName = "manager"
                         },
                         new
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1995, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager3@evsystem.com",
+                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "technician@evsystem.com",
                             EmailConfirmed = true,
-                            FullName = "Lý Quản Lý 3",
+                            FullName = "Kỹ thuật viên bảo trì",
                             LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER3@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER3",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999000003",
+                            NormalizedEmail = "TECHNICIAN@EVSYSTEM.COM",
+                            NormalizedUserName = "TECHNICIAN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKV4vb55tRNp0q0sO0pF/Ua5A46af0IC1l5PZuNofciWemJVAk7vjQYutf5YQKjxfQ==",
+                            PhoneNumber = "0933333333",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
+                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
                             TwoFactorEnabled = false,
-                            UserName = "manager3"
+                            UserName = "technician"
                         },
                         new
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1995, 1, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager4@evsystem.com",
+                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "d1@evsystem.com",
                             EmailConfirmed = true,
-                            FullName = "Lý Quản Lý 4",
+                            FullName = "Tài xế 1",
                             LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER4@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER4",
+                            NormalizedEmail = "D1@EVSYSTEM.COM",
+                            NormalizedUserName = "D1",
                             PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999000004",
+                            PhoneNumber = "0933334333",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
+                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
                             TwoFactorEnabled = false,
-                            UserName = "manager4"
+                            UserName = "d1"
                         },
                         new
                         {
                             Id = "6",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1995, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "manager5@evsystem.com",
+                            ConcurrencyStamp = "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+                            DateOfBirth = new DateTime(1994, 8, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "d2@evsystem.com",
                             EmailConfirmed = true,
-                            FullName = "Lý Quản Lý 5",
+                            FullName = "Tài xế 2",
                             LockoutEnabled = false,
-                            NormalizedEmail = "MANAGER5@EVSYSTEM.COM",
-                            NormalizedUserName = "MANAGER5",
+                            NormalizedEmail = "D2@EVSYSTEM.COM",
+                            NormalizedUserName = "D2",
                             PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999000005",
+                            PhoneNumber = "0933333343",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
+                            SecurityStamp = "C1111111-D222-4333-E444-F55555555555",
                             TwoFactorEnabled = false,
-                            UserName = "manager5"
-                        },
-                        new
-                        {
-                            Id = "7",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1996, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator1@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trần Vận Hành 1",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR1@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999100001",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "operator1"
-                        },
-                        new
-                        {
-                            Id = "8",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1996, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator2@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trần Vận Hành 2",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR2@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR2",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999100002",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "operator2"
-                        },
-                        new
-                        {
-                            Id = "9",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1996, 2, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator3@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trần Vận Hành 3",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR3@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR3",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999100003",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "operator3"
-                        },
-                        new
-                        {
-                            Id = "10",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1996, 2, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator4@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trần Vận Hành 4",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR4@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR4",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999100004",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "operator4"
-                        },
-                        new
-                        {
-                            Id = "11",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1996, 2, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "operator5@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Trần Vận Hành 5",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OPERATOR5@EVSYSTEM.COM",
-                            NormalizedUserName = "OPERATOR5",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999100005",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "operator5"
-                        },
-                        new
-                        {
-                            Id = "12",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1997, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "tech1@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Hoàng Kỹ Thuật 1",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECH1@EVSYSTEM.COM",
-                            NormalizedUserName = "TECH1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999200001",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "tech1"
-                        },
-                        new
-                        {
-                            Id = "13",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1997, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "tech2@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Hoàng Kỹ Thuật 2",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECH2@EVSYSTEM.COM",
-                            NormalizedUserName = "TECH2",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999200002",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "tech2"
-                        },
-                        new
-                        {
-                            Id = "14",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1997, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "tech3@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Hoàng Kỹ Thuật 3",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECH3@EVSYSTEM.COM",
-                            NormalizedUserName = "TECH3",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999200003",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "tech3"
-                        },
-                        new
-                        {
-                            Id = "15",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1997, 3, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "tech4@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Hoàng Kỹ Thuật 4",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECH4@EVSYSTEM.COM",
-                            NormalizedUserName = "TECH4",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999200004",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "tech4"
-                        },
-                        new
-                        {
-                            Id = "16",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1997, 3, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "tech5@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Hoàng Kỹ Thuật 5",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "TECH5@EVSYSTEM.COM",
-                            NormalizedUserName = "TECH5",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumber = "0999200005",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "tech5"
-                        },
-                        new
-                        {
-                            Id = "17",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver1@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 1",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER1@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver1"
-                        },
-                        new
-                        {
-                            Id = "18",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver2@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 2",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER2@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER2",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver2"
-                        },
-                        new
-                        {
-                            Id = "19",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver3@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 3",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER3@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER3",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver3"
-                        },
-                        new
-                        {
-                            Id = "20",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver4@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 4",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER4@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER4",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver4"
-                        },
-                        new
-                        {
-                            Id = "21",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver5@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 5",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER5@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER5",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver5"
-                        },
-                        new
-                        {
-                            Id = "22",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver6@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 6",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER6@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER6",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver6"
-                        },
-                        new
-                        {
-                            Id = "23",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver7@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 7",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER7@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER7",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver7"
-                        },
-                        new
-                        {
-                            Id = "24",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver8@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 8",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER8@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER8",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver8"
-                        },
-                        new
-                        {
-                            Id = "25",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver9@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 9",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER9@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER9",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver9"
-                        },
-                        new
-                        {
-                            Id = "26",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            DateOfBirth = new DateTime(1998, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "driver10@evsystem.com",
-                            EmailConfirmed = true,
-                            FullName = "Phạm Tài Xế 10",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DRIVER10@EVSYSTEM.COM",
-                            NormalizedUserName = "DRIVER10",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPObFX2yWUOPm4hpjM163Nl64+ipd6Xpz7yGYFOE0vsE1lMTJvMlNk75wZn25hBatA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",
-                            TwoFactorEnabled = false,
-                            UserName = "driver10"
+                            UserName = "d2"
                         });
                 });
 
@@ -611,143 +241,6 @@ namespace API.Migrations
                     b.HasIndex("StationId");
 
                     b.ToTable("Assignments", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "2",
-                            StationId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "7",
-                            StationId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "12",
-                            StationId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "3",
-                            StationId = 2
-                        },
-                        new
-                        {
-                            Id = 5,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "8",
-                            StationId = 2
-                        },
-                        new
-                        {
-                            Id = 6,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "13",
-                            StationId = 2
-                        },
-                        new
-                        {
-                            Id = 7,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "4",
-                            StationId = 3
-                        },
-                        new
-                        {
-                            Id = 8,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "9",
-                            StationId = 3
-                        },
-                        new
-                        {
-                            Id = 9,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "14",
-                            StationId = 3
-                        },
-                        new
-                        {
-                            Id = 10,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "5",
-                            StationId = 4
-                        },
-                        new
-                        {
-                            Id = 11,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "10",
-                            StationId = 4
-                        },
-                        new
-                        {
-                            Id = 12,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "15",
-                            StationId = 4
-                        },
-                        new
-                        {
-                            Id = 13,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "6",
-                            StationId = 5
-                        },
-                        new
-                        {
-                            Id = 14,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "11",
-                            StationId = 5
-                        },
-                        new
-                        {
-                            Id = 15,
-                            EffectiveFrom = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EffectiveTo = new DateTime(2026, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            StaffId = "16",
-                            StationId = 5
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.ChargingPackage", b =>
@@ -858,6 +351,296 @@ namespace API.Migrations
                     b.HasIndex("StationId");
 
                     b.ToTable("ChargingPosts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "HCM01-CHG001",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "HCM01-CHG002",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "HCM01-CHG003",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "HCM01-CHG004",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "HCM01-CHG005",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 150m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "HCM01-CHG006",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 150m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "HCM01-CHG007",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Code = "HCM01-CHG008",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 1,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Code = "HCM02-CHG001",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Code = "HCM02-CHG002",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "HCM02-CHG003",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Code = "HCM02-CHG004",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Code = "HCM02-CHG005",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 150m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Code = "HCM02-CHG006",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 150m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Code = "HCM02-CHG007",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Code = "HCM02-CHG008",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 2,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Code = "BD03-CHG001",
+                            ConnectorType = "Type2",
+                            IsWalkIn = false,
+                            PowerKW = 11m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Code = "BD03-CHG002",
+                            ConnectorType = "Type2",
+                            IsWalkIn = true,
+                            PowerKW = 11m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Normal"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Code = "BD03-CHG003",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 60m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Code = "BD03-CHG004",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 60m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Code = "BD03-CHG005",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = false,
+                            PowerKW = 150m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Code = "BD03-CHG006",
+                            ConnectorType = "CCS2",
+                            IsWalkIn = true,
+                            PowerKW = 150m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Fast"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Code = "BD03-CHG007",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = false,
+                            PowerKW = 1.2m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Code = "BD03-CHG008",
+                            ConnectorType = "VinEScooter",
+                            IsWalkIn = true,
+                            PowerKW = 1.2m,
+                            StationId = 3,
+                            StationName = "",
+                            Status = "Available",
+                            Type = "Scooter"
+                        });
                 });
 
             modelBuilder.Entity("API.Entities.ChargingSession", b =>
@@ -941,338 +724,6 @@ namespace API.Migrations
                     b.HasIndex("VehicleId");
 
                     b.ToTable("ChargingSessions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 101,
-                            ChargingPostId = 31,
-                            CompletedTime = new DateTime(2025, 11, 21, 12, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 12, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 101,
-                            ReservationId = 101,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 12, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-1"
-                        },
-                        new
-                        {
-                            Id = 102,
-                            ChargingPostId = 32,
-                            CompletedTime = new DateTime(2025, 11, 21, 14, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 14, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 102,
-                            ReservationId = 102,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 14, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-2"
-                        },
-                        new
-                        {
-                            Id = 103,
-                            ChargingPostId = 41,
-                            CompletedTime = new DateTime(2025, 11, 21, 16, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 16, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 103,
-                            ReservationId = 103,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 16, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-3"
-                        },
-                        new
-                        {
-                            Id = 104,
-                            ChargingPostId = 42,
-                            CompletedTime = new DateTime(2025, 11, 21, 18, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 18, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 104,
-                            ReservationId = 104,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 18, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-4"
-                        },
-                        new
-                        {
-                            Id = 105,
-                            ChargingPostId = 43,
-                            CompletedTime = new DateTime(2025, 11, 21, 20, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 20, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 105,
-                            ReservationId = 105,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 20, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-5"
-                        },
-                        new
-                        {
-                            Id = 106,
-                            ChargingPostId = 25,
-                            CompletedTime = new DateTime(2025, 11, 21, 22, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 21, 22, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 106,
-                            ReservationId = 106,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 21, 22, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-6"
-                        },
-                        new
-                        {
-                            Id = 107,
-                            ChargingPostId = 31,
-                            CompletedTime = new DateTime(2025, 11, 22, 0, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 0, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 107,
-                            ReservationId = 107,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-7"
-                        },
-                        new
-                        {
-                            Id = 108,
-                            ChargingPostId = 32,
-                            CompletedTime = new DateTime(2025, 11, 22, 2, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 2, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 108,
-                            ReservationId = 108,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 2, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-8"
-                        },
-                        new
-                        {
-                            Id = 109,
-                            ChargingPostId = 41,
-                            CompletedTime = new DateTime(2025, 11, 22, 4, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 4, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 109,
-                            ReservationId = 109,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 4, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-9"
-                        },
-                        new
-                        {
-                            Id = 110,
-                            ChargingPostId = 42,
-                            CompletedTime = new DateTime(2025, 11, 22, 6, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 6, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 110,
-                            ReservationId = 110,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 6, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-10"
-                        },
-                        new
-                        {
-                            Id = 111,
-                            ChargingPostId = 43,
-                            CompletedTime = new DateTime(2025, 11, 22, 8, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 8, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 111,
-                            ReservationId = 111,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 8, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-11"
-                        },
-                        new
-                        {
-                            Id = 112,
-                            ChargingPostId = 25,
-                            CompletedTime = new DateTime(2025, 11, 22, 10, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 10, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 112,
-                            ReservationId = 112,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 10, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-12"
-                        },
-                        new
-                        {
-                            Id = 113,
-                            ChargingPostId = 31,
-                            CompletedTime = new DateTime(2025, 11, 22, 12, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 12, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 113,
-                            ReservationId = 113,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 12, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-13"
-                        },
-                        new
-                        {
-                            Id = 114,
-                            ChargingPostId = 32,
-                            CompletedTime = new DateTime(2025, 11, 22, 14, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 14, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 114,
-                            ReservationId = 114,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 14, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-14"
-                        },
-                        new
-                        {
-                            Id = 115,
-                            ChargingPostId = 41,
-                            CompletedTime = new DateTime(2025, 11, 22, 16, 30, 5, 0, DateTimeKind.Utc),
-                            Cost = 42000,
-                            EndBatteryPercentage = 60m,
-                            EndTime = new DateTime(2025, 11, 22, 16, 30, 0, 0, DateTimeKind.Utc),
-                            EnergyConsumed = 10.0,
-                            IdleFee = 6000,
-                            IsOverstay = false,
-                            IsPaid = true,
-                            IsWalkInSession = false,
-                            OverstayFee = 0,
-                            ReceiptId = 115,
-                            ReservationId = 115,
-                            StartBatteryPercentage = 20m,
-                            StartTime = new DateTime(2025, 11, 22, 16, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Completed",
-                            StopReason = 0,
-                            VehiclePlate = "Demo-15"
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.DriverPackage", b =>
@@ -1488,248 +939,6 @@ namespace API.Migrations
                     b.HasIndex("StationId");
 
                     b.ToTable("Receipts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 101,
-                            AppUserId = "18",
-                            CreateAt = new DateTime(2025, 11, 21, 12, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 2,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 102,
-                            AppUserId = "22",
-                            CreateAt = new DateTime(2025, 11, 21, 14, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 3,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 103,
-                            AppUserId = "23",
-                            CreateAt = new DateTime(2025, 11, 21, 16, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 4,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 104,
-                            AppUserId = "24",
-                            CreateAt = new DateTime(2025, 11, 21, 18, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 5,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 105,
-                            AppUserId = "17",
-                            CreateAt = new DateTime(2025, 11, 21, 20, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 1,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 106,
-                            AppUserId = "18",
-                            CreateAt = new DateTime(2025, 11, 21, 22, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 2,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 107,
-                            AppUserId = "22",
-                            CreateAt = new DateTime(2025, 11, 22, 0, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 3,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 108,
-                            AppUserId = "23",
-                            CreateAt = new DateTime(2025, 11, 22, 2, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 4,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 109,
-                            AppUserId = "24",
-                            CreateAt = new DateTime(2025, 11, 22, 4, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 5,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 110,
-                            AppUserId = "17",
-                            CreateAt = new DateTime(2025, 11, 22, 6, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 1,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 111,
-                            AppUserId = "18",
-                            CreateAt = new DateTime(2025, 11, 22, 8, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 2,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 112,
-                            AppUserId = "22",
-                            CreateAt = new DateTime(2025, 11, 22, 10, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 3,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 113,
-                            AppUserId = "23",
-                            CreateAt = new DateTime(2025, 11, 22, 12, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 4,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 114,
-                            AppUserId = "24",
-                            CreateAt = new DateTime(2025, 11, 22, 14, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 5,
-                            Status = 1,
-                            TotalCost = 48000m
-                        },
-                        new
-                        {
-                            Id = 115,
-                            AppUserId = "17",
-                            CreateAt = new DateTime(2025, 11, 22, 16, 30, 0, 0, DateTimeKind.Utc),
-                            DiscountAmount = 0m,
-                            EnergyConsumed = 10m,
-                            EnergyCost = 42000m,
-                            IdleFee = 6000m,
-                            OverstayFee = 0m,
-                            PricePerKwhSnapshot = 4200m,
-                            PricingName = "Thành viên - Sạc nhanh DC",
-                            StationId = 1,
-                            Status = 1,
-                            TotalCost = 48000m
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.Report", b =>
@@ -1832,188 +1041,6 @@ namespace API.Migrations
                     b.HasIndex("VehicleId");
 
                     b.ToTable("Reservations");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 101,
-                            ChargingPostId = 31,
-                            CreatedAt = new DateTime(2025, 11, 21, 11, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "18",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 12, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 11, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 102,
-                            ChargingPostId = 32,
-                            CreatedAt = new DateTime(2025, 11, 21, 13, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "22",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 14, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 13, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 103,
-                            ChargingPostId = 41,
-                            CreatedAt = new DateTime(2025, 11, 21, 15, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "23",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 16, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 15, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 104,
-                            ChargingPostId = 42,
-                            CreatedAt = new DateTime(2025, 11, 21, 17, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "24",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 18, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 17, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 105,
-                            ChargingPostId = 43,
-                            CreatedAt = new DateTime(2025, 11, 21, 19, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "17",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 20, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 19, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 106,
-                            ChargingPostId = 25,
-                            CreatedAt = new DateTime(2025, 11, 21, 21, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "18",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 21, 22, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 21, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 107,
-                            ChargingPostId = 31,
-                            CreatedAt = new DateTime(2025, 11, 21, 23, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "22",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 0, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 21, 23, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 108,
-                            ChargingPostId = 32,
-                            CreatedAt = new DateTime(2025, 11, 22, 1, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "23",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 2, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 1, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 109,
-                            ChargingPostId = 41,
-                            CreatedAt = new DateTime(2025, 11, 22, 3, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "24",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 4, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 3, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 110,
-                            ChargingPostId = 42,
-                            CreatedAt = new DateTime(2025, 11, 22, 5, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "17",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 6, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 5, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 111,
-                            ChargingPostId = 43,
-                            CreatedAt = new DateTime(2025, 11, 22, 7, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "18",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 8, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 7, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 112,
-                            ChargingPostId = 25,
-                            CreatedAt = new DateTime(2025, 11, 22, 9, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "22",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 10, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 9, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 113,
-                            ChargingPostId = 31,
-                            CreatedAt = new DateTime(2025, 11, 22, 11, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "23",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 12, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 11, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 114,
-                            ChargingPostId = 32,
-                            CreatedAt = new DateTime(2025, 11, 22, 13, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "24",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 14, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 13, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        },
-                        new
-                        {
-                            Id = 115,
-                            ChargingPostId = 41,
-                            CreatedAt = new DateTime(2025, 11, 22, 15, 0, 0, 0, DateTimeKind.Utc),
-                            DriverId = "17",
-                            IsProcessedByDiscipline = false,
-                            Status = "Completed",
-                            TimeSlotEnd = new DateTime(2025, 11, 22, 16, 0, 0, 0, DateTimeKind.Utc),
-                            TimeSlotStart = new DateTime(2025, 11, 22, 15, 0, 0, 0, DateTimeKind.Utc),
-                            VehicleId = 3
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.Station", b =>
@@ -2099,32 +1126,6 @@ namespace API.Migrations
                             Name = "Trạm sạc VinFast Bình Dương",
                             OpenTime = new TimeSpan(0, 6, 0, 0, 0),
                             Status = "Active"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Address = "Sân bay Tân Sơn Nhất, Quận Tân Bình, TP.HCM",
-                            CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "HCM04",
-                            Description = "Trạm sạc tại khu vực sân bay, tiện cho xe công nghệ",
-                            Latitude = 10.8169828,
-                            Longitude = 106.64705360000001,
-                            Name = "Trạm sạc VinFast Sân bay",
-                            OpenTime = new TimeSpan(0, 6, 0, 0, 0),
-                            Status = "Active"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Address = "172 Nguyễn Văn Linh, Quận 7, TP.HCM",
-                            CloseTime = new TimeSpan(0, 22, 0, 0, 0),
-                            Code = "HCM05",
-                            Description = "Trạm sạc khu vực Phú Mỹ Hưng, tập trung nhiều xe ô tô",
-                            Latitude = 10.751982699999999,
-                            Longitude = 106.7210539,
-                            Name = "Trạm sạc VinFast Quận 7",
-                            OpenTime = new TimeSpan(0, 6, 0, 0, 0),
-                            Status = "Active"
                         });
                 });
 
@@ -2182,125 +1183,6 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("Vehicles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 2,
-                            BatteryCapacityKWh = 42.0,
-                            ConnectorType = "CCS2",
-                            IsActive = true,
-                            MaxChargingPowerKW = 60.0,
-                            Model = "VF e34",
-                            OwnerId = "18",
-                            Plate = "51F-D12.34",
-                            RegistrationStatus = "Approved",
-                            Type = "Car"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BatteryCapacityKWh = 59.600000000000001,
-                            ConnectorType = "CCS2",
-                            IsActive = true,
-                            MaxChargingPowerKW = 150.0,
-                            Model = "VF 6",
-                            OwnerId = "19",
-                            Plate = "60A-F98.76",
-                            RegistrationStatus = "Approved",
-                            Type = "Car"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            BatteryCapacityKWh = 87.700000000000003,
-                            ConnectorType = "CCS2",
-                            IsActive = true,
-                            MaxChargingPowerKW = 150.0,
-                            Model = "VF 8",
-                            OwnerId = "20",
-                            Plate = "51G-333.33",
-                            RegistrationStatus = "Approved",
-                            Type = "Car"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            BatteryCapacityKWh = 18.640000000000001,
-                            ConnectorType = "CCS2",
-                            IsActive = true,
-                            MaxChargingPowerKW = 60.0,
-                            Model = "VF 3",
-                            OwnerId = "21",
-                            Plate = "51C-555.55",
-                            RegistrationStatus = "Approved",
-                            Type = "Car"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            BatteryCapacityKWh = 75.299999999999997,
-                            ConnectorType = "CCS2",
-                            IsActive = true,
-                            MaxChargingPowerKW = 150.0,
-                            Model = "VF 7",
-                            OwnerId = "22",
-                            Plate = "51A-777.77",
-                            RegistrationStatus = "Approved",
-                            Type = "Car"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = "VinEScooter",
-                            IsActive = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Theon S",
-                            OwnerId = "23",
-                            Plate = "59-E56.78",
-                            RegistrationStatus = "Approved",
-                            Type = "Motorbike"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = "VinEScooter",
-                            IsActive = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Evo 200/200 Lite",
-                            OwnerId = "24",
-                            Plate = "51H-222.22",
-                            RegistrationStatus = "Approved",
-                            Type = "Motorbike"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = "VinEScooter",
-                            IsActive = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Klara S2 (2022)",
-                            OwnerId = "25",
-                            Plate = "59-B44.44",
-                            RegistrationStatus = "Approved",
-                            Type = "Motorbike"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            BatteryCapacityKWh = 3.5,
-                            ConnectorType = "VinEScooter",
-                            IsActive = true,
-                            MaxChargingPowerKW = 1.2,
-                            Model = "Feliz S",
-                            OwnerId = "26",
-                            Plate = "59-C66.66",
-                            RegistrationStatus = "Approved",
-                            Type = "Motorbike"
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.VehicleModel", b =>
@@ -2567,88 +1449,6 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("Wallets");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Balance = 500000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "17"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Balance = 100000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "18"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Balance = 0m,
-                            Dept = 25000m,
-                            IsDept = true,
-                            UserId = "19"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Balance = 200000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "20"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Balance = 0m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "21"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Balance = 150000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "22"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Balance = 50000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "23"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Balance = 0m,
-                            Dept = 10000m,
-                            IsDept = true,
-                            UserId = "24"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Balance = 300000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "25"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Balance = 50000m,
-                            Dept = 0m,
-                            IsDept = false,
-                            UserId = "26"
-                        });
                 });
 
             modelBuilder.Entity("API.Entities.Wallet.WalletTransaction", b =>
@@ -2863,7 +1663,7 @@ namespace API.Migrations
                         new
                         {
                             UserId = "2",
-                            RoleId = "3"
+                            RoleId = "4"
                         },
                         new
                         {
@@ -2873,116 +1673,16 @@ namespace API.Migrations
                         new
                         {
                             UserId = "4",
-                            RoleId = "3"
+                            RoleId = "5"
                         },
                         new
                         {
                             UserId = "5",
-                            RoleId = "3"
+                            RoleId = "2"
                         },
                         new
                         {
                             UserId = "6",
-                            RoleId = "3"
-                        },
-                        new
-                        {
-                            UserId = "7",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "8",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "9",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "10",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "11",
-                            RoleId = "4"
-                        },
-                        new
-                        {
-                            UserId = "12",
-                            RoleId = "5"
-                        },
-                        new
-                        {
-                            UserId = "13",
-                            RoleId = "5"
-                        },
-                        new
-                        {
-                            UserId = "14",
-                            RoleId = "5"
-                        },
-                        new
-                        {
-                            UserId = "15",
-                            RoleId = "5"
-                        },
-                        new
-                        {
-                            UserId = "16",
-                            RoleId = "5"
-                        },
-                        new
-                        {
-                            UserId = "17",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "18",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "19",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "20",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "21",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "22",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "23",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "24",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "25",
-                            RoleId = "2"
-                        },
-                        new
-                        {
-                            UserId = "26",
                             RoleId = "2"
                         });
                 });

@@ -138,7 +138,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // --- Đăng ký service (tầng logic)
 builder.Services.AddScoped<ITokenService, TokenService>();
-// builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<IChargingSessionService, ChargingSessionService>();
@@ -230,4 +230,3 @@ app.MapHub<ReservationHub>("hubs/reservation");
 app.MapHub<BotHub>("/hubs/bot");
 
 app.Run();
-
