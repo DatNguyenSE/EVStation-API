@@ -21,16 +21,28 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder;
 using Microsoft.AspNetCore.HttpOverrides; // Thêm dòng này lên đầu file Program.cs
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    })
     .AddNewtonsoftJson(options =>
     {
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
         // chuyển các giá trị kiểu enum thành chữ chứ không còn là 0, 1, 2,...
         options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+    });
+
+
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options => {
+        // Cấu hình riêng cho SignalR để đảm bảo nó cũng bỏ qua vòng lặp
+        options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 // swagger
@@ -163,7 +175,7 @@ builder.Services.AddHostedService<IdleFeeService>();
 builder.Services.AddHostedService<ReservationMonitorService>();
 
 // Đăng ký SignalR
-builder.Services.AddSignalR();
+// builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IChargingSimulationService, ChargingSimulationService>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
