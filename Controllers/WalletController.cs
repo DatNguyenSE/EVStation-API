@@ -96,14 +96,16 @@ namespace API.Controllers
             try
             {
                 var response = await _walletService.HandleVnpayCallbackAsync(Request.Query);
-                if (response.Success)
-                    return Ok(new { message = "Nạp tiền thành công", data = response });
-                else
-                    return BadRequest(new { message = "Thanh toán thất bại", data = response });
+
+                // Lấy lại query string do VNPAY gửi về
+                var query = Request.QueryString.Value;
+
+                // Redirect về frontend Angular
+                return Redirect($"http://localhost:4200/thanh-toan{query}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return Redirect($"http://localhost:4200/thanh-toan?error={ex.Message}");
             }
         }
 
