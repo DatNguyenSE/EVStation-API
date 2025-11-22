@@ -49,7 +49,12 @@ namespace API.Services
         public async Task<Report> CreateReportAsync(CreateReportDto dto, string staffId, IOptions<CloudinarySettings> cloudinaryConfig)
         {
             var post = await _uow.ChargingPosts.GetByIdAsync(dto.PostId);
-            if (post == null) throw new Exception("Charging post not found");
+            if (post == null) throw new Exception("Không tìm thấy trụ sạc.");
+
+            var currentAssignment = await _uow.Assignments.GetCurrentAssignmentAsync(staffId);
+            var stationId = currentAssignment?.StationId;
+            if(stationId == null || stationId != post.StationId)
+                throw new Exception("Bạn không có quyền báo cáo sự cố cho trụ này.");
 
             string? imageUrl = null;
             if (dto.ImageFile != null)
@@ -236,6 +241,11 @@ namespace API.Services
             var techUser = await _userManager.FindByIdAsync(dto.TechnicianId);
             if (techUser == null || !await _userManager.IsInRoleAsync(techUser, AppConstant.Roles.Technician))
                 throw new Exception("Kỹ thuật viên không tồn tại hoặc không hợp lệ.");
+
+            var currentAssignment = await _uow.Assignments.GetCurrentAssignmentAsync(dto.TechnicianId);
+            var stationId = currentAssignment?.StationId;
+            if(report.ChargingPost.StationId != stationId)
+                throw new Exception("Kỹ thuật viên không thuộc cùng trạm với trụ sạc trong báo cáo.");
 
             var notifiedUserIds = new List<string>();
 
